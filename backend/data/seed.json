@@ -2216,60 +2216,6 @@
         "PRV-바이블-보고서교부",
         "PRV-금소법-art_18"
       ]
-    },
-    {
-      "rule_id": "RULE_028_001",
-      "rule_seq": 79,
-      "parent_seq": "28",
-      "content": "[감점] 우월적 지위 이용 편의 요구·수령 등 불공정영업행위 금지",
-      "meta_title": "불공정영업행위 금지",
-      "meta_category": "불공정영업금지",
-      "keywords": [
-        "불공정영업",
-        "우월적 지위",
-        "편의 요구",
-        "편의 수령",
-        "권익 침해"
-      ],
-      "judge_prompt": "우월적 지위를 이용해 소비자 권익을 침해하거나 판매 관련 편의를 요구·수령하는 불공정영업행위가 없었는가? (감점)",
-      "violation_type": "감점형",
-      "verification_method": "llm_judgment",
-      "basis": [
-        "PRV-금소법-art_20"
-      ],
-      "product_type": "공통",
-      "is_deduct": 1,
-      "rule_version": "1.0.0",
-      "ruleset_id": "RSETisa000000001",
-      "trigger_state": "감점 요소 탐지 단계",
-      "condition_type": "모든 고객"
-    },
-    {
-      "rule_id": "RULE_029_001",
-      "rule_seq": 80,
-      "parent_seq": "29",
-      "is_deduct": 1,
-      "content": "[감점] 광고·안내물 오인 유발·사실 상이 내용 금지 및 필수 포함사항 표시",
-      "meta_title": "광고 규제 준수",
-      "meta_category": "광고규제",
-      "keywords": [
-        "광고",
-        "안내물",
-        "오인",
-        "사실과 다른",
-        "필수 포함사항"
-      ],
-      "judge_prompt": "상담에 사용한 광고·안내물이 오인을 유발하거나 사실과 다른 내용을 담지 않고, 필수 포함사항을 표시하였는가? (감점)",
-      "violation_type": "감점형",
-      "verification_method": "human_review",
-      "basis": [
-        "PRV-금소법-art_22"
-      ],
-      "product_type": "공통",
-      "rule_version": "1.0.0",
-      "ruleset_id": "RSETisa000000001",
-      "trigger_state": "감점 요소 탐지 단계",
-      "condition_type": "모든 고객"
     }
   ],
   "vocabulary": {

@@ -1,81 +1,315 @@
 {
   "_comment": "룰별 태그·발화행위 매핑. 누락형=충족을 위해 필요한 (태그,행위). 감점형/비계량형은 근사 매핑이며 관리 UI에서 조정 가능.",
-  "RULE_001_001": { "semantic_tag": "CUST_TYPE", "speech_act": "CF" },
-  "RULE_001_002": { "semantic_tag": "SUIT_WISH", "speech_act": "NT" },
-  "RULE_001_003": { "semantic_tag": "SUIT_WISH", "speech_act": "CF" },
-  "RULE_002_001": { "semantic_tag": "SUIT_GOAL", "speech_act": "EX" },
-  "RULE_002_002": { "semantic_tag": "CUST_VULN", "speech_act": "CF" },
-  "RULE_002_003": { "semantic_tag": "SUIT_PROF", "speech_act": "CF" },
-  "RULE_003_001": { "semantic_tag": "SUIT_RSLT", "speech_act": "EX" },
-  "RULE_003_002": { "semantic_tag": "DOC_PROF", "speech_act": "NT" },
-  "RULE_004_001": { "semantic_tag": "SUIT_RECO", "speech_act": "EX" },
-  "RULE_005_001": { "semantic_tag": "PROD_STRC", "speech_act": "EX" },
-  "RULE_005_002": { "semantic_tag": "DOC_ELIG", "speech_act": "EX" },
-  "RULE_005_003": { "semantic_tag": "CTRT_TERM", "speech_act": "EX" },
-  "RULE_005_004": { "semantic_tag": "PROD_PAYO", "speech_act": "EX" },
-  "RULE_005_005": { "semantic_tag": "FEE_REDEM", "speech_act": "EX" },
-  "RULE_005_006": { "semantic_tag": "FEE_BASE", "speech_act": "EX" },
-  "RULE_006_001": { "semantic_tag": "SUIT_PROF", "speech_act": "NT" },
-  "RULE_006_002": { "semantic_tag": "SUIT_PROF", "speech_act": "NT" },
-  "RULE_006_003": { "semantic_tag": "SUIT_PROF", "speech_act": "NT" },
-  "RULE_007_001": { "semantic_tag": "SUIT_RECO", "speech_act": "EX" },
-  "RULE_007_002": { "semantic_tag": "PROD_COMP", "speech_act": "EX" },
-  "RULE_008_001": { "semantic_tag": "RSK_UNFIT", "speech_act": "NT" },
-  "RULE_008_002": { "semantic_tag": "RSK_UNFIT", "speech_act": "NT" },
-  "RULE_008_003": { "semantic_tag": "SUIT_WISH", "speech_act": "CF" },
-  "RULE_008_004": { "semantic_tag": "RSK_UNFIT", "speech_act": "NT" },
-  "RULE_009_001": { "semantic_tag": "DOC_APPR", "speech_act": "NT" },
-  "RULE_010_001": { "semantic_tag": "CNST_REC", "speech_act": "NT" },
-  "RULE_010_002": { "semantic_tag": "CNST_REC", "speech_act": "NT" },
-  "RULE_010_003": { "semantic_tag": "CNST_REC", "speech_act": "CF" },
-  "RULE_011_001": { "semantic_tag": "DOC_EXPL", "speech_act": "EX" },
-  "RULE_011_002": { "semantic_tag": "DOC_EXPL", "speech_act": "NT" },
-  "RULE_012_001": { "semantic_tag": "PROD_STRC", "speech_act": "EX" },
-  "RULE_013_001": { "semantic_tag": "RSK_LOSS", "speech_act": "EX" },
-  "RULE_013_002": { "semantic_tag": "RSK_OWNR", "speech_act": "EX" },
-  "RULE_013_003": { "semantic_tag": "RSK_NODEP", "speech_act": "EX" },
-  "RULE_013_004": { "semantic_tag": "RSK_GEN", "speech_act": "EX" },
-  "RULE_014_001": { "semantic_tag": "FEE_BASE", "speech_act": "EX" },
-  "RULE_015_001": { "semantic_tag": "FEE_REDEM", "speech_act": "EX" },
-  "RULE_016_001": { "semantic_tag": "CONF_FORM", "speech_act": "CF" },
-  "RULE_016_002": { "semantic_tag": "CONF_FORM", "speech_act": "CF" },
-  "RULE_017_001": { "semantic_tag": "DOC_EXPL", "speech_act": "NT" },
-  "RULE_017_002": { "semantic_tag": "CONF_FORM", "speech_act": "CF" },
-  "RULE_018_001": { "semantic_tag": "CTRT_TERM", "speech_act": "EX" },
-  "RULE_019_001": { "semantic_tag": "CTRT_TERM", "speech_act": "NT" },
-  "RULE_020_001": { "semantic_tag": "DOC_MAND", "speech_act": "NT" },
-  "RULE_020_002": { "semantic_tag": "DOC_MAND", "speech_act": "NT" },
-  "RULE_020_003": { "semantic_tag": "DOC_MAND", "speech_act": "NT" },
-  "RULE_020_004": { "semantic_tag": "DOC_MAND", "speech_act": "NT" },
-  "RULE_021_001": { "semantic_tag": "CONF_UND", "speech_act": "CF" },
-  "RULE_021_002": { "semantic_tag": "CONF_UND", "speech_act": "EX" },
-  "RULE_022_001": { "semantic_tag": "CUST_VULN", "speech_act": "CF" },
-  "RULE_023_001": { "semantic_tag": "CNST_3RD", "speech_act": "AG" },
-  "RULE_024_001": { "semantic_tag": "DOC_SUIT", "speech_act": "NT" },
-  "RULE_024_002": { "semantic_tag": "DOC_SUIT", "speech_act": "NT" },
-  "RULE_025_001": { "semantic_tag": "RSK_UNFIT", "speech_act": "EX" },
-  "RULE_026_001": { "semantic_tag": "SUIT_RECO", "speech_act": "NT" },
-  "RULE_027_001": { "semantic_tag": "CUST_PURP", "speech_act": "RF" },
-  "RULE_NQ_001": { "semantic_tag": "CUST_PURP", "speech_act": "NA" },
-  "RULE_NQ_002": { "semantic_tag": "CUST_PURP", "speech_act": "NA" },
-  "RULE_NQ_003": { "semantic_tag": "SUIT_MISF", "speech_act": "NA" },
-  "RULE_BIB_001": { "semantic_tag": "CNST_REC", "speech_act": "CF" },
-  "RULE_BIB_002": { "semantic_tag": "CNST_REC", "speech_act": "EX" },
-  "RULE_BIB_003": { "semantic_tag": "CONF_UND", "speech_act": "CF" },
-  "RULE_BIB_004": { "semantic_tag": "RSK_UNFIT", "speech_act": "EX" },
-  "RULE_BIB_005": { "semantic_tag": "CTRT_COOL", "speech_act": "CF" },
-  "RULE_BIB_006": { "semantic_tag": "CTRT_COOL", "speech_act": "NT" },
-  "RULE_BIB_007": { "semantic_tag": "CONF_FIN", "speech_act": "CF" },
-  "RULE_BIB_008": { "semantic_tag": "CTRT_COOL", "speech_act": "NT" },
-  "RULE_BIB_009": { "semantic_tag": "CTRT_COOL", "speech_act": "NT" },
-  "RULE_BIB_010": { "semantic_tag": "CTRT_TERM", "speech_act": "NT" },
-  "RULE_BIB_011": { "semantic_tag": "CTRT_TERM", "speech_act": "NT" },
-  "RULE_BIB_012": { "semantic_tag": "DOC_MAND", "speech_act": "NT" },
-  "RULE_BIB_013": { "semantic_tag": "CONF_CAP", "speech_act": "CF" },
-  "RULE_BIB_014": { "semantic_tag": "CONF_CAP", "speech_act": "CF" },
-  "RULE_BIB_015": { "semantic_tag": "CUST_VULN", "speech_act": "CF" },
-  "RULE_BIB_016": { "semantic_tag": "CNST_3RD", "speech_act": "CF" },
-  "RULE_BIB_017": { "semantic_tag": "CNST_3RD", "speech_act": "NT" },
-  "RULE_BIB_018": { "semantic_tag": "DOC_SUIT", "speech_act": "NT" },
-  "RULE_BIB_019": { "semantic_tag": "DOC_APPR", "speech_act": "NT" }
+  "RULE_001_001": {
+    "semantic_tag": "CUST_TYPE",
+    "speech_act": "CF"
+  },
+  "RULE_001_002": {
+    "semantic_tag": "SUIT_WISH",
+    "speech_act": "NT"
+  },
+  "RULE_001_003": {
+    "semantic_tag": "SUIT_WISH",
+    "speech_act": "CF"
+  },
+  "RULE_002_001": {
+    "semantic_tag": "SUIT_GOAL",
+    "speech_act": "EX"
+  },
+  "RULE_002_002": {
+    "semantic_tag": "CUST_VULN",
+    "speech_act": "CF"
+  },
+  "RULE_002_003": {
+    "semantic_tag": "SUIT_PROF",
+    "speech_act": "CF"
+  },
+  "RULE_003_001": {
+    "semantic_tag": "SUIT_RSLT",
+    "speech_act": "EX"
+  },
+  "RULE_003_002": {
+    "semantic_tag": "DOC_PROF",
+    "speech_act": "NT"
+  },
+  "RULE_004_001": {
+    "semantic_tag": "SUIT_RECO",
+    "speech_act": "EX"
+  },
+  "RULE_005_001": {
+    "semantic_tag": "PROD_STRC",
+    "speech_act": "EX"
+  },
+  "RULE_005_002": {
+    "semantic_tag": "DOC_ELIG",
+    "speech_act": "EX"
+  },
+  "RULE_005_003": {
+    "semantic_tag": "CTRT_TERM",
+    "speech_act": "EX"
+  },
+  "RULE_005_004": {
+    "semantic_tag": "PROD_PAYO",
+    "speech_act": "EX"
+  },
+  "RULE_005_005": {
+    "semantic_tag": "FEE_REDEM",
+    "speech_act": "EX"
+  },
+  "RULE_005_006": {
+    "semantic_tag": "FEE_BASE",
+    "speech_act": "EX"
+  },
+  "RULE_006_001": {
+    "semantic_tag": "SUIT_PROF",
+    "speech_act": "NT"
+  },
+  "RULE_006_002": {
+    "semantic_tag": "SUIT_PROF",
+    "speech_act": "NT"
+  },
+  "RULE_006_003": {
+    "semantic_tag": "SUIT_PROF",
+    "speech_act": "NT"
+  },
+  "RULE_007_001": {
+    "semantic_tag": "SUIT_RECO",
+    "speech_act": "EX"
+  },
+  "RULE_007_002": {
+    "semantic_tag": "PROD_COMP",
+    "speech_act": "EX"
+  },
+  "RULE_008_001": {
+    "semantic_tag": "RSK_UNFIT",
+    "speech_act": "NT"
+  },
+  "RULE_008_002": {
+    "semantic_tag": "RSK_UNFIT",
+    "speech_act": "NT"
+  },
+  "RULE_008_003": {
+    "semantic_tag": "SUIT_WISH",
+    "speech_act": "CF"
+  },
+  "RULE_008_004": {
+    "semantic_tag": "RSK_UNFIT",
+    "speech_act": "NT"
+  },
+  "RULE_009_001": {
+    "semantic_tag": "DOC_APPR",
+    "speech_act": "NT"
+  },
+  "RULE_010_001": {
+    "semantic_tag": "CNST_REC",
+    "speech_act": "NT"
+  },
+  "RULE_010_002": {
+    "semantic_tag": "CNST_REC",
+    "speech_act": "NT"
+  },
+  "RULE_010_003": {
+    "semantic_tag": "CNST_REC",
+    "speech_act": "CF"
+  },
+  "RULE_011_001": {
+    "semantic_tag": "DOC_EXPL",
+    "speech_act": "EX"
+  },
+  "RULE_011_002": {
+    "semantic_tag": "DOC_EXPL",
+    "speech_act": "NT"
+  },
+  "RULE_012_001": {
+    "semantic_tag": "PROD_STRC",
+    "speech_act": "EX"
+  },
+  "RULE_013_001": {
+    "semantic_tag": "RSK_LOSS",
+    "speech_act": "EX"
+  },
+  "RULE_013_002": {
+    "semantic_tag": "RSK_OWNR",
+    "speech_act": "EX"
+  },
+  "RULE_013_003": {
+    "semantic_tag": "RSK_NODEP",
+    "speech_act": "EX"
+  },
+  "RULE_013_004": {
+    "semantic_tag": "RSK_GEN",
+    "speech_act": "EX"
+  },
+  "RULE_014_001": {
+    "semantic_tag": "FEE_BASE",
+    "speech_act": "EX"
+  },
+  "RULE_015_001": {
+    "semantic_tag": "FEE_REDEM",
+    "speech_act": "EX"
+  },
+  "RULE_016_001": {
+    "semantic_tag": "CONF_FORM",
+    "speech_act": "CF"
+  },
+  "RULE_016_002": {
+    "semantic_tag": "CONF_FORM",
+    "speech_act": "CF"
+  },
+  "RULE_017_001": {
+    "semantic_tag": "DOC_EXPL",
+    "speech_act": "NT"
+  },
+  "RULE_017_002": {
+    "semantic_tag": "CONF_FORM",
+    "speech_act": "CF"
+  },
+  "RULE_018_001": {
+    "semantic_tag": "CTRT_TERM",
+    "speech_act": "EX"
+  },
+  "RULE_019_001": {
+    "semantic_tag": "CTRT_TERM",
+    "speech_act": "NT"
+  },
+  "RULE_020_001": {
+    "semantic_tag": "DOC_MAND",
+    "speech_act": "NT"
+  },
+  "RULE_020_002": {
+    "semantic_tag": "DOC_MAND",
+    "speech_act": "NT"
+  },
+  "RULE_020_003": {
+    "semantic_tag": "DOC_MAND",
+    "speech_act": "NT"
+  },
+  "RULE_020_004": {
+    "semantic_tag": "DOC_MAND",
+    "speech_act": "NT"
+  },
+  "RULE_021_001": {
+    "semantic_tag": "CONF_UND",
+    "speech_act": "CF"
+  },
+  "RULE_021_002": {
+    "semantic_tag": "CONF_UND",
+    "speech_act": "EX"
+  },
+  "RULE_022_001": {
+    "semantic_tag": "CUST_VULN",
+    "speech_act": "CF"
+  },
+  "RULE_023_001": {
+    "semantic_tag": "CNST_3RD",
+    "speech_act": "AG"
+  },
+  "RULE_024_001": {
+    "semantic_tag": "DOC_SUIT",
+    "speech_act": "NT"
+  },
+  "RULE_024_002": {
+    "semantic_tag": "DOC_SUIT",
+    "speech_act": "NT"
+  },
+  "RULE_025_001": {
+    "semantic_tag": "RSK_UNFIT",
+    "speech_act": "EX"
+  },
+  "RULE_026_001": {
+    "semantic_tag": "SUIT_RECO",
+    "speech_act": "NT"
+  },
+  "RULE_027_001": {
+    "semantic_tag": "CUST_PURP",
+    "speech_act": "RF"
+  },
+  "RULE_NQ_001": {
+    "semantic_tag": "CUST_PURP",
+    "speech_act": "NA"
+  },
+  "RULE_NQ_002": {
+    "semantic_tag": "CUST_PURP",
+    "speech_act": "NA"
+  },
+  "RULE_NQ_003": {
+    "semantic_tag": "SUIT_MISF",
+    "speech_act": "NA"
+  },
+  "RULE_BIB_001": {
+    "semantic_tag": "CNST_REC",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_002": {
+    "semantic_tag": "CNST_REC",
+    "speech_act": "EX"
+  },
+  "RULE_BIB_003": {
+    "semantic_tag": "CONF_UND",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_004": {
+    "semantic_tag": "RSK_UNFIT",
+    "speech_act": "EX"
+  },
+  "RULE_BIB_005": {
+    "semantic_tag": "CTRT_COOL",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_006": {
+    "semantic_tag": "CTRT_COOL",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_007": {
+    "semantic_tag": "CONF_FIN",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_008": {
+    "semantic_tag": "CTRT_COOL",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_009": {
+    "semantic_tag": "CTRT_COOL",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_010": {
+    "semantic_tag": "CTRT_TERM",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_011": {
+    "semantic_tag": "CTRT_TERM",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_012": {
+    "semantic_tag": "DOC_MAND",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_013": {
+    "semantic_tag": "CONF_CAP",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_014": {
+    "semantic_tag": "CONF_CAP",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_015": {
+    "semantic_tag": "CUST_VULN",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_016": {
+    "semantic_tag": "CNST_3RD",
+    "speech_act": "CF"
+  },
+  "RULE_BIB_017": {
+    "semantic_tag": "CNST_3RD",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_018": {
+    "semantic_tag": "DOC_SUIT",
+    "speech_act": "NT"
+  },
+  "RULE_BIB_019": {
+    "semantic_tag": "DOC_APPR",
+    "speech_act": "NT"
+  }
 }
