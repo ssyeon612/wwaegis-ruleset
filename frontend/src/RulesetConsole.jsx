@@ -797,8 +797,7 @@ const GROUP_COLOR = {
 function TagsView({ rules, taxonomy, selected, setSelected, onOpen }) {
   const T = useT();
   const sem = taxonomy.semantic_tags || {};
-  const acts = taxonomy.speech_acts || {};
-  const juries = taxonomy.jury_panels || {};
+  const [tab, setTab] = useState("전체");
 
   const usage = useMemo(() => {
     const m = {};
@@ -815,39 +814,58 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen }) {
   return (
     <div>
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>태그 사전</div>
-        <div style={{ fontSize: 12, color: T.faint, marginTop: 2 }}>
-          태그 {Object.keys(sem).length} · 발화행위 {Object.keys(acts).length} · 배심원 패널 {Object.keys(juries).length}
-        </div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>태그 목록</div>
+      </div>
+
+      {/* 그룹 탭 */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14, borderBottom: `1px solid ${T.line}`, paddingBottom: 10 }}>
+        {[["전체", null, Object.keys(sem).length], ...Object.entries(groups).map(([p, ts]) => [TAG_GROUPS[p] || p, p, ts.length])].map(([label, key, n]) => {
+          const active = tab === (key ?? "전체");
+          const gc = key ? (GROUP_COLOR[key] || T.accent) : T.accent;
+          return (
+            <button key={key ?? "전체"} onClick={() => setTab(key ?? "전체")}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer",
+                background: active ? gc : T.subtle, color: active ? "#fff" : T.sub,
+                borderRadius: 8, padding: "6px 11px", fontSize: 12.5, fontWeight: active ? 700 : 500 }}>
+              {key && <span style={{ width: 7, height: 7, borderRadius: 2, background: active ? "#fff" : gc }} />}
+              {label}
+              <span style={{ fontSize: 11, fontWeight: 700, opacity: active ? 0.85 : 0.6 }}>{n}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 8fr) minmax(0, 4fr)", gap: 12, alignItems: "start" }}>
-        {/* 태그 그룹 — 섹션별 태그 카드 (라벨 전체 표시) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-          {Object.entries(groups).map(([prefix, tags]) => {
+        {/* 태그 그룹 — 섹션별 읽기 리스트 (한글 라벨 우선) */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {Object.entries(groups).filter(([prefix]) => tab === "전체" || tab === prefix).map(([prefix, tags]) => {
             const gc = GROUP_COLOR[prefix] || T.accent;
+            const gtot = tags.reduce((a, t) => a + (usage[t.code] || 0), 0);
             return (
               <div key={prefix}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 3, background: gc }} />
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: 3, background: gc }} />
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{TAG_GROUPS[prefix] || prefix}</span>
                   <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint }}>{prefix}</span>
-                  <span style={{ fontSize: 11, color: T.faint }}>· {tags.length}</span>
+                  <span style={{ marginLeft: "auto", fontSize: 11, color: T.faint }}>태그 {tags.length} · 룰 {gtot}</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(215px, 1fr))", gap: 8 }}>
-                  {tags.map((t) => {
+                <div style={{ border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden", background: T.surface }}>
+                  {tags.map((t, i) => {
                     const n = usage[t.code] || 0;
                     const active = selected === t.code;
                     return (
                       <div key={t.code} onClick={() => setSelected(active ? null : t.code)}
-                        style={{ border: `1px solid ${active ? T.accent : T.line}`, background: active ? T.accentBg : T.surface, borderRadius: 9, padding: "9px 11px", cursor: "pointer" }}
-                        onMouseEnter={(e) => { if (!active) e.currentTarget.style.borderColor = gc; }}
-                        onMouseLeave={(e) => { if (!active) e.currentTarget.style.borderColor = T.line; }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                          <span style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 700, color: active ? T.accent : gc }}>{t.code}</span>
-                          <span style={{ fontSize: 10.5, fontWeight: 700, color: n ? T.ink : T.faint, background: n ? T.chipBg : "transparent", borderRadius: 8, padding: "1px 7px", whiteSpace: "nowrap" }}>룰 {n}</span>
-                        </div>
-                        <div style={{ fontSize: 12, color: T.sub, lineHeight: 1.45 }}>{t.label}</div>
+                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", cursor: "pointer",
+                          borderTop: i ? `1px solid ${T.line}` : "none",
+                          borderLeft: `3px solid ${active ? gc : "transparent"}`,
+                          background: active ? T.accentBg : "transparent" }}
+                        onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = T.subtle; }}
+                        onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = "transparent"; }}>
+                        <span style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{t.label}</span>
+                          <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint, marginLeft: 8 }}>{t.code}</span>
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: n ? gc : T.faint, background: n ? T.chipBg : "transparent", borderRadius: 20, padding: "2px 9px", whiteSpace: "nowrap", flexShrink: 0 }}>룰 {n}</span>
                       </div>
                     );
                   })}
@@ -864,40 +882,22 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen }) {
               right={<button onClick={() => setSelected(null)} style={{ border: "none", background: "none", color: T.faint, fontSize: 12, cursor: "pointer" }}>해제</button>}>
               <div style={{ fontSize: 12, color: T.sub, marginBottom: 8 }}>{sem[selected]}</div>
               {rulesForTag.length === 0 && <div style={{ fontSize: 12, color: T.faint }}>사용하는 룰이 없습니다</div>}
-              <div style={{ display: "flex", flexDirection: "column", gap: 2, maxHeight: "52vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "62vh", overflowY: "auto" }}>
                 {rulesForTag.map((r) => (
-                  <div key={r.rule_id} onClick={() => onOpen(r.rule_id)}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, cursor: "pointer" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = T.subtle)}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                    <span style={{ fontFamily: T.mono, fontSize: 10.5, color: T.faint, minWidth: 84 }}>{r.rule_id.replace(/^RULE_/, "")}</span>
-                    <span style={{ fontSize: 12, color: T.ink, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.content}</span>
-                    {r.speech_act && <span style={{ fontFamily: T.mono, fontSize: 10, color: T.sub }}>{r.speech_act}</span>}
+                  <div key={r.rule_id} style={{ borderLeft: `3px solid ${T.accent}`, background: T.subtle, borderRadius: "0 7px 7px 0", padding: "8px 11px" }}>
+                    <div style={{ fontSize: 12.5, lineHeight: 1.6, color: T.ink }}>{r.content}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 10.5, color: T.faint }}>{r.meta_category}</span>
+                    </div>
                   </div>
                 ))}
               </div>
             </Card>
           ) : (
-            <Card title="발화행위 (speech_act)">
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                {Object.entries(acts).map(([code, label]) => (
-                  <span key={code} style={{ display: "inline-flex", gap: 5, alignItems: "center", background: T.chipBg, borderRadius: 8, padding: "3px 8px" }}>
-                    <span style={{ fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: T.ink }}>{code}</span>
-                    <span style={{ fontSize: 11, color: T.sub }}>{label}</span>
-                  </span>
-                ))}
-              </div>
+            <Card title="태그 선택">
+              <div style={{ fontSize: 12, color: T.faint, lineHeight: 1.6 }}>왼쪽에서 태그를 선택하면 해당 태그가 매칭되는 룰이 표시됩니다.</div>
             </Card>
           )}
-          <Card title="배심원 패널 (jury_panel)">
-            {Object.entries(juries).map(([id, p]) => (
-              <div key={id}>
-                <div style={{ fontFamily: T.mono, fontSize: 12, fontWeight: 600, color: T.ink }}>{id}</div>
-                <div style={{ fontSize: 11, color: T.sub, marginTop: 2 }}>{p.name}</div>
-                <div style={{ fontSize: 11, color: T.faint, marginTop: 3 }}>{(p.jurors || []).join(" · ")}</div>
-              </div>
-            ))}
-          </Card>
         </div>
       </div>
     </div>
