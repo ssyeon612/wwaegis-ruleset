@@ -1,0 +1,11 @@
+node_modules/
+**/node_modules/
+frontend/dist/
+backend/data/rule_mgnt.db
+backend/data/rule_mgnt.db-shm
+backend/data/rule_mgnt.db-wal
+.DS_Store
+*.local
+
+# 내부 요구사항 문서 — 원격 저장소에 올리지 않음(민감)
+기능요구사항/

@@ -1,0 +1,81 @@
+// 백엔드 REST API 클라이언트 (Vite 프록시로 /api → :4000)
+const BASE = "/api";
+
+async function json(res) {
+  if (!res.ok) {
+    let body = null;
+    try { body = await res.json(); } catch {}
+    throw new Error(body?.error_message || `${res.status} ${res.statusText}`);
+  }
+  return res.json();
+}
+
+// 관리 데이터 일괄 로드 (provisions / rules / vocabulary / taxonomy / products)
+export async function fetchBundle() {
+  const [provisions, rules, vocabulary, taxonomy, products] = await Promise.all([
+    fetch(`${BASE}/provisions`).then(json),
+    fetch(`${BASE}/rules`).then(json),
+    fetch(`${BASE}/vocabulary`).then(json),
+    fetch(`${BASE}/taxonomy`).then(json),
+    fetch(`${BASE}/products`).then(json),
+  ]);
+  const provisionMap = Object.fromEntries(provisions.map((p) => [p.provision_id, p]));
+  return { provisions: provisionMap, rules, vocabulary, taxonomy, products };
+}
+
+// 룰 편집 영속화 (변경 이력 append)
+export async function updateRule(ruleId, patch) {
+  return fetch(`${BASE}/rules/${encodeURIComponent(ruleId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  }).then(json);
+}
+
+// ── ST 인터페이스 (RS-2 loadRuleSet) ─────────────────────
+// 상품 식별자(+ ST 가 매칭한 의미태그) → 룰셋 본문. 태그를 보내면 해당 룰만 반환.
+export async function loadRuleSet(productId, tags = []) {
+  const id = typeof productId === "string" ? productId : productId?.product_id;
+  const qs = new URLSearchParams({ product_id: id || "" });
+  if (tags.length) qs.set("tags", tags.join(","));
+  return fetch(`${BASE}/ruleset/load?${qs.toString()}`).then(json);
+}
+
+// 조항 개정 (버전업) — dry_run:true 면 미리보기만
+export async function amendProvision(provisionId, body) {
+  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}/amend`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  }).then(json);
+}
+export async function fetchProvisionHistory(provisionId) {
+  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}/history`).then(json);
+}
+// 전체 변경 이력
+export async function fetchChangelog(params = {}) {
+  const qs = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
+  return fetch(`${BASE}/changelog${qs ? `?${qs}` : ""}`).then(json);
+}
+// 룰 재검토 완료
+export async function clearRuleReview(ruleId) {
+  return fetch(`${BASE}/rules/${encodeURIComponent(ruleId)}/review/clear`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).then(json);
+}
+
+// RS-1 listRuleSets
+export async function listRuleSets(category) {
+  const q = category ? `?ruleset_category=${encodeURIComponent(category)}` : "";
+  return fetch(`${BASE}/rulesets${q}`).then(json);
+}
+
+// 온톨로지 — 지식그래프 + RDF 내보내기
+export async function fetchOntology() {
+  return fetch(`${BASE}/ontology/graph`).then(json);
+}
+export async function fetchOntologyExport(format) {
+  if (format === "jsonld") {
+    const j = await fetch(`${BASE}/ontology/export?format=jsonld`).then((r) => r.json());
+    return JSON.stringify(j, null, 2);
+  }
+  return fetch(`${BASE}/ontology/export?format=turtle`).then((r) => r.text());
+}

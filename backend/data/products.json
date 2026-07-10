@@ -1,0 +1,18 @@
+{
+  "_comment": "상품 마스터. product_categories 와 일치하는 ruleset_category 를 가진 모든 룰셋이 적용 대상 (F2-3 카테고리 기준 N:M).",
+  "PRODisa000000001": {
+    "product_id": "PRODisa000000001",
+    "product_name": "ISA 중개형",
+    "product_categories": ["ISA", "공통"]
+  },
+  "PRODfnd000000001": {
+    "product_id": "PRODfnd000000001",
+    "product_name": "일반 공모펀드",
+    "product_categories": ["공통"]
+  },
+  "PRODels000000001": {
+    "product_id": "PRODels000000001",
+    "product_name": "ELS 스텝다운",
+    "product_categories": ["ISA", "공통"]
+  }
+}

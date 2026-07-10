@@ -1,0 +1,12 @@
+# Render Blueprint — 백엔드 1개 서비스가 프론트(dist)+API 를 함께 서빙
+services:
+  - type: web
+    name: aegis-ruleset
+    runtime: node
+    plan: free
+    buildCommand: npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build
+    startCommand: node backend/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"

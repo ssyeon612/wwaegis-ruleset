@@ -1,0 +1,4 @@
+node_modules
+data/rule_mgnt.db
+data/rule_mgnt.db-shm
+data/rule_mgnt.db-wal

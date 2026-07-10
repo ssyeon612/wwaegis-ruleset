@@ -1,0 +1,2310 @@
+{
+  "provisions": {
+    "PRV-금소법-art_17": {
+      "provision_id": "PRV-금소법-art_17",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_17",
+      "heading": "적합성원칙",
+      "text": "금융상품판매업자등은 일반금융소비자의 정보를 파악하고, 부적합한 금융상품 계약 체결을 권유해서는 아니 된다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_18": {
+      "provision_id": "PRV-금소법-art_18",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_18",
+      "heading": "적정성원칙",
+      "text": "판매업자등은 권유 없이 계약하려는 경우에도 상품이 일반금융소비자에게 적정한지 판단하고 부적정 시 알려야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_19__para_1": {
+      "provision_id": "PRV-금소법-art_19__para_1",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_19__para_1",
+      "heading": "설명의무",
+      "text": "계약 체결 권유 시 및 소비자 요청 시 금융상품의 중요한 사항을 이해할 수 있도록 설명하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_19__para_2": {
+      "provision_id": "PRV-금소법-art_19__para_2",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_19__para_2",
+      "heading": "설명서 제공·이해 확인",
+      "text": "설명서를 제공하고, 이해하였음을 서명·기명날인·녹취 등으로 확인받아야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_19__para_3": {
+      "provision_id": "PRV-금소법-art_19__para_3",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_19__para_3",
+      "heading": "허위·왜곡 설명 금지",
+      "text": "중요사항을 거짓·왜곡(단정적 판단 제공 포함)하여 설명하거나 빠뜨려서는 아니 된다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-투자권유준칙-고령자": {
+      "provision_id": "PRV-투자권유준칙-고령자",
+      "document_id": "표준투자권유준칙",
+      "document_type": "가이드라인",
+      "e_id": "elderly_protection",
+      "heading": "고령투자자 보호 기준",
+      "text": "만 65세 이상 고령투자자에 대한 강화된 판매 절차(전담창구, 조력자, 숙려제도 등)를 적용한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-내규-모니터링기준": {
+      "provision_id": "PRV-내규-모니터링기준",
+      "document_id": "완전판매 모니터링 내규",
+      "document_type": "내규",
+      "e_id": "monitoring_std",
+      "heading": "감점·비계량 평가 기준",
+      "text": "상담 품질 감점 항목 및 비계량 평가 항목의 판정 기준을 정한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_28": {
+      "provision_id": "PRV-금소법-art_28",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_28",
+      "heading": "자료의 기록·유지 및 열람",
+      "text": "판매업자등은 판매 관련 자료를 기록·유지하여야 하며, 소비자의 열람 요구 시 정한 기한 내 열람하게 하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_44": {
+      "provision_id": "PRV-금소법-art_44",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_44",
+      "heading": "손해배상책임(설명의무 위반 입증책임 전환)",
+      "text": "설명의무 위반으로 손해 발생 시 배상 책임을 지며, 고의·과실 없음을 판매업자등이 입증하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_46": {
+      "provision_id": "PRV-금소법-art_46",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_46",
+      "heading": "청약의 철회",
+      "text": "일반금융소비자는 투자성 상품 계약서류 제공일 또는 계약체결일로부터 7일(대출성 14일) 내 청약을 철회할 수 있으며, 판매업자등은 청약철회 접수일부터 3영업일 이내에 이미 받은 금전을 반환하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-금소법-art_47": {
+      "provision_id": "PRV-금소법-art_47",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_47",
+      "heading": "위법계약의 해지",
+      "text": "판매규제 위반 계약에 대해 소비자는 위반사실을 안 날부터 1년과 계약서류를 받은 날부터 5년 중 먼저 도래하는 기간 내에 해지를 요구할 수 있으며, 판매업자는 요구받은 날부터 10일 이내에 수락 여부를 통지하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null
+    },
+    "PRV-바이블-대면녹취": {
+      "provision_id": "PRV-바이블-대면녹취",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_recording",
+      "heading": "대면녹취 기준",
+      "text": "일반금융소비자 대상 녹취 의무: 고령·부적합(부적정) 투자자는 모든 금융투자상품, 비고령·적합 투자자는 3등급 이상 상품(사모 대상 제한), 고난도 상품은 모든 개인 일반금융소비자. 녹취 범위는 투자성향 상담부터 적합성·설명의무·계약사항(계좌명·계좌번호·상품명·가입금액)까지 포함.",
+      "effective_from": "2022-06-24",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.132-134"
+    },
+    "PRV-바이블-숙려제도": {
+      "provision_id": "PRV-바이블-숙려제도",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_cooling_off",
+      "heading": "숙려제도",
+      "text": "고난도 금융투자상품 및 적정성원칙 대상상품 가입 시 2영업일 숙려기간 부여. 숙려기간 중 투자위험·원금손실가능성·최대손실가능금액·취소기간/방법을 2회 안내(LMS). 가입의사 확인기간 내 최종 의사 미확인 시 자동취소·투자금 반환.",
+      "effective_from": "2022-06-24",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.142-144"
+    },
+    "PRV-바이블-청약철회": {
+      "provision_id": "PRV-바이블-청약철회",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_withdrawal",
+      "heading": "청약철회권 의무기준",
+      "text": "고난도 단위형펀드·고난도 투자일임/금전신탁 대상(파생결합증권 제외). 청약철회 신청은 계약서류 제공일 또는 계약체결일로부터 7일 이내, 회사는 철회 신청 접수일부터 3영업일 이내에 대금을 반환(철회 완료). 철회권 행사 방해는 불공정 영업행위에 해당.",
+      "effective_from": "2021-05-10",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.149-150"
+    },
+    "PRV-바이블-위법계약해지": {
+      "provision_id": "PRV-바이블-위법계약해지",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_unlawful_termination",
+      "heading": "위법계약해지권 의무기준",
+      "text": "계속적 계약(투자일임·랩·신탁)으로 기간 종료 전 해지 시 불이익이 발생하는 계약이 대상. 해지요구 접수일 10일 이내 수락 여부 통지. 해지 시 수수료·위약금 등 비용 없이 장래효로 해지.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.152-153"
+    },
+    "PRV-바이블-자료보관": {
+      "provision_id": "PRV-바이블-자료보관",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_records",
+      "heading": "판매 관련 자료 보존·제공",
+      "text": "계약서류·계약이행자료(투자자정보확인서, 적합성보고서, 고령투자자상담확인서 등)·광고자료·권리행사자료를 유형별 기간 보존(대부분 10년). 서면 요청 시 6영업일 이내 제공, 열람 요구 시 8일 이내 열람 제공.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.156"
+    },
+    "PRV-바이블-해피콜": {
+      "provision_id": "PRV-바이블-해피콜",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_happy_call",
+      "heading": "판매후 확인콜(해피콜)",
+      "text": "개인 신규 가입건 대상 상품별 기준(일반펀드 매수 1천만원 이상 최초가입일 등)으로 매매(계약)일부터 7영업일 이내 수행. 고령자·부적합 고객은 금액 기준 없이 전건. 점검 항목: 적합성, 상품특징·위험사항 설명 여부, 필수 교부서류 수령 여부. 미응답 시 재접촉 해피콜(3회 이상 시도).",
+      "effective_from": "2022-06-01",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.157-164"
+    },
+    "PRV-바이블-고령자절차": {
+      "provision_id": "PRV-바이블-고령자절차",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_elderly",
+      "heading": "고령투자자 판매 절차",
+      "text": "만65세 이상: 전담창구 상담, 투자권유 유의상품 권유 시 관리직 지점장 사전확인, 비상연락용 조력자 연락처 확인(본인·조력자 동의), 지정인 알림 서비스 안내(대상상품 건별), 초고령(만80세 이상)은 조력자 동석 안내.",
+      "effective_from": "2022-06-27",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.104-128"
+    },
+    "PRV-바이블-보고서교부": {
+      "provision_id": "PRV-바이블-보고서교부",
+      "document_id": "내규",
+      "document_type": "내규",
+      "e_id": "bible_reports",
+      "heading": "적합성·적정성판단보고서",
+      "text": "신규투자자·고령투자자 등 대상 파생결합상품 권유 시 적합성보고서를 출력·설명·교부(미출력 시 가입불가, 원본 교부·사본 보관). 부적정 상품 가입 시 적정성 판단 결과와 이유를 기재한 적정성판단보고서 교부.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "실무바이블 OCR",
+      "source_page": "p.47-48"
+    },
+    "PRV-금소법-art_20": {
+      "provision_id": "PRV-금소법-art_20",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_20",
+      "heading": "불공정영업행위 금지",
+      "text": "금융상품판매업자등은 우월적 지위를 이용하여 소비자의 권익을 침해하는 행위 또는 판매와 관련하여 편의의 요구·수령 등을 하여서는 아니 된다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null,
+      "version": "1.0"
+    },
+    "PRV-금소법-art_21": {
+      "provision_id": "PRV-금소법-art_21",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_21",
+      "heading": "부당권유행위 금지",
+      "text": "금융상품 권유 시 소비자가 오인할 우려가 있는 행위(단정적 판단 제공, 적합성원칙 회피 목적의 확인서 징구, 요청하지 않은 다른 상품 권유, 객관적 근거 없는 비교 등)를 하여서는 아니 된다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null,
+      "version": "1.0"
+    },
+    "PRV-금소법-art_22": {
+      "provision_id": "PRV-금소법-art_22",
+      "document_id": "금융소비자보호법",
+      "document_type": "법률",
+      "e_id": "art_22",
+      "heading": "금융상품 광고 규제",
+      "text": "금융상품 광고 시 소비자가 오인할 수 있는 내용 및 사실과 다른 내용은 금지되며, 필수 포함사항을 표시하여야 한다.",
+      "effective_from": "2021-03-25",
+      "effective_to": null,
+      "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
+      "source_page": null,
+      "version": "1.0"
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "RULE_001_001",
+      "rule_seq": 1,
+      "parent_seq": "1",
+      "content": "금융소비자 확인 (일반금융소비자 또는 전문금융소비자 여부 확인)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "일반금융소비자 투자자정보 확인서 작성",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "금융소비자 확인",
+        "일반금융소비자",
+        "전문금융소비자"
+      ],
+      "judge_prompt": "고객이 일반금융소비자인지 전문금융소비자인지 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_001_002",
+      "rule_seq": 2,
+      "parent_seq": "1",
+      "content": "투자권유 희망하지 않은 경우 유의사항 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "일반금융소비자 투자자정보 확인서 작성",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자권유 희망 안함",
+        "미희망",
+        "적합성원칙 설명의무"
+      ],
+      "judge_prompt": "투자권유 미희망 시 적합성원칙·설명의무 부담 여부를 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_001_003",
+      "rule_seq": 3,
+      "parent_seq": "1",
+      "content": "투자권유 희망 및 투자자정보제공 여부 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "일반금융소비자 투자자정보 확인서 작성",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자권유 희망",
+        "투자자정보 제공",
+        "의향"
+      ],
+      "judge_prompt": "투자권유 희망 여부 및 투자자정보 제공 의향을 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_002_001",
+      "rule_seq": 4,
+      "parent_seq": "2",
+      "content": "작성 취지/내용: 투자자정보 파악 목적 설명 (연령대·소득현황 등)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자권유 희망 여부 파악",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자자정보 작성 취지",
+        "연령대",
+        "소득현황"
+      ],
+      "judge_prompt": "투자자정보 작성 취지(연령대·소득현황 파악 목적)를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_002_002",
+      "rule_seq": 5,
+      "parent_seq": "2",
+      "content": "취약금융소비자 해당 여부 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자권유 희망 여부 파악",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "취약금융소비자",
+        "취약계층",
+        "고령자 해당"
+      ],
+      "judge_prompt": "취약금융소비자 해당 여부를 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_002_003",
+      "rule_seq": 6,
+      "parent_seq": "2",
+      "content": "투자성향 진단시스템 입력",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자권유 희망 여부 파악",
+      "meta_category": "적합성원칙",
+      "trigger_state": "금융소비자 확인 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자성향 진단",
+        "시스템 입력"
+      ],
+      "judge_prompt": "투자성향 진단시스템에 고객 정보를 입력하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_003_001",
+      "rule_seq": 7,
+      "parent_seq": "3",
+      "content": "투자성향 분석결과 설명 (투자성향·뜻·투자 가능 금융상품 범위)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자성향 분석결과 설명 및 교부",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자성향 결과",
+        "성향 설명",
+        "투자 가능 상품"
+      ],
+      "judge_prompt": "투자성향 분석결과(성향·뜻·투자 가능 상품 범위)를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_003_002",
+      "rule_seq": 8,
+      "parent_seq": "3",
+      "content": "투자성향 분석결과 교부",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자성향 분석결과 설명 및 교부",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "분석결과 교부",
+        "결과 드림",
+        "성향표 교부"
+      ],
+      "judge_prompt": "투자성향 분석결과를 교부하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_004_001",
+      "rule_seq": 9,
+      "parent_seq": "4",
+      "content": "투자성향에 적합한 상품 1가지 이상 권유(추천)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "적합한 상품 투자권유",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "적합 상품 권유",
+        "추천",
+        "맞는 상품"
+      ],
+      "judge_prompt": "투자성향에 적합한 상품을 1가지 이상 권유하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_001",
+      "rule_seq": 10,
+      "parent_seq": "5",
+      "content": "중개형 ISA 개요 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "ISA 개요",
+        "중개형 ISA",
+        "ISA란"
+      ],
+      "judge_prompt": "중개형 ISA 개요를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_002",
+      "rule_seq": 11,
+      "parent_seq": "5",
+      "content": "가입대상 및 자격확인서류 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "가입대상",
+        "자격확인서류"
+      ],
+      "judge_prompt": "가입대상 및 자격확인서류를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_003",
+      "rule_seq": 12,
+      "parent_seq": "5",
+      "content": "납입한도 및 의무가입기간 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "납입한도",
+        "의무가입기간",
+        "3년 5년"
+      ],
+      "judge_prompt": "납입한도 및 의무가입기간을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_004",
+      "rule_seq": 13,
+      "parent_seq": "5",
+      "content": "세제 혜택 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "세제 혜택",
+        "비과세",
+        "절세",
+        "세금"
+      ],
+      "judge_prompt": "세제 혜택을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_005",
+      "rule_seq": 14,
+      "parent_seq": "5",
+      "content": "중도인출 및 계약해지 (만기불일치 위험) 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "중도인출",
+        "계약해지",
+        "만기불일치"
+      ],
+      "judge_prompt": "중도인출 및 계약해지 시 만기불일치 위험을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_005_006",
+      "rule_seq": 15,
+      "parent_seq": "5",
+      "content": "특징·수수료·투자대상 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "ISA 가입요건 및 세제 혜택",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "수수료",
+        "투자대상",
+        "특징"
+      ],
+      "judge_prompt": "상품 특징·수수료·투자대상을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_006_001",
+      "rule_seq": 16,
+      "parent_seq": "6",
+      "content": "[감점] 성향분석 없이 투자권유 희망여부 확인서 등 작성 유도",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 투자자성향 재분석 및 생략 유도",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "성향분석 없이",
+        "확인서 먼저",
+        "작성 유도"
+      ],
+      "judge_prompt": "투자성향 분석 없이 확인서 작성을 유도하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_006_002",
+      "rule_seq": 17,
+      "parent_seq": "6",
+      "content": "[감점] 투자성향 재진단 유도",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 투자자성향 재분석 및 생략 유도",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "재진단",
+        "성향 다시",
+        "재분석"
+      ],
+      "judge_prompt": "투자성향 재진단을 유도하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_006_003",
+      "rule_seq": 18,
+      "parent_seq": "6",
+      "content": "[감점] 투자성향 진단 시 응답 유도",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 투자자성향 재분석 및 생략 유도",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "응답 유도",
+        "이거 맞죠",
+        "이렇게 하세요"
+      ],
+      "judge_prompt": "투자성향 진단 시 특정 응답을 유도하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_007_001",
+      "rule_seq": 19,
+      "parent_seq": "7",
+      "content": "[감점] 계열운용사 펀드임을 고지하지 않음",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 계열사 상품 권유",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "계열운용사",
+        "계열 펀드",
+        "계열사 상품"
+      ],
+      "judge_prompt": "계열운용사 펀드임을 고지하지 않았는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_007_002",
+      "rule_seq": 20,
+      "parent_seq": "7",
+      "content": "[감점] 유사 비계열운용사 펀드 미추천",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 계열사 상품 권유",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "비계열 펀드 추천",
+        "유사 펀드"
+      ],
+      "judge_prompt": "유사한 비계열운용사 펀드를 추천하지 않았는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_008_001",
+      "rule_seq": 21,
+      "parent_seq": "8",
+      "content": "[감점] 부적합 상품 요청 시 ① 투자권유·추천 불가 안내",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 부적합 의무절차 (-10점)",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "부적합 불가 안내",
+        "투자권유 못함"
+      ],
+      "judge_prompt": "부적합 상품 요청 시 투자권유·추천 불가임을 안내하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_008_002",
+      "rule_seq": 22,
+      "parent_seq": "8",
+      "content": "[감점] ② 부적합상품목록 제시 불가",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 부적합 의무절차 (-10점)",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "부적합상품목록 제시 불가"
+      ],
+      "judge_prompt": "부적합상품목록을 제시하지 않았는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_008_003",
+      "rule_seq": 23,
+      "parent_seq": "8",
+      "content": "[감점] full-name 언급 가입 원할 시 ③ 투자권유 희망여부 확인서 작성·의사확인",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 부적합 의무절차 (-10점)",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "full-name 언급",
+        "희망여부 확인서"
+      ],
+      "judge_prompt": "full-name 가입 요청 시 투자권유 희망여부 확인서를 작성하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_008_004",
+      "rule_seq": 24,
+      "parent_seq": "8",
+      "content": "[감점] ④ 부적합(부적정) 금융상품 거래확인서 작성·유의사항 안내",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[감점] 부적합 의무절차 (-10점)",
+      "meta_category": "적합성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "부적합 거래확인서",
+        "부적정 확인서"
+      ],
+      "judge_prompt": "부적합(부적정) 금융상품 거래확인서를 작성하고 유의사항을 안내하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_009_001",
+      "rule_seq": 25,
+      "parent_seq": "9",
+      "content": "부적정 시 적정성 판단 보고서 작성 및 교부",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[부적정] 적정성 판단 보고서",
+      "meta_category": "적정성원칙",
+      "trigger_state": "적합성/적정성 판단 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "적정성 보고서",
+        "부적정 판단"
+      ],
+      "judge_prompt": "부적정 상품 판매 시 적정성 판단 보고서를 작성하고 교부하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_18"
+      ]
+    },
+    {
+      "rule_id": "RULE_010_001",
+      "rule_seq": 26,
+      "parent_seq": "10",
+      "content": "판매과정 녹취대상 여부 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "판매과정 녹취 (녹취의무 대상자)",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "녹취대상",
+        "녹취 의무",
+        "고령자 녹취"
+      ],
+      "judge_prompt": "판매과정 녹취 대상임을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_010_002",
+      "rule_seq": 27,
+      "parent_seq": "10",
+      "content": "추후 녹취파일 제공 가능함 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "판매과정 녹취 (녹취의무 대상자)",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "녹취파일 제공",
+        "녹취 드릴 수 있음"
+      ],
+      "judge_prompt": "추후 녹취파일 제공이 가능함을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_010_003",
+      "rule_seq": 28,
+      "parent_seq": "10",
+      "content": "녹취 동의 여부 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "판매과정 녹취 (녹취의무 대상자)",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "녹취 동의",
+        "녹취 동의하시겠어요"
+      ],
+      "judge_prompt": "녹취 동의 여부를 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_011_001",
+      "rule_seq": 29,
+      "parent_seq": "11",
+      "content": "핵심설명서·간이설명서·투자설명서·간이정청서 안내 중 택일 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자성향설명서 교부",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "핵심설명서",
+        "간이설명서",
+        "투자설명서",
+        "교부"
+      ],
+      "judge_prompt": "핵심·간이·투자설명서를 안내 중 택일하여 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_011_002",
+      "rule_seq": 30,
+      "parent_seq": "11",
+      "content": "지시어 피설명서보다 설명 후 제공하는 것은 교부 부인정",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자성향설명서 교부",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "교부 부인정",
+        "보여드리고 드림"
+      ],
+      "judge_prompt": "지시 피설명서보다 설명 후 제공하는 방식으로 교부하지 않았는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_012_001",
+      "rule_seq": 31,
+      "parent_seq": "12",
+      "content": "(펀드) Full-name·상품등급·이용방법·계약기간 / (ELS) 명칭·기초자산·수익구조 / (공통) 지수 판매사의 상품등급·의미",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자성 상품의 내용에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "펀드 Full-name",
+        "ELS 기초자산",
+        "상품등급"
+      ],
+      "judge_prompt": "상품 유형(펀드/ELS)에 맞는 명칭·상품등급·이용방법·수익구조 등을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_013_001",
+      "rule_seq": 32,
+      "parent_seq": "13",
+      "content": "원금손실 가능성 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자위험에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "원금손실",
+        "원금 손실 될 수 있음"
+      ],
+      "judge_prompt": "원금손실 가능성을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_013_002",
+      "rule_seq": 33,
+      "parent_seq": "13",
+      "content": "자기책임원칙 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자위험에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자기책임원칙",
+        "본인 책임"
+      ],
+      "judge_prompt": "자기책임원칙을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_013_003",
+      "rule_seq": 34,
+      "parent_seq": "13",
+      "content": "예금자보호 비대상 상품 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자위험에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "예금자보호 비대상",
+        "예금보호 안됨"
+      ],
+      "judge_prompt": "예금자보호 비대상 상품임을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_013_004",
+      "rule_seq": 35,
+      "parent_seq": "13",
+      "content": "투자위험 핵심사항 2가지 이상: ①투자대상국위험 ②환율변동 ③헤지여부 ④환헤지위험",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "투자위험에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자위험 핵심",
+        "환율변동",
+        "환헤지",
+        "헤지"
+      ],
+      "judge_prompt": "투자위험 핵심사항 2가지 이상(환율변동·환헤지·투자대상국·헤지여부)을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_014_001",
+      "rule_seq": 36,
+      "parent_seq": "14",
+      "content": "(펀드) 판매·판매수수료·이보수 / (ELS) 기준가결정일·조기상환·만기상환 수익구조 설명",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "수수료·보수에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "수수료",
+        "이보수",
+        "판매수수료",
+        "판매수수료",
+        "기준가결정일"
+      ],
+      "judge_prompt": "수수료·보수(펀드/ELS 간 상품에 맞게)를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_015_001",
+      "rule_seq": 37,
+      "parent_seq": "15",
+      "content": "(펀드) 환매·중도해지 가능여부·기준가적용일 / (ELS) 중도상환 신청기간·결정일·금액결정방식 설명",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "환매·중도해지에 대한 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "환매",
+        "중도해지",
+        "중도상환",
+        "기준가적용일"
+      ],
+      "judge_prompt": "환매·중도해지 조건(펀드/ELS 간 상품에 맞게)을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1"
+      ]
+    },
+    {
+      "rule_id": "RULE_016_001",
+      "rule_seq": 38,
+      "parent_seq": "16",
+      "content": "가입 상품 및 투자위험을 고객과 함께 기재 후 서명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "상품 설명서 이해여부 확인",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "함께 기재",
+        "고객 자필",
+        "서명"
+      ],
+      "judge_prompt": "가입 상품 및 투자위험을 고객과 함께 기재 후 서명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_016_002",
+      "rule_seq": 39,
+      "parent_seq": "16",
+      "content": "원금손실·예금자보호 비적용 기재 후 서명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "상품 설명서 이해여부 확인",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "원금손실 서명",
+        "예금자보호 비적용"
+      ],
+      "judge_prompt": "원금손실·예금자보호 비적용 사항을 기재 후 서명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_017_001",
+      "rule_seq": 40,
+      "parent_seq": "17",
+      "content": "설명 내용과 실제 설명서 내용이 같다는 사실 고지",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "지시의 서명",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "내용 같다 고지",
+        "설명서 내용 일치"
+      ],
+      "judge_prompt": "설명 내용과 실제 설명서 내용이 같다는 사실을 고지하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_017_002",
+      "rule_seq": 41,
+      "parent_seq": "17",
+      "content": "설명한 지시의 서명 여부 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "지시의 서명",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "지시 서명",
+        "서명 했는지"
+      ],
+      "judge_prompt": "설명한 지시의 서명이 있는지 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_018_001",
+      "rule_seq": 42,
+      "parent_seq": "18",
+      "content": "위법계약 해지의 행사요건·해지절차 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "위법계약의 해지",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "위법계약 해지",
+        "해지 행사요건"
+      ],
+      "judge_prompt": "위법계약 해지의 행사요건·해지절차를 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_019_001",
+      "rule_seq": 43,
+      "parent_seq": "19",
+      "content": "금융감독원 등에 분쟁조정 신청 가능 설명",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "분쟁의 조정",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "분쟁조정",
+        "금융감독원",
+        "민원 신청"
+      ],
+      "judge_prompt": "금융감독원 등에 분쟁조정 신청이 가능함을 설명하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_020_001",
+      "rule_seq": 44,
+      "parent_seq": "20",
+      "content": "자료이동요구권 존재 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "자료이동요구권",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자료이동요구권",
+        "이동 권리"
+      ],
+      "judge_prompt": "자료이동요구권의 존재를 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_020_002",
+      "rule_seq": 45,
+      "parent_seq": "20",
+      "content": "자료제공기한 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "자료이동요구권",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자료제공기한",
+        "자료 줄 수 있는 기한"
+      ],
+      "judge_prompt": "자료제공기한을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_020_003",
+      "rule_seq": 46,
+      "parent_seq": "20",
+      "content": "자료이동 가능기간 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "자료이동요구권",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자료이동 가능기간",
+        "얼마나 볼 수 있는지"
+      ],
+      "judge_prompt": "자료이동 가능기간을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_020_004",
+      "rule_seq": 47,
+      "parent_seq": "20",
+      "content": "자료이동 신청방법 안내",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "자료이동요구권",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자료이동 신청방법",
+        "어떻게 신청"
+      ],
+      "judge_prompt": "자료이동 신청방법을 안내하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_021_001",
+      "rule_seq": 48,
+      "parent_seq": "21",
+      "content": "고객 이해 여부 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "이해도 높이기 위한 추가 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "이해 여부",
+        "이해하셨나요",
+        "이해 확인"
+      ],
+      "judge_prompt": "고객이 상품 내용을 이해했는지 확인하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_021_002",
+      "rule_seq": 49,
+      "parent_seq": "21",
+      "content": "이해하기 쉬운 추가 설명 제공",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "이해도 높이기 위한 추가 설명",
+      "meta_category": "설명의무",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "추가 설명",
+        "더 설명",
+        "쉽게"
+      ],
+      "judge_prompt": "이해하기 쉬운 추가 설명을 제공하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_19__para_1",
+        "PRV-금소법-art_19__para_2"
+      ]
+    },
+    {
+      "rule_id": "RULE_022_001",
+      "rule_seq": 50,
+      "parent_seq": "22",
+      "content": "만 65세 이상 투자권유 유의상품 관리직 지점 사전 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[고령자]관리직지점 사전확인",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "관리직 사전확인",
+        "65세 이상",
+        "유의상품"
+      ],
+      "judge_prompt": "만 65세 이상 고령자에 대해 관리직 지점의 사전확인을 받았는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-투자권유준칙-고령자"
+      ]
+    },
+    {
+      "rule_id": "RULE_023_001",
+      "rule_seq": 51,
+      "parent_seq": "23",
+      "content": "만 80세 이상 투자권유 유의상품 조력자 안내 동의서 작성",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[고령자] 조력자와의 안내 동의서",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "초고령자",
+      "keywords": [
+        "80세 이상",
+        "조력자 동의서",
+        "보호자"
+      ],
+      "judge_prompt": "만 80세 이상 고령자에 대해 조력자 안내 동의서를 작성하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-투자권유준칙-고령자"
+      ]
+    },
+    {
+      "rule_id": "RULE_024_001",
+      "rule_seq": 52,
+      "parent_seq": "24",
+      "content": "(ELS·ELD·DLS·DLF) 적합성보고서 기재사항 작성",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "적합성보고서 기재",
+        "ELS 고령자"
+      ],
+      "judge_prompt": "(ELS 등) 적합성보고서 기재사항을 작성하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-투자권유준칙-고령자"
+      ]
+    },
+    {
+      "rule_id": "RULE_024_002",
+      "rule_seq": 53,
+      "parent_seq": "24",
+      "content": "(ELS·ELD·DLS·DLF) 적합성보고서 교부",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "적합성보고서 교부",
+        "보고서 드림"
+      ],
+      "judge_prompt": "(ELS 등) 적합성보고서를 교부하였는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-투자권유준칙-고령자"
+      ]
+    },
+    {
+      "rule_id": "RULE_025_001",
+      "rule_seq": 54,
+      "parent_seq": "25",
+      "content": "[감점] 금소법상 부당권유행위 준수",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "부당권유 행위 금지",
+      "meta_category": "부당권유금지",
+      "trigger_state": "감점 요소 탐지 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "부당권유",
+        "금소법 위반",
+        "단정적 판단",
+        "손실보전"
+      ],
+      "judge_prompt": "부당권유행위가 없었는가? 즉 단정적 판단 제공, 사실과 다른/오인 유발 설명, 객관적 근거 없는 상품 비교, 요청하지 않은 다른 상품 권유, 적합성원칙 회피 목적의 확인서 징구, 거부의사 표시 후 계속 권유(1개월 경과 재권유 예외) 등이 없었는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_21"
+      ]
+    },
+    {
+      "rule_id": "RULE_026_001",
+      "rule_seq": 55,
+      "parent_seq": "26",
+      "content": "[감점] 대면판매 관련법 회피 목적 온라인 가입 유도",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "온라인 가입 유도 여부",
+      "meta_category": "부당권유금지",
+      "trigger_state": "감점 요소 탐지 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "온라인 유도",
+        "앱으로 하세요",
+        "비대면 안내"
+      ],
+      "judge_prompt": "대면판매 관련법 적용 회피를 목적으로 온라인 가입을 유도하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_21"
+      ]
+    },
+    {
+      "rule_id": "RULE_027_001",
+      "rule_seq": 56,
+      "parent_seq": "27",
+      "content": "[감점] 상담거부 (재방문 요청 등)",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "상담거부",
+      "meta_category": "감점항목",
+      "trigger_state": "감점 요소 탐지 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "상담 거부",
+        "다음에 오세요",
+        "재방문"
+      ],
+      "judge_prompt": "상담 가능한 지점이 있음에도 상담을 거부하거나 재방문을 요청하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-내규-모니터링기준"
+      ]
+    },
+    {
+      "rule_id": "RULE_NQ_001",
+      "rule_seq": 57,
+      "parent_seq": "NQ",
+      "content": "상담지연 (과도한 타직원 문의·장기 자리 비움)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "상담지연",
+      "meta_category": "비계량",
+      "trigger_state": "비계량 평가 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "상담지연",
+        "자리비움",
+        "다른 직원 계속 물어봄"
+      ],
+      "judge_prompt": "다른 직원에게 과도하게 문의하거나 상담직원이 장기간 자리를 비웠는가?",
+      "violation_type": "비계량형",
+      "verification_method": "human_review",
+      "basis": [
+        "PRV-내규-모니터링기준"
+      ]
+    },
+    {
+      "rule_id": "RULE_NQ_002",
+      "rule_seq": 58,
+      "parent_seq": "NQ",
+      "content": "적절한 상담시간 (대기 제외 40분 이상 여부)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "적절한 상담시간",
+      "meta_category": "비계량",
+      "trigger_state": "비계량 평가 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "상담시간",
+        "40분",
+        "얼마나 걸렸는지"
+      ],
+      "judge_prompt": "대기시간 제외 상담시간이 40분 이상인가? (최소 상담시간 기준)",
+      "violation_type": "비계량형",
+      "verification_method": "human_review",
+      "basis": [
+        "PRV-내규-모니터링기준"
+      ]
+    },
+    {
+      "rule_id": "RULE_NQ_003",
+      "rule_seq": 59,
+      "parent_seq": "NQ",
+      "content": "가입 목적에 맞지 않는 상품 권유",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "meta_title": "가입목적에 맞지 않는 상품권유",
+      "meta_category": "비계량",
+      "trigger_state": "비계량 평가 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "목적 불일치",
+        "가입목적에 안 맞는 상품"
+      ],
+      "judge_prompt": "고객의 가입 목적에 맞지 않는 상품을 권유하였는가?",
+      "violation_type": "비계량형",
+      "verification_method": "human_review",
+      "basis": [
+        "PRV-내규-모니터링기준"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_001",
+      "rule_seq": 60,
+      "parent_seq": "B1",
+      "content": "녹취 대상 판별: 소비자유형(일반)·고령/부적합 여부·상품 상품등급(3등급 이상)·고난도 여부에 따라 녹취 대상 확인 및 6799 화면 등록",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "대면녹취 대상 판별·등록",
+      "meta_category": "녹취",
+      "trigger_state": "녹취 진행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "녹취 대상",
+        "3등급",
+        "고난도",
+        "6799"
+      ],
+      "judge_prompt": "해당 거래가 녹취 대상 기준에 해당하는지 판별되고 녹취 등록이 완료되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-대면녹취",
+        "PRV-금소법-art_44"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_002",
+      "rule_seq": 61,
+      "parent_seq": "B1",
+      "content": "녹취 범위 준수: 투자성향 결과 안내부터 적합성원칙(현재 투자자금 성향·부적합 상품고지), 설명의무(내용·위험), 계약사항(계좌명·계좌번호·상품명·가입금액)까지 모두녹취에 포함",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "대면녹취 범위 준수",
+      "meta_category": "녹취",
+      "trigger_state": "녹취 진행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "투자성향",
+        "상품고지",
+        "계좌번호",
+        "가입금액"
+      ],
+      "judge_prompt": "녹취에 투자성향 안내, 적합성 관련 고지, 상품 설명, 계약사항 확인이 모두 포함되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-대면녹취",
+        "PRV-금소법-art_44"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_003",
+      "rule_seq": 62,
+      "parent_seq": "B1",
+      "content": "이해 여부·설명서 교부 확인 시 고객 응답이 명확히 확인되도록 녹취",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "고객 응답 확인 녹취",
+      "meta_category": "녹취",
+      "trigger_state": "녹취 진행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "이해하셨습니까",
+        "설명서 받으셨",
+        "네"
+      ],
+      "judge_prompt": "설명 이해 여부와 계약서류 교부 확인에 대한 고객 본인의 응답 녹음이 녹취에 존재하는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-대면녹취"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_004",
+      "rule_seq": 63,
+      "parent_seq": "B1",
+      "content": "오상담·오설 설명사항 누락·부당권유 등 위법 발언 부존재",
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "녹취 중 위법 발언 금지",
+      "meta_category": "녹취",
+      "trigger_state": "녹취 진행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "무조건",
+        "보장",
+        "확실"
+      ],
+      "judge_prompt": "녹취에서 오상담, 단정적 판단 제공, 부당권유에 해당하는 발언이 탐지되는가? (부존재가 충족)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-대면녹취",
+        "PRV-금소법-art_44"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_005",
+      "rule_seq": 64,
+      "parent_seq": "B2",
+      "content": "숙려제도 대상 판별: 고난도 금융투자상품·적정성원칙 대상상품 × 개인 일반금융소비자(고난도) 또는 고령·부적합(적정성 대상) 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "숙려 대상 판별",
+      "meta_category": "숙려제도",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "숙려",
+        "고난도",
+        "적정성"
+      ],
+      "judge_prompt": "해당 가입건이 숙려제도 대상 기준에 따라 판별·등록되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-숙려제도"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_006",
+      "rule_seq": 65,
+      "parent_seq": "B2",
+      "content": "숙려기간(2영업일) 중 매수·청약 및 최종 가입의사 확인 불가 준수, 유의사항(투자위험·원금손실가능성·최대손실금액·취소기간/방법) 2회 발송",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "숙려기간 준수·유의사항 발송",
+      "meta_category": "숙려제도",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "숙려기간",
+        "2영업일",
+        "유의사항"
+      ],
+      "judge_prompt": "숙려기간 내 가입처리가 차단되고 유의사항 안내가 2회 발송되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-숙려제도"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_007",
+      "rule_seq": 66,
+      "parent_seq": "B2",
+      "content": "가입의사 확인기간 내 고객 본인의 최종 가입의사 확인 (미확인 시 자동취소·투자금 반환)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "최종 가입의사 확인",
+      "meta_category": "숙려제도",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "가입의사",
+        "확인기간",
+        "자동취소"
+      ],
+      "judge_prompt": "가입의사 확인기간 내 본인의 가입의사가 확인되었거나, 미확인 건이 자동취소 처리되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-숙려제도"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_008",
+      "rule_seq": 67,
+      "parent_seq": "B3",
+      "content": "청약철회권 안내: 고난도 단위형펀드·고난도 투자일임/금전신탁 판매 시 철회 가능기간(계약서류 제공일/체결일로부터 7일) 안내",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "청약철회권 안내",
+      "meta_category": "청약철회권",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "청약철회",
+        "7일",
+        "철회"
+      ],
+      "judge_prompt": "청약철회 가능 대상·기간·방법에 대한 안내 발화가 존재하는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_46",
+        "PRV-바이블-청약철회"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_009",
+      "rule_seq": 68,
+      "parent_seq": "B3",
+      "content": "청약철회 처리: 철회 신청 접수일로부터 3영업일 이내 대금 반환(철회 완료), 행사 방해 금지",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "청약철회 처리기한 준수",
+      "meta_category": "청약철회권",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "철회신청",
+        "3영업일"
+      ],
+      "judge_prompt": "청약철회 요청 접수일로부터 3영업일 이내에 대금 반환(철회 처리)이 완료되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_46",
+        "PRV-바이블-청약철회"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_010",
+      "rule_seq": 69,
+      "parent_seq": "B4",
+      "content": "위법계약해지권 안내: 계속적 계약(투자일임·랩·신탁) 판매 시 해지권 및 행사 기간(위반사실 안 날로부터 1년과 계약서류 받은 날로부터 5년 중 먼저 도래하는 기간) 안내",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "위법계약해지권 안내",
+      "meta_category": "위법계약해지권",
+      "trigger_state": "설명의무 이행 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "위법계약",
+        "해지권"
+      ],
+      "judge_prompt": "위법계약해지권의 대상·기간·방법에 대한 안내 발화가 존재하는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_47",
+        "PRV-바이블-위법계약해지"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_011",
+      "rule_seq": 70,
+      "parent_seq": "B4",
+      "content": "위법계약해지 요구 접수일로부터 10일 이내 수락 여부 통지, 해지 시 수수료·위약금 없이 장래효 해지",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "해지요구 통지기한 준수",
+      "meta_category": "위법계약해지권",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "해지요구",
+        "10일",
+        "통지"
+      ],
+      "judge_prompt": "해지 요구 접수일로부터 10일 이내에 수락 여부가 고객에게 통지되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_47",
+        "PRV-바이블-위법계약해지"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_012",
+      "rule_seq": 71,
+      "parent_seq": "B5",
+      "content": "판매 관련 자료 유형별 보존(계약서류·이행자료·권리행사자료 등, 대부분 10년) 및 서면 요청 시 6영업일 이내 제공, 열람 요구 시 8일 이내 열람",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "자료 보존·제공 기한 준수",
+      "meta_category": "자료보관",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "자료 보존",
+        "6영업일",
+        "열람"
+      ],
+      "judge_prompt": "판매 관련 자료가 규정 기간 보존되고 요청 건이 기한 내 제공되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-금소법-art_28",
+        "PRV-바이블-자료보관"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_013",
+      "rule_seq": 72,
+      "parent_seq": "B6",
+      "content": "판매후 확인콜 대상 판별·준수: 상품별 금액·주기 기준 적용, 고령자·부적합 고객은 금액 기준 없이 전건 준수",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "확인콜 대상·준수",
+      "meta_category": "판매후확인콜",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "확인콜",
+        "해피콜"
+      ],
+      "judge_prompt": "해당 가입건이 확인콜 대상 기준에 따라 기한 내 준수되었는가? (미응답 시 재접촉 3회 이상 시도)",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-해피콜"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_014",
+      "rule_seq": 73,
+      "parent_seq": "B6",
+      "content": "확인콜 점검 항목 확인: 적합성, 상품특징·위험사항 설명 여부, 판매직원 교부 여부를 고객 응답으로 확인",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "확인콜 점검 항목",
+      "meta_category": "판매후확인콜",
+      "trigger_state": "계약체결 후 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "적합성",
+        "위험",
+        "서류"
+      ],
+      "judge_prompt": "확인콜에서 적합성·설명 이행·서류 교부에 대한 고객의 유효 응답이 확보되었는가? (부적격 응답은 보완 대상)",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-해피콜"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_015",
+      "rule_seq": 74,
+      "parent_seq": "B7",
+      "content": "고령투자자 투자권유 유의상품 권유 시 관리직 지점의 사전 확인(설명 이해 여부·권유 적법성 등, 지점 면담 또는 유선) 진행",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "고령자 유의상품 사전확인",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "사전확인",
+        "유의상품",
+        "관리직"
+      ],
+      "judge_prompt": "투자권유 유의상품 권유 건에 대해 관리직 지점의 사전확인이 계약 체결 전에 수행되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-고령자절차"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_016",
+      "rule_seq": 75,
+      "parent_seq": "B7",
+      "content": "고령투자자 투자자정보 등록 시 비상연락용 조력자 연락처 등록 여부 확인 (본인·조력자 동의 시 등록, 정정 등록 시 미지정 처리)",
+      "product_type": "공통",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "조력자 연락처 확인",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "조력자",
+        "비상연락"
+      ],
+      "judge_prompt": "조력자 등록 여부 확인 및 안내 발화가 존재하는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-고령자절차"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_017",
+      "rule_seq": 76,
+      "parent_seq": "B7",
+      "content": "고령층 지정인 알림 서비스: 대상상품(파생결합증권·투자일임·조건부자본증권 등) 판매 시 건별 신청의사 확인, 신청 시 신청서 지구·발송·전달 확인",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "지정인 알림 서비스 안내",
+      "meta_category": "고령자",
+      "trigger_state": "고령자 특화 절차 단계",
+      "condition_type": "고령자",
+      "keywords": [
+        "지정인",
+        "알림 서비스"
+      ],
+      "judge_prompt": "대상상품 판매 시 지정인 알림 서비스 신청의사 확인 발화가 존재하는가?",
+      "violation_type": "누락형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-바이블-고령자절차"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_018",
+      "rule_seq": 77,
+      "parent_seq": "B8",
+      "content": "적합성보고서 출력·설명·교부: 신규투자자·고령투자자 등 대상 파생결합상품 권유 시 (미출력 시 가입불가, 원본 교부·사본 보관)",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "적합성보고서 교부",
+      "meta_category": "적합성원칙",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "적합성보고서",
+        "교부"
+      ],
+      "judge_prompt": "적합성보고서가 출력·설명·교부되고 사본이 보관되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-보고서교부",
+        "PRV-금소법-art_17"
+      ]
+    },
+    {
+      "rule_id": "RULE_BIB_019",
+      "rule_seq": 78,
+      "parent_seq": "B8",
+      "content": "적정성판단보고서 교부: 부적정 상품 가입 시 판단 결과와 이유를 기재하여 교부",
+      "product_type": "상품",
+      "is_deduct": 0,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETcommon000001",
+      "meta_title": "적정성판단보고서 교부",
+      "meta_category": "적정성원칙",
+      "trigger_state": "확인·서명 단계",
+      "condition_type": "모든 고객",
+      "keywords": [
+        "적정성",
+        "판단보고서"
+      ],
+      "judge_prompt": "부적정 상품 가입건에 대해 적정성판단보고서가 교부되었는가?",
+      "violation_type": "누락형",
+      "verification_method": "deterministic",
+      "basis": [
+        "PRV-바이블-보고서교부",
+        "PRV-금소법-art_18"
+      ]
+    },
+    {
+      "rule_id": "RULE_028_001",
+      "rule_seq": 79,
+      "parent_seq": "28",
+      "content": "[감점] 우월적 지위 이용 편의 요구·수령 등 불공정영업행위 금지",
+      "meta_title": "불공정영업행위 금지",
+      "meta_category": "불공정영업금지",
+      "keywords": [
+        "불공정영업",
+        "우월적 지위",
+        "편의 요구",
+        "편의 수령",
+        "권익 침해"
+      ],
+      "judge_prompt": "우월적 지위를 이용해 소비자 권익을 침해하거나 판매 관련 편의를 요구·수령하는 불공정영업행위가 없었는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "llm_judgment",
+      "basis": [
+        "PRV-금소법-art_20"
+      ],
+      "product_type": "공통",
+      "is_deduct": 1,
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "trigger_state": "감점 요소 탐지 단계",
+      "condition_type": "모든 고객"
+    },
+    {
+      "rule_id": "RULE_029_001",
+      "rule_seq": 80,
+      "parent_seq": "29",
+      "is_deduct": 1,
+      "content": "[감점] 광고·안내물 오인 유발·사실 상이 내용 금지 및 필수 포함사항 표시",
+      "meta_title": "광고 규제 준수",
+      "meta_category": "광고규제",
+      "keywords": [
+        "광고",
+        "안내물",
+        "오인",
+        "사실과 다른",
+        "필수 포함사항"
+      ],
+      "judge_prompt": "상담에 사용한 광고·안내물이 오인을 유발하거나 사실과 다른 내용을 담지 않고, 필수 포함사항을 표시하였는가? (감점)",
+      "violation_type": "감점형",
+      "verification_method": "human_review",
+      "basis": [
+        "PRV-금소법-art_22"
+      ],
+      "product_type": "공통",
+      "rule_version": "1.0.0",
+      "ruleset_id": "RSETisa000000001",
+      "trigger_state": "감점 요소 탐지 단계",
+      "condition_type": "모든 고객"
+    }
+  ],
+  "vocabulary": {
+    "condition_type": [
+      "고령자",
+      "모든 고객",
+      "초고령자"
+    ],
+    "meta_category": [
+      "녹취",
+      "숙려제도",
+      "위법계약해지권",
+      "자료보관",
+      "청약철회권",
+      "판매후확인콜"
+    ],
+    "product_type": [
+      "공통",
+      "상품"
+    ],
+    "trigger_state": [
+      "감점 요소 탐지 단계",
+      "계약체결 후 단계",
+      "고령자 특화 절차 단계",
+      "금융소비자 확인 단계",
+      "녹취 진행 단계",
+      "비계량 평가 단계",
+      "설명의무 이행 단계",
+      "적합성/적정성 판단 단계",
+      "확인·서명 단계"
+    ],
+    "violation_type": [
+      "감점형",
+      "누락형",
+      "비계량형"
+    ]
+  }
+}
