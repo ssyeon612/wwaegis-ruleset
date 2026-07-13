@@ -159,7 +159,7 @@ function ListView({ rules, provisions, taxonomy, products = [], openId, setOpenI
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
   // 상품 셀렉트 옵션 : 공통 + 등록된 products (조건 옵션은 표준 4분류 + 기존 값)
   const productOptions = [...new Set(["공통", ...products.map((p) => p.product_name)])];
-  const conditionOptions = [...new Set(["모든 고객", "고령(65+)", "초고령(80+)", "부적합·전문투자자", ...rules.map((r) => r.condition_type).filter(Boolean)])];
+  const conditionOptions = [...new Set(["모든 고객", "고령자(65+)", "초고령자(80+)", ...rules.map((r) => r.condition_type).filter(Boolean)])];
   const fieldLabel = { fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase" };
   const provsOf = (r) => (r.basis || []).map((pid) => provisions[pid]).filter(Boolean);
 
