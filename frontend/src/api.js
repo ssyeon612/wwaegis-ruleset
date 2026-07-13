@@ -10,17 +10,17 @@ async function json(res) {
   return res.json();
 }
 
-// 관리 데이터 일괄 로드 (provisions / rules / vocabulary / taxonomy / products)
+// 관리 데이터 일괄 로드 (knowledge / rules / vocabulary / taxonomy / products)
 export async function fetchBundle() {
-  const [provisions, rules, vocabulary, taxonomy, products] = await Promise.all([
-    fetch(`${BASE}/provisions`).then(json),
+  const [knowledge, rules, vocabulary, taxonomy, products] = await Promise.all([
+    fetch(`${BASE}/knowledge`).then(json),
     fetch(`${BASE}/rules`).then(json),
     fetch(`${BASE}/vocabulary`).then(json),
     fetch(`${BASE}/taxonomy`).then(json),
     fetch(`${BASE}/products`).then(json),
   ]);
-  const provisionMap = Object.fromEntries(provisions.map((p) => [p.provision_id, p]));
-  return { provisions: provisionMap, rules, vocabulary, taxonomy, products };
+  const knowledgeMap = Object.fromEntries(knowledge.map((p) => [p.knowledge_id, p]));
+  return { knowledge: knowledgeMap, rules, vocabulary, taxonomy, products };
 }
 
 // 룰 추가 (신규 생성)
@@ -33,8 +33,8 @@ export async function createRule(payload) {
 }
 
 // 근거 조항 추가 (신규 생성)
-export async function createProvision(payload) {
-  return fetch(`${BASE}/provisions`, {
+export async function createKnowledge(payload) {
+  return fetch(`${BASE}/knowledge`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
@@ -42,8 +42,8 @@ export async function createProvision(payload) {
 }
 
 // 근거 조항 삭제
-export async function deleteProvision(provisionId) {
-  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}`, { method: "DELETE" }).then(json);
+export async function deleteKnowledge(knowledgeId) {
+  return fetch(`${BASE}/knowledge/${encodeURIComponent(knowledgeId)}`, { method: "DELETE" }).then(json);
 }
 
 // ── 의미태그(semantic_tags) 추가/수정/삭제 ──
@@ -84,20 +84,9 @@ export async function loadRuleSet(productId, tags = []) {
   return fetch(`${BASE}/ruleset/load?${qs.toString()}`).then(json);
 }
 
-// 조항 개정 (버전업) — dry_run:true 면 미리보기만
-export async function amendProvision(provisionId, body) {
-  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}/amend`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }).then(json);
-}
-export async function fetchProvisionHistory(provisionId) {
-  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}/history`).then(json);
-}
 // 근거 조항 직접 수정 (버전업 없이 제목·원문·출처 in-place)
-export async function updateProvision(provisionId, patch) {
-  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}`, {
+export async function updateKnowledge(knowledgeId, patch) {
+  return fetch(`${BASE}/knowledge/${encodeURIComponent(knowledgeId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),

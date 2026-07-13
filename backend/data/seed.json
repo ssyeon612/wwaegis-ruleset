@@ -1,7 +1,7 @@
 {
-  "provisions": {
-    "PRV-금소법-art_17": {
-      "provision_id": "PRV-금소법-art_17",
+  "knowledge": {
+    "KNW-금소법-art_17": {
+      "knowledge_id": "KNW-금소법-art_17",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_17",
@@ -12,8 +12,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_18": {
-      "provision_id": "PRV-금소법-art_18",
+    "KNW-금소법-art_18": {
+      "knowledge_id": "KNW-금소법-art_18",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_18",
@@ -24,8 +24,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_19__para_1": {
-      "provision_id": "PRV-금소법-art_19__para_1",
+    "KNW-금소법-art_19__para_1": {
+      "knowledge_id": "KNW-금소법-art_19__para_1",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_19__para_1",
@@ -36,8 +36,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_19__para_2": {
-      "provision_id": "PRV-금소법-art_19__para_2",
+    "KNW-금소법-art_19__para_2": {
+      "knowledge_id": "KNW-금소법-art_19__para_2",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_19__para_2",
@@ -48,8 +48,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_19__para_3": {
-      "provision_id": "PRV-금소법-art_19__para_3",
+    "KNW-금소법-art_19__para_3": {
+      "knowledge_id": "KNW-금소법-art_19__para_3",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_19__para_3",
@@ -60,8 +60,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-투자권유준칙-고령자": {
-      "provision_id": "PRV-투자권유준칙-고령자",
+    "KNW-투자권유준칙-고령자": {
+      "knowledge_id": "KNW-투자권유준칙-고령자",
       "document_id": "표준투자권유준칙",
       "document_type": "가이드라인",
       "e_id": "elderly_protection",
@@ -72,8 +72,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-내규-모니터링기준": {
-      "provision_id": "PRV-내규-모니터링기준",
+    "KNW-내규-모니터링기준": {
+      "knowledge_id": "KNW-내규-모니터링기준",
       "document_id": "완전판매 모니터링 내규",
       "document_type": "내규",
       "e_id": "monitoring_std",
@@ -84,8 +84,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_28": {
-      "provision_id": "PRV-금소법-art_28",
+    "KNW-금소법-art_28": {
+      "knowledge_id": "KNW-금소법-art_28",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_28",
@@ -96,8 +96,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_44": {
-      "provision_id": "PRV-금소법-art_44",
+    "KNW-금소법-art_44": {
+      "knowledge_id": "KNW-금소법-art_44",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_44",
@@ -108,8 +108,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_46": {
-      "provision_id": "PRV-금소법-art_46",
+    "KNW-금소법-art_46": {
+      "knowledge_id": "KNW-금소법-art_46",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_46",
@@ -120,8 +120,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-금소법-art_47": {
-      "provision_id": "PRV-금소법-art_47",
+    "KNW-금소법-art_47": {
+      "knowledge_id": "KNW-금소법-art_47",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_47",
@@ -132,8 +132,8 @@
       "source_system": "자기입력(법제처 OpenAPI 원문 교체 필요)",
       "source_page": null
     },
-    "PRV-바이블-대면녹취": {
-      "provision_id": "PRV-바이블-대면녹취",
+    "KNW-바이블-대면녹취": {
+      "knowledge_id": "KNW-바이블-대면녹취",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_recording",
@@ -144,8 +144,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.132-134"
     },
-    "PRV-바이블-숙려제도": {
-      "provision_id": "PRV-바이블-숙려제도",
+    "KNW-바이블-숙려제도": {
+      "knowledge_id": "KNW-바이블-숙려제도",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_cooling_off",
@@ -156,8 +156,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.142-144"
     },
-    "PRV-바이블-청약철회": {
-      "provision_id": "PRV-바이블-청약철회",
+    "KNW-바이블-청약철회": {
+      "knowledge_id": "KNW-바이블-청약철회",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_withdrawal",
@@ -168,8 +168,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.149-150"
     },
-    "PRV-바이블-위법계약해지": {
-      "provision_id": "PRV-바이블-위법계약해지",
+    "KNW-바이블-위법계약해지": {
+      "knowledge_id": "KNW-바이블-위법계약해지",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_unlawful_termination",
@@ -180,8 +180,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.152-153"
     },
-    "PRV-바이블-자료보관": {
-      "provision_id": "PRV-바이블-자료보관",
+    "KNW-바이블-자료보관": {
+      "knowledge_id": "KNW-바이블-자료보관",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_records",
@@ -192,8 +192,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.156"
     },
-    "PRV-바이블-해피콜": {
-      "provision_id": "PRV-바이블-해피콜",
+    "KNW-바이블-해피콜": {
+      "knowledge_id": "KNW-바이블-해피콜",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_happy_call",
@@ -204,8 +204,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.157-164"
     },
-    "PRV-바이블-고령자절차": {
-      "provision_id": "PRV-바이블-고령자절차",
+    "KNW-바이블-고령자절차": {
+      "knowledge_id": "KNW-바이블-고령자절차",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_elderly",
@@ -216,8 +216,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.104-128"
     },
-    "PRV-바이블-보고서교부": {
-      "provision_id": "PRV-바이블-보고서교부",
+    "KNW-바이블-보고서교부": {
+      "knowledge_id": "KNW-바이블-보고서교부",
       "document_id": "내규",
       "document_type": "내규",
       "e_id": "bible_reports",
@@ -228,8 +228,8 @@
       "source_system": "실무바이블 OCR",
       "source_page": "p.47-48"
     },
-    "PRV-금소법-art_20": {
-      "provision_id": "PRV-금소법-art_20",
+    "KNW-금소법-art_20": {
+      "knowledge_id": "KNW-금소법-art_20",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_20",
@@ -241,8 +241,8 @@
       "source_page": null,
       "version": "1.0"
     },
-    "PRV-금소법-art_21": {
-      "provision_id": "PRV-금소법-art_21",
+    "KNW-금소법-art_21": {
+      "knowledge_id": "KNW-금소법-art_21",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_21",
@@ -254,8 +254,8 @@
       "source_page": null,
       "version": "1.0"
     },
-    "PRV-금소법-art_22": {
-      "provision_id": "PRV-금소법-art_22",
+    "KNW-금소법-art_22": {
+      "knowledge_id": "KNW-금소법-art_22",
       "document_id": "금융소비자보호법",
       "document_type": "법률",
       "e_id": "art_22",
@@ -272,11 +272,9 @@
     {
       "rule_id": "RULE_001_001",
       "rule_seq": 1,
-      "parent_seq": "1",
       "content": "금융소비자 확인 (일반금융소비자 또는 전문금융소비자 여부 확인)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "일반금융소비자 투자자정보 확인서 작성",
       "meta_category": "적합성원칙",
@@ -291,17 +289,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_001_002",
       "rule_seq": 2,
-      "parent_seq": "1",
       "content": "투자권유 희망하지 않은 경우 유의사항 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "일반금융소비자 투자자정보 확인서 작성",
       "meta_category": "적합성원칙",
@@ -316,17 +312,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_001_003",
       "rule_seq": 3,
-      "parent_seq": "1",
       "content": "투자권유 희망 및 투자자정보제공 여부 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "일반금융소비자 투자자정보 확인서 작성",
       "meta_category": "적합성원칙",
@@ -341,17 +335,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_002_001",
       "rule_seq": 4,
-      "parent_seq": "2",
       "content": "작성 취지/내용: 투자자정보 파악 목적 설명 (연령대·소득현황 등)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자권유 희망 여부 파악",
       "meta_category": "적합성원칙",
@@ -366,17 +358,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_002_002",
       "rule_seq": 5,
-      "parent_seq": "2",
       "content": "취약금융소비자 해당 여부 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자권유 희망 여부 파악",
       "meta_category": "적합성원칙",
@@ -391,17 +381,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_002_003",
       "rule_seq": 6,
-      "parent_seq": "2",
       "content": "투자성향 진단시스템 입력",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자권유 희망 여부 파악",
       "meta_category": "적합성원칙",
@@ -415,17 +403,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_003_001",
       "rule_seq": 7,
-      "parent_seq": "3",
       "content": "투자성향 분석결과 설명 (투자성향·뜻·투자 가능 금융상품 범위)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자성향 분석결과 설명 및 교부",
       "meta_category": "적합성원칙",
@@ -440,17 +426,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_003_002",
       "rule_seq": 8,
-      "parent_seq": "3",
       "content": "투자성향 분석결과 교부",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자성향 분석결과 설명 및 교부",
       "meta_category": "적합성원칙",
@@ -465,17 +449,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_004_001",
       "rule_seq": 9,
-      "parent_seq": "4",
       "content": "투자성향에 적합한 상품 1가지 이상 권유(추천)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "적합한 상품 투자권유",
       "meta_category": "적합성원칙",
@@ -490,17 +472,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_001",
       "rule_seq": 10,
-      "parent_seq": "5",
       "content": "중개형 ISA 개요 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -515,17 +495,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_002",
       "rule_seq": 11,
-      "parent_seq": "5",
       "content": "가입대상 및 자격확인서류 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -539,17 +517,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_003",
       "rule_seq": 12,
-      "parent_seq": "5",
       "content": "납입한도 및 의무가입기간 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -564,17 +540,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_004",
       "rule_seq": 13,
-      "parent_seq": "5",
       "content": "세제 혜택 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -590,17 +564,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_005",
       "rule_seq": 14,
-      "parent_seq": "5",
       "content": "중도인출 및 계약해지 (만기불일치 위험) 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -615,17 +587,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_005_006",
       "rule_seq": 15,
-      "parent_seq": "5",
       "content": "특징·수수료·투자대상 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "ISA 가입요건 및 세제 혜택",
       "meta_category": "적합성원칙",
@@ -640,17 +610,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_006_001",
       "rule_seq": 16,
-      "parent_seq": "6",
       "content": "성향분석 없이 투자권유 희망여부 확인서 등 작성 유도",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자자성향 재분석 및 생략 유도",
       "meta_category": "적합성원칙",
@@ -665,17 +633,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_006_002",
       "rule_seq": 17,
-      "parent_seq": "6",
       "content": "투자성향 재진단 유도",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자자성향 재분석 및 생략 유도",
       "meta_category": "적합성원칙",
@@ -690,17 +656,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_006_003",
       "rule_seq": 18,
-      "parent_seq": "6",
       "content": "투자성향 진단 시 응답 유도",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자자성향 재분석 및 생략 유도",
       "meta_category": "적합성원칙",
@@ -715,17 +679,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_007_001",
       "rule_seq": 19,
-      "parent_seq": "7",
       "content": "계열운용사 펀드임을 고지하지 않음",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "계열사 상품 권유",
       "meta_category": "적합성원칙",
@@ -740,17 +702,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_007_002",
       "rule_seq": 20,
-      "parent_seq": "7",
       "content": "유사 비계열운용사 펀드 미추천",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "계열사 상품 권유",
       "meta_category": "적합성원칙",
@@ -764,17 +724,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_008_001",
       "rule_seq": 21,
-      "parent_seq": "8",
       "content": "부적합 상품 요청 시 ① 투자권유·추천 불가 안내",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "부적합 의무절차 (-10점)",
       "meta_category": "적합성원칙",
@@ -788,17 +746,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_008_002",
       "rule_seq": 22,
-      "parent_seq": "8",
       "content": "② 부적합상품목록 제시 불가",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "부적합 의무절차 (-10점)",
       "meta_category": "적합성원칙",
@@ -811,17 +767,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_008_003",
       "rule_seq": 23,
-      "parent_seq": "8",
       "content": "full-name 언급 가입 원할 시 ③ 투자권유 희망여부 확인서 작성·의사확인",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "부적합 의무절차 (-10점)",
       "meta_category": "적합성원칙",
@@ -835,17 +789,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_008_004",
       "rule_seq": 24,
-      "parent_seq": "8",
       "content": "④ 부적합(부적정) 금융상품 거래확인서 작성·유의사항 안내",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "부적합 의무절차 (-10점)",
       "meta_category": "적합성원칙",
@@ -859,17 +811,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_17"
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_009_001",
       "rule_seq": 25,
-      "parent_seq": "9",
       "content": "부적정 시 적정성 판단 보고서 작성 및 교부",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "[부적정] 적정성 판단 보고서",
       "meta_category": "적정성원칙",
@@ -883,17 +833,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_18"
+        "KNW-금소법-art_18"
       ]
     },
     {
       "rule_id": "RULE_010_001",
       "rule_seq": 26,
-      "parent_seq": "10",
       "content": "판매과정 녹취대상 여부 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
@@ -908,17 +856,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_010_002",
       "rule_seq": 27,
-      "parent_seq": "10",
       "content": "추후 녹취파일 제공 가능함 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
@@ -932,17 +878,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_010_003",
       "rule_seq": 28,
-      "parent_seq": "10",
       "content": "녹취 동의 여부 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
@@ -956,17 +900,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_011_001",
       "rule_seq": 29,
-      "parent_seq": "11",
       "content": "핵심설명서·간이설명서·투자설명서·간이정청서 안내 중 택일 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자성향설명서 교부",
       "meta_category": "설명의무",
@@ -982,17 +924,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_011_002",
       "rule_seq": 30,
-      "parent_seq": "11",
       "content": "지시어 피설명서보다 설명 후 제공하는 것은 교부 부인정",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자성향설명서 교부",
       "meta_category": "설명의무",
@@ -1006,17 +946,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_012_001",
       "rule_seq": 31,
-      "parent_seq": "12",
       "content": "(펀드) Full-name·상품등급·이용방법·계약기간 / (ELS) 명칭·기초자산·수익구조 / (공통) 지수 판매사의 상품등급·의미",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자성 상품의 내용에 대한 설명",
       "meta_category": "설명의무",
@@ -1031,17 +969,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_013_001",
       "rule_seq": 32,
-      "parent_seq": "13",
       "content": "원금손실 가능성 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자위험에 대한 설명",
       "meta_category": "설명의무",
@@ -1055,17 +991,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_013_002",
       "rule_seq": 33,
-      "parent_seq": "13",
       "content": "자기책임원칙 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자위험에 대한 설명",
       "meta_category": "설명의무",
@@ -1079,17 +1013,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_013_003",
       "rule_seq": 34,
-      "parent_seq": "13",
       "content": "예금자보호 비대상 상품 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자위험에 대한 설명",
       "meta_category": "설명의무",
@@ -1103,17 +1035,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_013_004",
       "rule_seq": 35,
-      "parent_seq": "13",
       "content": "투자위험 핵심사항 2가지 이상: ①투자대상국위험 ②환율변동 ③헤지여부 ④환헤지위험",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "투자위험에 대한 설명",
       "meta_category": "설명의무",
@@ -1129,17 +1059,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_014_001",
       "rule_seq": 36,
-      "parent_seq": "14",
       "content": "(펀드) 판매·판매수수료·이보수 / (ELS) 기준가결정일·조기상환·만기상환 수익구조 설명",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "수수료·보수에 대한 설명",
       "meta_category": "설명의무",
@@ -1156,17 +1084,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_015_001",
       "rule_seq": 37,
-      "parent_seq": "15",
       "content": "(펀드) 환매·중도해지 가능여부·기준가적용일 / (ELS) 중도상환 신청기간·결정일·금액결정방식 설명",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "환매·중도해지에 대한 설명",
       "meta_category": "설명의무",
@@ -1182,17 +1108,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1"
+        "KNW-금소법-art_19__para_1"
       ]
     },
     {
       "rule_id": "RULE_016_001",
       "rule_seq": 38,
-      "parent_seq": "16",
       "content": "가입 상품 및 투자위험을 고객과 함께 기재 후 서명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "상품 설명서 이해여부 확인",
       "meta_category": "설명의무",
@@ -1207,18 +1131,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_016_002",
       "rule_seq": 39,
-      "parent_seq": "16",
       "content": "원금손실·예금자보호 비적용 기재 후 서명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "상품 설명서 이해여부 확인",
       "meta_category": "설명의무",
@@ -1232,18 +1154,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_017_001",
       "rule_seq": 40,
-      "parent_seq": "17",
       "content": "설명 내용과 실제 설명서 내용이 같다는 사실 고지",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "지시의 서명",
       "meta_category": "설명의무",
@@ -1257,18 +1177,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_017_002",
       "rule_seq": 41,
-      "parent_seq": "17",
       "content": "설명한 지시의 서명 여부 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "지시의 서명",
       "meta_category": "설명의무",
@@ -1282,18 +1200,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_018_001",
       "rule_seq": 42,
-      "parent_seq": "18",
       "content": "위법계약 해지의 행사요건·해지절차 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "위법계약의 해지",
       "meta_category": "설명의무",
@@ -1307,18 +1223,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_019_001",
       "rule_seq": 43,
-      "parent_seq": "19",
       "content": "금융감독원 등에 분쟁조정 신청 가능 설명",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "분쟁의 조정",
       "meta_category": "설명의무",
@@ -1333,18 +1247,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_020_001",
       "rule_seq": 44,
-      "parent_seq": "20",
       "content": "자료이동요구권 존재 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "자료이동요구권",
       "meta_category": "설명의무",
@@ -1358,18 +1270,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_020_002",
       "rule_seq": 45,
-      "parent_seq": "20",
       "content": "자료제공기한 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "자료이동요구권",
       "meta_category": "설명의무",
@@ -1383,18 +1293,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_020_003",
       "rule_seq": 46,
-      "parent_seq": "20",
       "content": "자료이동 가능기간 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "자료이동요구권",
       "meta_category": "설명의무",
@@ -1408,18 +1316,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_020_004",
       "rule_seq": 47,
-      "parent_seq": "20",
       "content": "자료이동 신청방법 안내",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "자료이동요구권",
       "meta_category": "설명의무",
@@ -1433,18 +1339,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_021_001",
       "rule_seq": 48,
-      "parent_seq": "21",
       "content": "고객 이해 여부 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "이해도 높이기 위한 추가 설명",
       "meta_category": "설명의무",
@@ -1459,18 +1363,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_021_002",
       "rule_seq": 49,
-      "parent_seq": "21",
       "content": "이해하기 쉬운 추가 설명 제공",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "이해도 높이기 위한 추가 설명",
       "meta_category": "설명의무",
@@ -1485,18 +1387,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_19__para_1",
-        "PRV-금소법-art_19__para_2"
+        "KNW-금소법-art_19__para_1",
+        "KNW-금소법-art_19__para_2"
       ]
     },
     {
       "rule_id": "RULE_023_001",
       "rule_seq": 51,
-      "parent_seq": "23",
       "content": "만 80세 이상 투자권유 유의상품 조력자 안내 동의서 작성",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "[고령자] 조력자와의 안내 동의서",
       "meta_category": "고령자",
@@ -1511,17 +1411,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-투자권유준칙-고령자"
+        "KNW-투자권유준칙-고령자"
       ]
     },
     {
       "rule_id": "RULE_024_001",
       "rule_seq": 52,
-      "parent_seq": "24",
       "content": "(ELS·ELD·DLS·DLF) 적합성보고서 기재사항 작성",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
       "meta_category": "고령자",
@@ -1535,17 +1433,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-투자권유준칙-고령자"
+        "KNW-투자권유준칙-고령자"
       ]
     },
     {
       "rule_id": "RULE_024_002",
       "rule_seq": 53,
-      "parent_seq": "24",
       "content": "(ELS·ELD·DLS·DLF) 적합성보고서 교부",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
       "meta_category": "고령자",
@@ -1559,17 +1455,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-투자권유준칙-고령자"
+        "KNW-투자권유준칙-고령자"
       ]
     },
     {
       "rule_id": "RULE_025_001",
       "rule_seq": 54,
-      "parent_seq": "25",
       "content": "금소법상 부당권유행위 준수",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "부당권유 행위 금지",
       "meta_category": "부당권유금지",
@@ -1585,17 +1479,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_21"
+        "KNW-금소법-art_21"
       ]
     },
     {
       "rule_id": "RULE_026_001",
       "rule_seq": 55,
-      "parent_seq": "26",
       "content": "대면판매 관련법 회피 목적 온라인 가입 유도",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "온라인 가입 유도 여부",
       "meta_category": "부당권유금지",
@@ -1610,17 +1502,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_21"
+        "KNW-금소법-art_21"
       ]
     },
     {
       "rule_id": "RULE_027_001",
       "rule_seq": 56,
-      "parent_seq": "27",
       "content": "상담거부 (재방문 요청 등)",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "상담거부",
       "meta_category": "감점항목",
@@ -1635,17 +1525,15 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-내규-모니터링기준"
+        "KNW-내규-모니터링기준"
       ]
     },
     {
       "rule_id": "RULE_NQ_001",
       "rule_seq": 57,
-      "parent_seq": "NQ",
       "content": "상담지연 (과도한 타직원 문의·장기 자리 비움)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "상담지연",
       "meta_category": "비계량",
@@ -1660,17 +1548,15 @@
       "violation_type": "비계량형",
       "verification_method": "human_review",
       "basis": [
-        "PRV-내규-모니터링기준"
+        "KNW-내규-모니터링기준"
       ]
     },
     {
       "rule_id": "RULE_NQ_002",
       "rule_seq": 58,
-      "parent_seq": "NQ",
       "content": "적절한 상담시간 (대기 제외 40분 이상 여부)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "적절한 상담시간",
       "meta_category": "비계량",
@@ -1685,17 +1571,15 @@
       "violation_type": "비계량형",
       "verification_method": "human_review",
       "basis": [
-        "PRV-내규-모니터링기준"
+        "KNW-내규-모니터링기준"
       ]
     },
     {
       "rule_id": "RULE_NQ_003",
       "rule_seq": 59,
-      "parent_seq": "NQ",
       "content": "가입 목적에 맞지 않는 상품 권유",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETisa000000001",
       "meta_title": "가입목적에 맞지 않는 상품권유",
       "meta_category": "비계량",
@@ -1709,17 +1593,15 @@
       "violation_type": "비계량형",
       "verification_method": "human_review",
       "basis": [
-        "PRV-내규-모니터링기준"
+        "KNW-내규-모니터링기준"
       ]
     },
     {
       "rule_id": "RULE_BIB_001",
       "rule_seq": 60,
-      "parent_seq": "B1",
       "content": "녹취 대상 판별: 소비자유형(일반)·고령/부적합 여부·상품 상품등급(3등급 이상)·고난도 여부에 따라 녹취 대상 확인 및 6799 화면 등록",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "대면녹취 대상 판별·등록",
       "meta_category": "녹취",
@@ -1735,18 +1617,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-대면녹취",
-        "PRV-금소법-art_44"
+        "KNW-바이블-대면녹취",
+        "KNW-금소법-art_44"
       ]
     },
     {
       "rule_id": "RULE_BIB_002",
       "rule_seq": 61,
-      "parent_seq": "B1",
       "content": "녹취 범위 준수: 투자성향 결과 안내부터 적합성원칙(현재 투자자금 성향·부적합 상품고지), 설명의무(내용·위험), 계약사항(계좌명·계좌번호·상품명·가입금액)까지 모두녹취에 포함",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "대면녹취 범위 준수",
       "meta_category": "녹취",
@@ -1762,18 +1642,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-대면녹취",
-        "PRV-금소법-art_44"
+        "KNW-바이블-대면녹취",
+        "KNW-금소법-art_44"
       ]
     },
     {
       "rule_id": "RULE_BIB_003",
       "rule_seq": 62,
-      "parent_seq": "B1",
       "content": "이해 여부·설명서 교부 확인 시 고객 응답이 명확히 확인되도록 녹취",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "고객 응답 확인 녹취",
       "meta_category": "녹취",
@@ -1788,17 +1666,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-대면녹취"
+        "KNW-바이블-대면녹취"
       ]
     },
     {
       "rule_id": "RULE_BIB_004",
       "rule_seq": 63,
-      "parent_seq": "B1",
       "content": "오상담·오설 설명사항 누락·부당권유 등 위법 발언 부존재",
       "product_type": "공통",
       "is_deduct": 1,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "녹취 중 위법 발언 금지",
       "meta_category": "녹취",
@@ -1813,18 +1689,16 @@
       "violation_type": "감점형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-대면녹취",
-        "PRV-금소법-art_44"
+        "KNW-바이블-대면녹취",
+        "KNW-금소법-art_44"
       ]
     },
     {
       "rule_id": "RULE_BIB_005",
       "rule_seq": 64,
-      "parent_seq": "B2",
       "content": "숙려제도 대상 판별: 고난도 금융투자상품·적정성원칙 대상상품 × 개인 일반금융소비자(고난도) 또는 고령·부적합(적정성 대상) 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "숙려 대상 판별",
       "meta_category": "숙려제도",
@@ -1839,17 +1713,15 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-숙려제도"
+        "KNW-바이블-숙려제도"
       ]
     },
     {
       "rule_id": "RULE_BIB_006",
       "rule_seq": 65,
-      "parent_seq": "B2",
       "content": "숙려기간(2영업일) 중 매수·청약 및 최종 가입의사 확인 불가 준수, 유의사항(투자위험·원금손실가능성·최대손실금액·취소기간/방법) 2회 발송",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "숙려기간 준수·유의사항 발송",
       "meta_category": "숙려제도",
@@ -1864,17 +1736,15 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-숙려제도"
+        "KNW-바이블-숙려제도"
       ]
     },
     {
       "rule_id": "RULE_BIB_007",
       "rule_seq": 66,
-      "parent_seq": "B2",
       "content": "가입의사 확인기간 내 고객 본인의 최종 가입의사 확인 (미확인 시 자동취소·투자금 반환)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "최종 가입의사 확인",
       "meta_category": "숙려제도",
@@ -1889,17 +1759,15 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-숙려제도"
+        "KNW-바이블-숙려제도"
       ]
     },
     {
       "rule_id": "RULE_BIB_008",
       "rule_seq": 67,
-      "parent_seq": "B3",
       "content": "청약철회권 안내: 고난도 단위형펀드·고난도 투자일임/금전신탁 판매 시 철회 가능기간(계약서류 제공일/체결일로부터 7일) 안내",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "청약철회권 안내",
       "meta_category": "청약철회권",
@@ -1914,18 +1782,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_46",
-        "PRV-바이블-청약철회"
+        "KNW-금소법-art_46",
+        "KNW-바이블-청약철회"
       ]
     },
     {
       "rule_id": "RULE_BIB_009",
       "rule_seq": 68,
-      "parent_seq": "B3",
       "content": "청약철회 처리: 철회 신청 접수일로부터 3영업일 이내 대금 반환(철회 완료), 행사 방해 금지",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "청약철회 처리기한 준수",
       "meta_category": "청약철회권",
@@ -1939,18 +1805,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_46",
-        "PRV-바이블-청약철회"
+        "KNW-금소법-art_46",
+        "KNW-바이블-청약철회"
       ]
     },
     {
       "rule_id": "RULE_BIB_010",
       "rule_seq": 69,
-      "parent_seq": "B4",
       "content": "위법계약해지권 안내: 계속적 계약(투자일임·랩·신탁) 판매 시 해지권 및 행사 기간(위반사실 안 날로부터 1년과 계약서류 받은 날로부터 5년 중 먼저 도래하는 기간) 안내",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "위법계약해지권 안내",
       "meta_category": "위법계약해지권",
@@ -1964,18 +1828,16 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-금소법-art_47",
-        "PRV-바이블-위법계약해지"
+        "KNW-금소법-art_47",
+        "KNW-바이블-위법계약해지"
       ]
     },
     {
       "rule_id": "RULE_BIB_011",
       "rule_seq": 70,
-      "parent_seq": "B4",
       "content": "위법계약해지 요구 접수일로부터 10일 이내 수락 여부 통지, 해지 시 수수료·위약금 없이 장래효 해지",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "해지요구 통지기한 준수",
       "meta_category": "위법계약해지권",
@@ -1990,18 +1852,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_47",
-        "PRV-바이블-위법계약해지"
+        "KNW-금소법-art_47",
+        "KNW-바이블-위법계약해지"
       ]
     },
     {
       "rule_id": "RULE_BIB_012",
       "rule_seq": 71,
-      "parent_seq": "B5",
       "content": "판매 관련 자료 유형별 보존(계약서류·이행자료·권리행사자료 등, 대부분 10년) 및 서면 요청 시 6영업일 이내 제공, 열람 요구 시 8일 이내 열람",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "자료 보존·제공 기한 준수",
       "meta_category": "자료보관",
@@ -2016,18 +1876,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-금소법-art_28",
-        "PRV-바이블-자료보관"
+        "KNW-금소법-art_28",
+        "KNW-바이블-자료보관"
       ]
     },
     {
       "rule_id": "RULE_BIB_013",
       "rule_seq": 72,
-      "parent_seq": "B6",
       "content": "판매후 확인콜 대상 판별·준수: 상품별 금액·주기 기준 적용, 고령자·부적합 고객은 금액 기준 없이 전건 준수",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "확인콜 대상·준수",
       "meta_category": "판매후확인콜",
@@ -2041,17 +1899,15 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-해피콜"
+        "KNW-바이블-해피콜"
       ]
     },
     {
       "rule_id": "RULE_BIB_014",
       "rule_seq": 73,
-      "parent_seq": "B6",
       "content": "확인콜 점검 항목 확인: 적합성, 상품특징·위험사항 설명 여부, 판매직원 교부 여부를 고객 응답으로 확인",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "확인콜 점검 항목",
       "meta_category": "판매후확인콜",
@@ -2066,17 +1922,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-해피콜"
+        "KNW-바이블-해피콜"
       ]
     },
     {
       "rule_id": "RULE_BIB_015",
       "rule_seq": 74,
-      "parent_seq": "B7",
       "content": "고령투자자 투자권유 유의상품 권유 시 관리직 지점의 사전 확인(설명 이해 여부·권유 적법성 등, 지점 면담 또는 유선) 진행",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "고령자 유의상품 사전확인",
       "meta_category": "고령자",
@@ -2091,17 +1945,15 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-고령자절차"
+        "KNW-바이블-고령자절차"
       ]
     },
     {
       "rule_id": "RULE_BIB_016",
       "rule_seq": 75,
-      "parent_seq": "B7",
       "content": "고령투자자 투자자정보 등록 시 비상연락용 조력자 연락처 등록 여부 확인 (본인·조력자 동의 시 등록, 정정 등록 시 미지정 처리)",
       "product_type": "공통",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "조력자 연락처 확인",
       "meta_category": "고령자",
@@ -2115,17 +1967,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-고령자절차"
+        "KNW-바이블-고령자절차"
       ]
     },
     {
       "rule_id": "RULE_BIB_017",
       "rule_seq": 76,
-      "parent_seq": "B7",
       "content": "고령층 지정인 알림 서비스: 대상상품(파생결합증권·투자일임·조건부자본증권 등) 판매 시 건별 신청의사 확인, 신청 시 신청서 지구·발송·전달 확인",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "지정인 알림 서비스 안내",
       "meta_category": "고령자",
@@ -2139,17 +1989,15 @@
       "violation_type": "누락형",
       "verification_method": "llm_judgment",
       "basis": [
-        "PRV-바이블-고령자절차"
+        "KNW-바이블-고령자절차"
       ]
     },
     {
       "rule_id": "RULE_BIB_018",
       "rule_seq": 77,
-      "parent_seq": "B8",
       "content": "적합성보고서 출력·설명·교부: 신규투자자·고령투자자 등 대상 파생결합상품 권유 시 (미출력 시 가입불가, 원본 교부·사본 보관)",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "적합성보고서 교부",
       "meta_category": "적합성원칙",
@@ -2163,18 +2011,16 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-보고서교부",
-        "PRV-금소법-art_17"
+        "KNW-바이블-보고서교부",
+        "KNW-금소법-art_17"
       ]
     },
     {
       "rule_id": "RULE_BIB_019",
       "rule_seq": 78,
-      "parent_seq": "B8",
       "content": "적정성판단보고서 교부: 부적정 상품 가입 시 판단 결과와 이유를 기재하여 교부",
       "product_type": "상품",
       "is_deduct": 0,
-      "rule_version": "1.0.0",
       "ruleset_id": "RSETcommon000001",
       "meta_title": "적정성판단보고서 교부",
       "meta_category": "적정성원칙",
@@ -2188,8 +2034,8 @@
       "violation_type": "누락형",
       "verification_method": "deterministic",
       "basis": [
-        "PRV-바이블-보고서교부",
-        "PRV-금소법-art_18"
+        "KNW-바이블-보고서교부",
+        "KNW-금소법-art_18"
       ]
     }
   ],

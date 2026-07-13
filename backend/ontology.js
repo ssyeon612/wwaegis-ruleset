@@ -1,5 +1,5 @@
 // 온톨로지 — 관계형 룰셋 데이터를 타입드 지식그래프로 표현하고 RDF(Turtle/JSON-LD)로 내보낸다.
-// 노드: document / provision / rule / tag / ruleset / category / product / jury_panel
+// 노드: document / knowledge / rule / tag / ruleset / category / product / jury_panel
 // 엣지: CONTAINS · BASED_ON · REQUIRES · IN_RULESET · HAS_CATEGORY · APPLIES_TO · JUDGED_BY
 // deontic 양상(의무/금지/권고)은 rule 노드 속성.
 
@@ -16,7 +16,7 @@ export const modalityOf = (violation_type) => MODALITY[violation_type] || MODALI
 
 const N = {
   document: (id) => `doc:${id}`,
-  provision: (id) => `prov:${id}`,
+  knowledge: (id) => `knowledge:${id}`,
   rule: (id) => `rule:${id}`,
   tag: (code) => `tag:${code}`,
   ruleset: (id) => `rset:${id}`,
@@ -25,7 +25,7 @@ const N = {
   jury: (id) => `jury:${id}`,
 };
 
-const NODE_TYPES = ["document", "provision", "rule", "tag", "ruleset", "category", "product", "jury_panel"];
+const NODE_TYPES = ["document", "knowledge", "rule", "tag", "ruleset", "category", "product", "jury_panel"];
 const EDGE_TYPES = ["CONTAINS", "BASED_ON", "REQUIRES", "IN_RULESET", "HAS_CATEGORY", "APPLIES_TO", "JUDGED_BY"];
 
 export function buildGraph(db, taxonomy) {
@@ -34,22 +34,22 @@ export function buildGraph(db, taxonomy) {
   const addNode = (id, type, label, props = {}) => { if (!nodes.has(id)) nodes.set(id, { id, type, label, ...props }); };
   const addEdge = (source, target, type) => edges.push({ source, target, type });
 
-  const provisions = db.prepare("SELECT * FROM provisions").all();
+  const knowledge = db.prepare("SELECT * FROM knowledge").all();
   const rules = db.prepare("SELECT * FROM rules ORDER BY rule_seq").all();
   const rulesets = db.prepare("SELECT * FROM rulesets").all();
   const products = db.prepare("SELECT * FROM products").all();
   const semTags = taxonomy.semantic_tags || {};
   const juries = taxonomy.jury_panels || {};
 
-  // documents ← provisions
+  // documents ← knowledge
   const docs = new Set();
-  for (const p of provisions) {
-    addNode(N.provision(p.provision_id), "provision", p.heading, { e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, text: p.text });
+  for (const p of knowledge) {
+    addNode(N.knowledge(p.knowledge_id), "knowledge", p.heading, { e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, text: p.text });
     if (!docs.has(p.document_id)) {
       docs.add(p.document_id);
       addNode(N.document(p.document_id), "document", p.document_id, { document_type: p.document_type });
     }
-    addEdge(N.document(p.document_id), N.provision(p.provision_id), "CONTAINS");
+    addEdge(N.document(p.document_id), N.knowledge(p.knowledge_id), "CONTAINS");
   }
 
   // rulesets ← category
@@ -80,7 +80,7 @@ export function buildGraph(db, taxonomy) {
       modality: mod.code, modality_ko: mod.ko, threshold: r.threshold,
     });
     if (r.ruleset_id) { addNode(N.ruleset(r.ruleset_id), "ruleset", r.ruleset_id); addEdge(N.rule(r.rule_id), N.ruleset(r.ruleset_id), "IN_RULESET"); }
-    for (const pid of basis) addEdge(N.rule(r.rule_id), N.provision(pid), "BASED_ON");
+    for (const pid of basis) addEdge(N.rule(r.rule_id), N.knowledge(pid), "BASED_ON");
     for (const t of tags) { addNode(N.tag(t), "tag", semTags[t] || t, { code: t }); addEdge(N.rule(r.rule_id), N.tag(t), "REQUIRES"); }
     if (r.jury_panel_id) { addNode(N.jury(r.jury_panel_id), "jury_panel", juries[r.jury_panel_id]?.name || r.jury_panel_id, { jurors: juries[r.jury_panel_id]?.jurors }); addEdge(N.rule(r.rule_id), N.jury(r.jury_panel_id), "JUDGED_BY"); }
   }
@@ -97,7 +97,7 @@ export function buildGraph(db, taxonomy) {
 // ── RDF 내보내기 ─────────────────────────────────────────
 // IRI 지역명은 노드 인덱스 기반(n0,n1…)으로 고유하게 발급하고, 원본 식별자는 aegis:sourceId 리터럴로 보존한다.
 const esc = (s) => String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ");
-const CLASS = { document: "Document", provision: "Provision", rule: "Rule", tag: "SemanticTag", ruleset: "RuleSet", category: "Category", product: "Product", jury_panel: "JuryPanel" };
+const CLASS = { document: "Document", knowledge: "Knowledge", rule: "Rule", tag: "SemanticTag", ruleset: "RuleSet", category: "Category", product: "Product", jury_panel: "JuryPanel" };
 const PRED = { CONTAINS: "contains", BASED_ON: "basedOn", REQUIRES: "requiresTag", IN_RULESET: "inRuleSet", HAS_CATEGORY: "hasCategory", APPLIES_TO: "appliesTo", JUDGED_BY: "judgedBy" };
 const localName = (graph) => new Map(graph.nodes.map((n, i) => [n.id, `n${i}`]));
 

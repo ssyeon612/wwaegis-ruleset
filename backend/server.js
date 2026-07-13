@@ -44,23 +44,23 @@ const parseProduct = (row) => (row ? { ...row, product_categories: JSON.parse(ro
 // ══════════════════════════════════════════════════════════
 // 관리 사용자 인터페이스 (§4.1·§4.2)
 // ══════════════════════════════════════════════════════════
-app.get("/api/provisions", (_req, res) => {
-  res.json(db.prepare("SELECT * FROM provisions ORDER BY provision_id").all());
+app.get("/api/knowledge", (_req, res) => {
+  res.json(db.prepare("SELECT * FROM knowledge ORDER BY knowledge_id").all());
 });
 
-// 근거 조항 추가 (신규 생성) — provision_id 자동 부여 + 변경 이력 append
-app.post("/api/provisions", (req, res) => {
+// 근거 조항 추가 (신규 생성) — knowledge_id 자동 부여 + 변경 이력 append
+app.post("/api/knowledge", (req, res) => {
   const b = req.body || {};
   const heading = (b.heading || "").trim();
   const text = (b.text || "").trim();
   if (!heading || !text) return fail(res, 400, "bad_request", "heading and text are required");
 
-  const { c } = db.prepare("SELECT COUNT(*) AS c FROM provisions").get();
-  let provision_id = (b.provision_id || `PRV-USER-${String(c + 1).padStart(3, "0")}`).trim();
-  while (db.prepare("SELECT 1 FROM provisions WHERE provision_id = ?").get(provision_id)) provision_id += "_x";
+  const { c } = db.prepare("SELECT COUNT(*) AS c FROM knowledge").get();
+  let knowledge_id = (b.knowledge_id || `KNW-USER-${String(c + 1).padStart(3, "0")}`).trim();
+  while (db.prepare("SELECT 1 FROM knowledge WHERE knowledge_id = ?").get(knowledge_id)) knowledge_id += "_x";
 
   const row = {
-    provision_id,
+    knowledge_id,
     document_id: b.document_id || b.document_type || "내규",
     document_type: b.document_type || "내규",
     e_id: b.e_id || null,
@@ -72,13 +72,13 @@ app.post("/api/provisions", (req, res) => {
     version: "1.0",
     gist: gistOf(text),
   };
-  db.prepare(`INSERT INTO provisions
-    (provision_id, document_id, document_type, e_id, heading, text, effective_from, effective_to, source_system, source_page, version, gist)
-    VALUES (@provision_id, @document_id, @document_type, @e_id, @heading, @text, @effective_from, @effective_to, @source_system, @source_page, @version, @gist)`).run(row);
+  db.prepare(`INSERT INTO knowledge
+    (knowledge_id, document_id, document_type, e_id, heading, text, effective_from, effective_to, source_system, source_page, version, gist)
+    VALUES (@knowledge_id, @document_id, @document_type, @e_id, @heading, @text, @effective_from, @effective_to, @source_system, @source_page, @version, @gist)`).run(row);
 
   db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
-              VALUES ('provision', @id, 'create', @changes, @actor, @reason, @at)`).run({
-    id: provision_id, changes: JSON.stringify({ heading, document_type: row.document_type }),
+              VALUES ('knowledge', @id, 'create', @changes, @actor, @reason, @at)`).run({
+    id: knowledge_id, changes: JSON.stringify({ heading, document_type: row.document_type }),
     actor: b._actor || "admin", reason: b._reason || null, at: new Date().toISOString(),
   });
 
@@ -86,14 +86,14 @@ app.post("/api/provisions", (req, res) => {
 });
 
 // 근거 조항 직접 수정 — 제목·원문·출처(문서유형/문서명) in-place (버전업 없음)
-const PROV_EDITABLE = ["heading", "text", "document_type", "document_id", "e_id"];
-app.put("/api/provisions/:id", (req, res) => {
-  const existing = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
-  if (!existing) return fail(res, 404, "not_found", "provision not found");
+const KNOWLEDGE_EDITABLE = ["heading", "text", "document_type", "document_id", "e_id"];
+app.put("/api/knowledge/:id", (req, res) => {
+  const existing = db.prepare("SELECT * FROM knowledge WHERE knowledge_id = ?").get(req.params.id);
+  if (!existing) return fail(res, 404, "not_found", "knowledge not found");
 
   const b = req.body || {};
   const patch = {};
-  for (const key of PROV_EDITABLE) {
+  for (const key of KNOWLEDGE_EDITABLE) {
     if (key in b) patch[key] = typeof b[key] === "string" ? b[key].trim() : b[key];
   }
   if ("text" in patch) {
@@ -104,29 +104,29 @@ app.put("/api/provisions/:id", (req, res) => {
   if (Object.keys(patch).length === 0) return fail(res, 400, "bad_request", "no editable fields provided");
 
   const setClause = Object.keys(patch).map((k) => `${k} = @${k}`).join(", ");
-  db.prepare(`UPDATE provisions SET ${setClause} WHERE provision_id = @provision_id`).run({ ...patch, provision_id: req.params.id });
+  db.prepare(`UPDATE knowledge SET ${setClause} WHERE knowledge_id = @knowledge_id`).run({ ...patch, knowledge_id: req.params.id });
 
   db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
-              VALUES ('provision', @id, 'update', @changes, @actor, @reason, @at)`).run({
+              VALUES ('knowledge', @id, 'update', @changes, @actor, @reason, @at)`).run({
     id: req.params.id, changes: JSON.stringify(patch),
     actor: b._actor || "admin", reason: b._reason || null, at: new Date().toISOString(),
   });
 
-  res.json(db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id));
+  res.json(db.prepare("SELECT * FROM knowledge WHERE knowledge_id = ?").get(req.params.id));
 });
 
 // 근거 조항 삭제 — 이 조항을 근거(basis)로 쓰는 룰이 있으면 차단
-app.delete("/api/provisions/:id", (req, res) => {
-  const existing = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
-  if (!existing) return fail(res, 404, "not_found", "provision not found");
+app.delete("/api/knowledge/:id", (req, res) => {
+  const existing = db.prepare("SELECT * FROM knowledge WHERE knowledge_id = ?").get(req.params.id);
+  if (!existing) return fail(res, 404, "not_found", "knowledge not found");
 
   const refs = db.prepare("SELECT basis FROM rules").all()
     .filter((r) => { try { return JSON.parse(r.basis || "[]").includes(req.params.id); } catch { return false; } });
   if (refs.length) return fail(res, 409, "conflict", `이 조항을 근거로 사용하는 룰이 ${refs.length}건 있어 삭제할 수 없습니다`);
 
-  db.prepare("DELETE FROM provisions WHERE provision_id = ?").run(req.params.id);
+  db.prepare("DELETE FROM knowledge WHERE knowledge_id = ?").run(req.params.id);
   db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
-              VALUES ('provision', @id, 'delete', @changes, @actor, @reason, @at)`).run({
+              VALUES ('knowledge', @id, 'delete', @changes, @actor, @reason, @at)`).run({
     id: req.params.id, changes: JSON.stringify({ heading: existing.heading }),
     actor: req.body?._actor || "admin", reason: req.body?._reason || null, at: new Date().toISOString(),
   });
@@ -157,19 +157,18 @@ app.post("/api/rules", (req, res) => {
   const arr = (v) => JSON.stringify(Array.isArray(v) ? v : []);
   const row = {
     rule_id, rule_seq,
-    parent_seq: b.parent_seq ?? null,
     content,
     product_type: b.product_type || "공통",
     is_deduct: b.is_deduct ? 1 : 0,
-    rule_version: "1.0.0",
     ruleset_id: b.ruleset_id || null,
     meta_title: b.meta_title || content,
     meta_category: b.meta_category || null,
     trigger_state: b.trigger_state || null,
     condition_type: b.condition_type || null,
+    product_class: b.product_class || "투자성상품",
+    consumer_type: b.consumer_type || "일반금융소비자",
     keywords: arr(b.keywords),
     required_tags: arr(b.required_tags),
-    speech_act: b.speech_act || null,
     jury_panel_id: b.jury_panel_id || "JURY_STD_5",
     threshold: b.threshold ?? 3,
     judge_prompt: b.judge_prompt || content,
@@ -181,12 +180,12 @@ app.post("/api/rules", (req, res) => {
   };
 
   db.prepare(`INSERT INTO rules
-    (rule_id, rule_seq, parent_seq, content, product_type, is_deduct, rule_version, ruleset_id,
-     meta_title, meta_category, trigger_state, condition_type, keywords, required_tags, speech_act,
+    (rule_id, rule_seq, content, product_type, is_deduct, ruleset_id,
+     meta_title, meta_category, trigger_state, condition_type, product_class, consumer_type, keywords, required_tags,
      jury_panel_id, threshold, judge_prompt, verification_method, violation_type, basis, review_status, review_note)
     VALUES
-    (@rule_id, @rule_seq, @parent_seq, @content, @product_type, @is_deduct, @rule_version, @ruleset_id,
-     @meta_title, @meta_category, @trigger_state, @condition_type, @keywords, @required_tags, @speech_act,
+    (@rule_id, @rule_seq, @content, @product_type, @is_deduct, @ruleset_id,
+     @meta_title, @meta_category, @trigger_state, @condition_type, @product_class, @consumer_type, @keywords, @required_tags,
      @jury_panel_id, @threshold, @judge_prompt, @verification_method, @violation_type, @basis, @review_status, @review_note)`).run(row);
 
   db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
@@ -202,7 +201,7 @@ app.post("/api/rules", (req, res) => {
 });
 
 // 룰 수정 + 변경 이력 append (F4)
-const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "meta_category", "principle", "trigger_state", "product_type", "condition_type", "speech_act", "jury_panel_id", "threshold", "required_tags", "basis"];
+const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "meta_category", "principle", "trigger_state", "product_type", "condition_type", "product_class", "consumer_type", "jury_panel_id", "threshold", "required_tags", "basis"];
 const JSON_FIELDS = new Set(["required_tags", "basis"]);
 app.put("/api/rules/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
@@ -301,54 +300,6 @@ app.get("/api/products", (_req, res) => {
   res.json(db.prepare("SELECT * FROM products ORDER BY product_id").all().map(parseProduct));
 });
 
-// ── 조항 개정 (버전업) — 스냅샷 이력 + 영향 룰 자동 재검토 플래그 (F2-6·F4) ──
-app.post("/api/provisions/:id/amend", (req, res) => {
-  const { version, text, heading, effective_from, note, dry_run } = req.body || {};
-  const prov = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
-  if (!prov) return fail(res, 404, "not_found", "provision not found");
-  if (!version || !text) return fail(res, 400, "bad_request", "version and text are required");
-
-  const affected = db.prepare("SELECT * FROM rules ORDER BY rule_seq").all()
-    .filter((r) => JSON.parse(r.basis || "[]").includes(prov.provision_id));
-  const diff = {
-    from_version: prov.version, to_version: version,
-    old_heading: prov.heading, new_heading: heading ?? prov.heading,
-    old_text: prov.text, new_text: text,
-  };
-  const affected_rules = affected.map((r) => ({ rule_id: r.rule_id, content: r.content, trigger_state: r.trigger_state, review_status: r.review_status }));
-
-  if (dry_run) {
-    return res.json(ok({ dry_run: true, provision: prov, diff, affected_rules, affected_count: affected.length }));
-  }
-
-  const now = new Date().toISOString();
-  const reviewNote = `§${prov.e_id} 개정 (v${prov.version}→v${version})`;
-  db.transaction(() => {
-    db.prepare(`INSERT INTO provision_history (provision_id, version, heading, text, effective_from, note, archived_at)
-                VALUES (@pid, @version, @heading, @text, @eff, @note, @at)`).run({
-      pid: prov.provision_id, version: prov.version, heading: prov.heading, text: prov.text, eff: prov.effective_from, note: note || null, at: now,
-    });
-    db.prepare(`UPDATE provisions SET version=@version, text=@text, heading=@heading, effective_from=@eff, gist=@gist WHERE provision_id=@pid`).run({
-      version, text, heading: heading ?? prov.heading, eff: effective_from ?? prov.effective_from, gist: gistOf(text), pid: prov.provision_id,
-    });
-    const flag = db.prepare("UPDATE rules SET review_status='pending', review_note=@note WHERE rule_id=@id");
-    for (const r of affected) flag.run({ id: r.rule_id, note: reviewNote });
-    db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
-                VALUES ('provision', @id, 'amend', @changes, @actor, @reason, @at)`).run({
-      id: prov.provision_id, changes: JSON.stringify({ from: prov.version, to: version, affected: affected.map((r) => r.rule_id) }),
-      actor: req.body._actor || "admin", reason: note || null, at: now,
-    });
-  })();
-
-  const updated = db.prepare("SELECT * FROM provisions WHERE provision_id=?").get(prov.provision_id);
-  res.json(ok({ provision: updated, diff, affected_rules, affected_count: affected.length, flagged: affected.length }));
-});
-
-// 조항 버전 이력
-app.get("/api/provisions/:id/history", (req, res) => {
-  res.json(db.prepare("SELECT * FROM provision_history WHERE provision_id=? ORDER BY hist_id DESC").all(req.params.id));
-});
-
 // 전체 변경 이력 (append-only) — entity_type/action 필터
 app.get("/api/changelog", (req, res) => {
   const { entity_type, action, limit } = req.query;
@@ -415,9 +366,9 @@ const principleOf = (basisIds) => {
   return hit ? { code: hit.key, article: hit.art } : { code: "기타", article: null };
 };
 
-function buildJudge(r, provFull) {
+function buildJudge(r, knowledgeFull) {
   const basisIds = JSON.parse(r.basis || "[]");
-  const basis = basisIds.map((pid) => provFull[pid]).filter(Boolean);
+  const basis = basisIds.map((pid) => knowledgeFull[pid]).filter(Boolean);
   const principle = principleOf(basisIds);
   const basisView = basis.map((p) => ({ e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, heading: p.heading, gist: p.gist || p.text }));
   // ST 가 iTrix 에 넘길 "룰 판정정보" (대화는 ST가 붙임)
@@ -442,7 +393,7 @@ app.get("/api/ruleset/load", (req, res) => {
   const rulesets = db.prepare("SELECT * FROM rulesets").all().filter((rs) => cats.includes(rs.ruleset_category));
   const rsIds = rulesets.map((rs) => rs.ruleset_id);
   const version = [...new Set(rulesets.map((rs) => rs.ruleset_version))].join(",") || "1.0.0";
-  const provFull = Object.fromEntries(db.prepare("SELECT * FROM provisions").all().map((p) => [p.provision_id, p]));
+  const knowledgeFull = Object.fromEntries(db.prepare("SELECT * FROM knowledge").all().map((p) => [p.knowledge_id, p]));
 
   const allRows = db.prepare("SELECT * FROM rules ORDER BY rule_seq").all().filter((r) => rsIds.includes(r.ruleset_id));
   const totalInRuleset = allRows.length;
@@ -450,12 +401,12 @@ app.get("/api/ruleset/load", (req, res) => {
     ? allRows.filter((r) => JSON.parse(r.required_tags || "[]").some((t) => reqTags.includes(t)))
     : allRows;
   // 조항(근거 법령) 원문 뷰 — iTrix 위반 판정용
-  const provisionsOf = (r) =>
-    JSON.parse(r.basis || "[]").map((pid) => provFull[pid]).filter(Boolean)
-      .map((p) => ({ provision_id: p.provision_id, e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, heading: p.heading, text: p.text }));
+  const knowledgeOf = (r) =>
+    JSON.parse(r.basis || "[]").map((pid) => knowledgeFull[pid]).filter(Boolean)
+      .map((p) => ({ knowledge_id: p.knowledge_id, e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, heading: p.heading, text: p.text }));
 
   const rules = rows.map((r) => {
-    const { basisView, judge_payload, principle } = buildJudge(r, provFull);
+    const { basisView, judge_payload, principle } = buildJudge(r, knowledgeFull);
     const judge_chars = judge_payload.length;
     const ruleTags = JSON.parse(r.required_tags || "[]");
     return {
@@ -472,13 +423,12 @@ app.get("/api/ruleset/load", (req, res) => {
       // 매칭 메타 (ST 가 대화↔Rule 매칭에 사용)
       required_tags: ruleTags,
       matched_tags: reqTags.length ? ruleTags.filter((t) => reqTags.includes(t)) : [],
-      speech_act: r.speech_act || null,
       // 판정 메타 (ST → iTrix)
       jury_panel_id: r.jury_panel_id,
       threshold: r.threshold,
       judge_prompt: r.judge_prompt,
       basis: basisView,
-      provisions: provisionsOf(r), // 조항 (근거 법령 원문) — ST 실제 응답 페이로드용
+      knowledge: knowledgeOf(r), // 조항 (근거 법령 원문) — ST 실제 응답 페이로드용
       // iTrix 판정 페이로드 + 크기 검증 (2000자 = 룰 판정정보 + 대화)
       judge_payload,
       judge_chars,
