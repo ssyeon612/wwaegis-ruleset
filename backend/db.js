@@ -174,9 +174,12 @@ function ensureCols(table, defs) {
   for (const [name, ddl] of defs) if (!have.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${ddl}`);
 }
 ensureCols("provisions", [["version", "TEXT"], ["gist", "TEXT"]]);
-ensureCols("rules", [["review_status", "TEXT"], ["review_note", "TEXT"]]);
+ensureCols("rules", [["review_status", "TEXT"], ["review_note", "TEXT"], ["principle", "TEXT"]]);
 db.prepare("UPDATE provisions SET version = '1.0' WHERE version IS NULL").run();
 db.prepare("UPDATE rules SET review_status = 'ok' WHERE review_status IS NULL").run();
+// principle 백필 : 기존 룰의 meta_category → 판매원칙 (룰 분류 1축)
+for (const r of db.prepare("SELECT rule_id, meta_category FROM rules WHERE principle IS NULL").all())
+  db.prepare("UPDATE rules SET principle = ? WHERE rule_id = ?").run(META_TO_PRINCIPLE[r.meta_category] || null, r.rule_id);
 for (const p of db.prepare("SELECT provision_id, text FROM provisions WHERE gist IS NULL OR gist = ''").all())
   db.prepare("UPDATE provisions SET gist = ? WHERE provision_id = ?").run(gistOf(p.text), p.provision_id);
 
