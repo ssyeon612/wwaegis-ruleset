@@ -316,7 +316,6 @@ function ListView({ rules, provisions, taxonomy, openId, setOpenId, onUpdate, on
             {tags.length ? tags.slice(0, 2).map((t) => (<span key={t} style={{ fontFamily: T.mono, fontSize: 10.5, fontWeight: 600, color: T.accent, background: open ? T.surface : T.accentBg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>{t}</span>)) : <span style={{ fontFamily: T.mono, fontSize: 10.5, fontWeight: 600, color: T.faint, background: T.chipBg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>태그없음</span>}
           </span>
           <span style={{ fontSize: 13, fontWeight: open ? 600 : 400, color: T.ink, flex: 1, overflow: open ? "visible" : "hidden", textOverflow: "ellipsis", whiteSpace: open ? "normal" : "nowrap" }}>{r.content}</span>
-          {kw.slice(0, 2).map((k) => (<span key={k} style={{ fontFamily: T.mono, fontSize: 10.5, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "1px 6px", whiteSpace: "nowrap" }}>{k}</span>))}
           {r.review_status === "pending" && <Badge fg="#B45309" bg="#FEF3C7">재검토</Badge>}
           <span style={{ color: T.faint, fontSize: 12, transform: open ? "rotate(90deg)" : "none", transition: "transform .15s" }}>›</span>
         </div>
