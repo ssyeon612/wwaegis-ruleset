@@ -95,6 +95,14 @@ export async function amendProvision(provisionId, body) {
 export async function fetchProvisionHistory(provisionId) {
   return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}/history`).then(json);
 }
+// 근거 조항 직접 수정 (버전업 없이 제목·원문·출처 in-place)
+export async function updateProvision(provisionId, patch) {
+  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  }).then(json);
+}
 // 전체 변경 이력
 export async function fetchChangelog(params = {}) {
   const qs = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");

@@ -85,6 +85,36 @@ app.post("/api/provisions", (req, res) => {
   res.status(201).json(row);
 });
 
+// 근거 조항 직접 수정 — 제목·원문·출처(문서유형/문서명) in-place (버전업 없음)
+const PROV_EDITABLE = ["heading", "text", "document_type", "document_id", "e_id"];
+app.put("/api/provisions/:id", (req, res) => {
+  const existing = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
+  if (!existing) return fail(res, 404, "not_found", "provision not found");
+
+  const b = req.body || {};
+  const patch = {};
+  for (const key of PROV_EDITABLE) {
+    if (key in b) patch[key] = typeof b[key] === "string" ? b[key].trim() : b[key];
+  }
+  if ("text" in patch) {
+    if (!patch.text) return fail(res, 400, "bad_request", "text cannot be empty");
+    patch.gist = gistOf(patch.text);
+  }
+  if ("heading" in patch && !patch.heading) return fail(res, 400, "bad_request", "heading cannot be empty");
+  if (Object.keys(patch).length === 0) return fail(res, 400, "bad_request", "no editable fields provided");
+
+  const setClause = Object.keys(patch).map((k) => `${k} = @${k}`).join(", ");
+  db.prepare(`UPDATE provisions SET ${setClause} WHERE provision_id = @provision_id`).run({ ...patch, provision_id: req.params.id });
+
+  db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
+              VALUES ('provision', @id, 'update', @changes, @actor, @reason, @at)`).run({
+    id: req.params.id, changes: JSON.stringify(patch),
+    actor: b._actor || "admin", reason: b._reason || null, at: new Date().toISOString(),
+  });
+
+  res.json(db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id));
+});
+
 // 근거 조항 삭제 — 이 조항을 근거(basis)로 쓰는 룰이 있으면 차단
 app.delete("/api/provisions/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
@@ -172,14 +202,15 @@ app.post("/api/rules", (req, res) => {
 });
 
 // 룰 수정 + 변경 이력 append (F4)
-const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "speech_act", "jury_panel_id", "threshold", "required_tags"];
+const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "speech_act", "jury_panel_id", "threshold", "required_tags", "basis"];
+const JSON_FIELDS = new Set(["required_tags", "basis"]);
 app.put("/api/rules/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
   if (!existing) return fail(res, 404, "not_found", "rule not found");
 
   const patch = {};
   for (const key of EDITABLE) {
-    if (key in req.body) patch[key] = key === "required_tags" ? JSON.stringify(req.body[key] || []) : req.body[key];
+    if (key in req.body) patch[key] = JSON_FIELDS.has(key) ? JSON.stringify(req.body[key] || []) : req.body[key];
   }
   if (Object.keys(patch).length === 0) return fail(res, 400, "bad_request", "no editable fields provided");
 
