@@ -14,6 +14,25 @@ const gistOf = (text) => {
   return first.length > 90 ? first.slice(0, 90) + "…" : (first || text || "");
 };
 
+// meta_category → 판매원칙(principle) 매핑 : 룰 분류 1축 (프론트 PRINCIPLES 키와 일치)
+export const META_TO_PRINCIPLE = {
+  "적합성원칙": "적합성원칙",
+  "적정성원칙": "적정성원칙",
+  "설명의무": "설명의무",
+  "불공정영업금지": "불공정영업행위 금지",
+  "부당권유금지": "부당권유행위 금지",
+  "광고규제": "광고규제",
+  "녹취": "판매절차(녹취·숙려)",
+  "숙려제도": "판매절차(녹취·숙려)",
+  "청약철회권": "소비자 권리",
+  "위법계약해지권": "소비자 권리",
+  "자료보관": "사후관리",
+  "판매후확인콜": "사후관리",
+  "고령자": "고령투자자 보호",
+  "감점항목": "품질 평가(감점)",
+  "비계량": "품질 평가(감점)",
+};
+
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
 
@@ -62,6 +81,7 @@ db.exec(`
     ruleset_id          TEXT,
     meta_title          TEXT,
     meta_category       TEXT,
+    principle           TEXT,   -- 판매원칙 (6대 원칙 + 절차 카테고리) : 룰 분류 1축
     trigger_state       TEXT,
     condition_type      TEXT,
     keywords            TEXT,   -- JSON array (폴백)
@@ -110,11 +130,11 @@ function seed() {
     VALUES (@product_id, @product_name, @product_categories)`);
   const insR = db.prepare(`INSERT INTO rules
     (rule_id, rule_seq, parent_seq, content, product_type, is_deduct, rule_version, ruleset_id,
-     meta_title, meta_category, trigger_state, condition_type, keywords, required_tags, speech_act,
+     meta_title, meta_category, principle, trigger_state, condition_type, keywords, required_tags, speech_act,
      jury_panel_id, threshold, judge_prompt, verification_method, violation_type, basis, review_status, review_note)
     VALUES
     (@rule_id, @rule_seq, @parent_seq, @content, @product_type, @is_deduct, @rule_version, @ruleset_id,
-     @meta_title, @meta_category, @trigger_state, @condition_type, @keywords, @required_tags, @speech_act,
+     @meta_title, @meta_category, @principle, @trigger_state, @condition_type, @keywords, @required_tags, @speech_act,
      @jury_panel_id, @threshold, @judge_prompt, @verification_method, @violation_type, @basis, @review_status, @review_note)`);
   const insV = db.prepare(`INSERT INTO vocabulary (category, value) VALUES (?, ?)`);
 
@@ -129,6 +149,7 @@ function seed() {
       const reqTags = t.semantic_tag ? [t.semantic_tag] : [];
       insR.run({
         ...r,
+        principle: r.principle || META_TO_PRINCIPLE[r.meta_category] || null,
         keywords: JSON.stringify(r.keywords ?? []),
         required_tags: JSON.stringify(reqTags),
         speech_act: t.speech_act || null,

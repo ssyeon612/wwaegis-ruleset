@@ -898,7 +898,7 @@
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
       "trigger_state": "설명의무 이행 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "녹취대상",
         "녹취 의무",
@@ -923,7 +923,7 @@
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
       "trigger_state": "설명의무 이행 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "녹취파일 제공",
         "녹취 드릴 수 있음"
@@ -947,7 +947,7 @@
       "meta_title": "판매과정 녹취 (녹취의무 대상자)",
       "meta_category": "설명의무",
       "trigger_state": "설명의무 이행 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "녹취 동의",
         "녹취 동의하시겠어요"
@@ -1490,31 +1490,6 @@
       ]
     },
     {
-      "rule_id": "RULE_022_001",
-      "rule_seq": 50,
-      "parent_seq": "22",
-      "content": "만 65세 이상 투자권유 유의상품 관리직 지점 사전 확인",
-      "product_type": "공통",
-      "is_deduct": 0,
-      "rule_version": "1.0.0",
-      "ruleset_id": "RSETisa000000001",
-      "meta_title": "[고령자]관리직지점 사전확인",
-      "meta_category": "고령자",
-      "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
-      "keywords": [
-        "관리직 사전확인",
-        "65세 이상",
-        "유의상품"
-      ],
-      "judge_prompt": "만 65세 이상 고령자에 대해 관리직 지점의 사전확인을 받았는가?",
-      "violation_type": "누락형",
-      "verification_method": "llm_judgment",
-      "basis": [
-        "PRV-투자권유준칙-고령자"
-      ]
-    },
-    {
       "rule_id": "RULE_023_001",
       "rule_seq": 51,
       "parent_seq": "23",
@@ -1526,7 +1501,7 @@
       "meta_title": "[고령자] 조력자와의 안내 동의서",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "초고령자",
+      "condition_type": "초고령(80+)",
       "keywords": [
         "80세 이상",
         "조력자 동의서",
@@ -1551,7 +1526,7 @@
       "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "적합성보고서 기재",
         "ELS 고령자"
@@ -1575,7 +1550,7 @@
       "meta_title": "[고령자 등] 적합성보고서 내용 및 교부",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "적합성보고서 교부",
         "보고서 드림"
@@ -2106,7 +2081,7 @@
       "meta_title": "고령자 유의상품 사전확인",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "사전확인",
         "유의상품",
@@ -2131,7 +2106,7 @@
       "meta_title": "조력자 연락처 확인",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "조력자",
         "비상연락"
@@ -2155,7 +2130,7 @@
       "meta_title": "지정인 알림 서비스 안내",
       "meta_category": "고령자",
       "trigger_state": "고령자 특화 절차 단계",
-      "condition_type": "고령자",
+      "condition_type": "고령(65+)",
       "keywords": [
         "지정인",
         "알림 서비스"

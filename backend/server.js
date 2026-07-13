@@ -202,7 +202,7 @@ app.post("/api/rules", (req, res) => {
 });
 
 // 룰 수정 + 변경 이력 append (F4)
-const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "speech_act", "jury_panel_id", "threshold", "required_tags", "basis"];
+const EDITABLE = ["verification_method", "judge_prompt", "content", "meta_title", "meta_category", "principle", "trigger_state", "product_type", "condition_type", "speech_act", "jury_panel_id", "threshold", "required_tags", "basis"];
 const JSON_FIELDS = new Set(["required_tags", "basis"]);
 app.put("/api/rules/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);

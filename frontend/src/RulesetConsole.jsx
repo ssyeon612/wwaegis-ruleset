@@ -57,6 +57,7 @@ const PRINCIPLE_ART = Object.fromEntries(PRINCIPLES.map((p) => [p.key, p.art]));
 const PRINCIPLE_COLOR = Object.fromEntries(PRINCIPLES.map((p) => [p.key, { fg: p.fg, bg: p.bg }]));
 const principleBadge = (key) => PRINCIPLE_COLOR[key] || { fg: "#5A6577", bg: "#EEF1F5" };
 const principleOf = (r) => {
+  if (r.principle && PRINCIPLE_COLOR[r.principle]) return r.principle;
   const b = (r.basis || []).join(" ");
   const hit = PRINCIPLES.find((p) => p.test && p.test.test(b));
   return hit ? hit.key : "기타";
@@ -153,9 +154,13 @@ const VERDICT_STYLE = {
 //   · 공유 근거 조항은 그룹 헤더에서 1회만 표시(중복 제거)
 //   · 룰 클릭 시 인라인으로 펼쳐 체크 내용·태그·키워드·발화행위 표시
 // ─────────────────────────────────────────────
-function ListView({ rules, provisions, taxonomy, openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
+function ListView({ rules, provisions, taxonomy, products = [], openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
   const T = useT();
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
+  // 상품 셀렉트 옵션 : 공통 + 등록된 products (조건 옵션은 표준 4분류 + 기존 값)
+  const productOptions = [...new Set(["공통", ...products.map((p) => p.product_name)])];
+  const conditionOptions = [...new Set(["모든 고객", "고령(65+)", "초고령(80+)", "부적합·전문투자자", ...rules.map((r) => r.condition_type).filter(Boolean)])];
+  const fieldLabel = { fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase" };
   const provsOf = (r) => (r.basis || []).map((pid) => provisions[pid]).filter(Boolean);
 
   const q = query.trim().toLowerCase();
@@ -198,7 +203,7 @@ function ListView({ rules, provisions, taxonomy, openId, setOpenId, onUpdate, on
   }
 
   // 룰 추가 폼
-  const EMPTY_NEW = { content: "", product_type: "", condition_type: "", meta_title: "", required_tags: [], basis: [] };
+  const EMPTY_NEW = { content: "", product_type: "공통", condition_type: "모든 고객", meta_title: "", required_tags: [], basis: [] };
   const [adding, setAdding] = useState(false);
   const [nf, setNf] = useState(EMPTY_NEW);
   const [creating, setCreating] = useState(false);
@@ -247,7 +252,7 @@ function ListView({ rules, provisions, taxonomy, openId, setOpenId, onUpdate, on
             style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 48, resize: "vertical", lineHeight: 1.5, fontSize: 13 }} />
         </MetaRow>
       )}
-      <MetaRow label="조건">
+      <MetaRow label="고객조건">
         <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.condition_type}</span>
       </MetaRow>
       <MetaRow label="상품">
@@ -334,63 +339,88 @@ function ListView({ rules, provisions, taxonomy, openId, setOpenId, onUpdate, on
         </button>
       </div>
       {adding && (
-        <div style={{ background: T.surface, border: `1px solid ${T.accent}`, borderRadius: 12, padding: 16, marginBottom: 12 }}>
-          <div style={{ fontSize: 14, fontWeight: 700, color: T.ink, marginBottom: 12 }}>새 룰 추가</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 11, color: T.faint }}>룰 내용 (제목) *</span>
+        <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderTop: `3px solid ${T.accent}`, borderRadius: 12, marginBottom: 12, overflow: "hidden", boxShadow: "0 6px 20px -12px rgba(0,0,0,0.25)" }}>
+          {/* 헤더 */}
+          <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "14px 18px", borderBottom: `1px solid ${T.line}`, background: T.subtle }}>
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 18, fontWeight: 700, lineHeight: 1 }}>+</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: T.ink }}>새 룰 추가</div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 18, padding: "18px" }}>
+            {/* 룰 내용 */}
+            <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span style={fieldLabel}>룰 내용 <span style={{ color: T.accent }}>*</span></span>
               <textarea value={nf.content} onChange={(e) => setNfField({ content: e.target.value })}
                 placeholder="예: 원금 손실 가능성을 설명하였는가"
-                style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 48, resize: "vertical", lineHeight: 1.5, fontSize: 13 }} />
+                style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 60, resize: "vertical", lineHeight: 1.55, fontSize: 13.5 }} />
             </label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span style={{ fontSize: 11, color: T.faint }}>상품</span>
-                <input value={nf.product_type} onChange={(e) => setNfField({ product_type: e.target.value })} placeholder="공통" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
-              </label>
-              <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span style={{ fontSize: 11, color: T.faint }}>조건</span>
-                <input value={nf.condition_type} onChange={(e) => setNfField({ condition_type: e.target.value })} placeholder="예: 모든 고객" style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
-              </label>
+
+            {/* 분류: 상품 · 조건 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <span style={fieldLabel}>분류</span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>상품</span>
+                  <select value={nf.product_type || "공통"} onChange={(e) => setNfField({ product_type: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
+                    {productOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </label>
+                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>고객조건</span>
+                  <select value={nf.condition_type || "모든 고객"} onChange={(e) => setNfField({ condition_type: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
+                    {conditionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
+                </label>
+              </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 11, color: T.faint }}>태그</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
+
+            {/* 태그 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              <span style={fieldLabel}>의미 태그</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", padding: 8, border: `1px solid ${T.line}`, borderRadius: 9, background: T.bg, minHeight: 40, boxSizing: "border-box" }}>
+                {nf.required_tags.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>선택된 태그 없음</span>}
                 {nf.required_tags.map((code) => (
                   <span key={code} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.accentBg, color: T.accent, fontSize: 12, fontWeight: 600, padding: "3px 6px 3px 9px", borderRadius: 8 }}>
                     {koOf(code) || code}
                     <button onClick={() => setNfField({ required_tags: nf.required_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                   </span>
                 ))}
-                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.required_tags.includes(v)) setNfField({ required_tags: [...nf.required_tags, v] }); }} style={{ ...inputStyle, maxWidth: 220 }}>
-                  <option value="">+ 태그</option>
+                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.required_tags.includes(v)) setNfField({ required_tags: [...nf.required_tags, v] }); }} style={{ ...inputStyle, maxWidth: 200, marginLeft: "auto" }}>
+                  <option value="">+ 태그 추가</option>
                   {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
                 </select>
               </div>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <span style={{ fontSize: 11, color: T.faint }}>근거 조항</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
+
+            {/* 근거 조항 */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              <span style={fieldLabel}>근거 조항</span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", padding: 8, border: `1px solid ${T.line}`, borderRadius: 9, background: T.bg, minHeight: 40, boxSizing: "border-box" }}>
+                {nf.basis.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>연결된 근거 조항 없음</span>}
                 {nf.basis.map((pid) => (
                   <span key={pid} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.chipBg, color: T.sub, fontSize: 12, fontWeight: 600, padding: "3px 6px 3px 9px", borderRadius: 8 }}>
                     {provisions[pid]?.heading || pid}
                     <button onClick={() => setNfField({ basis: nf.basis.filter((x) => x !== pid) })} style={{ border: "none", background: "none", color: T.sub, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                   </span>
                 ))}
-                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.basis.includes(v)) setNfField({ basis: [...nf.basis, v] }); }} style={{ ...inputStyle, maxWidth: 300 }}>
-                  <option value="">+ 근거 조항</option>
+                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.basis.includes(v)) setNfField({ basis: [...nf.basis, v] }); }} style={{ ...inputStyle, maxWidth: 260, marginLeft: "auto" }}>
+                  <option value="">+ 근거 조항 추가</option>
                   {Object.values(provisions).map((p) => <option key={p.provision_id} value={p.provision_id}>{p.heading} · {p.document_id && p.document_id !== p.document_type ? `${p.document_type}·${p.document_id}` : p.document_type}</option>)}
                 </select>
               </div>
-              <span style={{ fontSize: 11, color: T.faint }}>→ 새 조항은 "근거 조항" 메뉴에서 추가</span>
             </div>
-            {createErr && <div style={{ color: "#DC2626", fontSize: 12 }}>{createErr}</div>}
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => { setAdding(false); resetNew(); }} disabled={creating}
-                style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>취소</button>
-              <button onClick={submitNew} disabled={creating}
-                style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 18px", cursor: creating ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: creating ? 0.6 : 1 }}>{creating ? "추가 중…" : "룰 추가"}</button>
-            </div>
+
+            {createErr && <div style={{ color: "#DC2626", fontSize: 12, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "8px 11px" }}>{createErr}</div>}
+          </div>
+
+          {/* 푸터 */}
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", padding: "13px 18px", borderTop: `1px solid ${T.line}`, background: T.subtle }}>
+            <button onClick={() => { setAdding(false); resetNew(); }} disabled={creating}
+              style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>취소</button>
+            <button onClick={submitNew} disabled={creating}
+              style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 20px", cursor: creating ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: creating ? 0.6 : 1 }}>{creating ? "추가 중…" : "룰 추가"}</button>
           </div>
         </div>
       )}
@@ -1015,7 +1045,6 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
                   <span style={{ width: 9, height: 9, borderRadius: 3, background: gc }} />
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{TAG_GROUPS[prefix] || prefix}</span>
                   <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint }}>{prefix}</span>
-                  <span style={{ marginLeft: "auto", fontSize: 11, color: T.faint }}>태그 {tags.length} · 룰 {gtot}</span>
                 </div>
                 <div style={{ border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden", background: T.surface }}>
                   {tags.map((t, i) => {
@@ -1519,7 +1548,7 @@ function AppShell({ mode, setMode }) {
       content = <LoadView products={products} taxonomy={taxonomy} form={loadForm} setForm={setLoadForm} result={loadResult} setResult={setLoadResult} />;
     } else {
       content = (
-        <ListView rules={rules} provisions={provisions} taxonomy={taxonomy}
+        <ListView rules={rules} provisions={provisions} taxonomy={taxonomy} products={products}
           openId={selectedRuleId} setOpenId={setSelectedRuleId}
           onUpdate={updateRuleLocal} onPersist={persistRule} onCreate={createRuleLocal} onDelete={deleteRuleLocal}
           query={listQuery} setQuery={setListQuery} />
