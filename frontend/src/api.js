@@ -23,6 +23,44 @@ export async function fetchBundle() {
   return { provisions: provisionMap, rules, vocabulary, taxonomy, products };
 }
 
+// 룰 추가 (신규 생성)
+export async function createRule(payload) {
+  return fetch(`${BASE}/rules`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).then(json);
+}
+
+// 근거 조항 추가 (신규 생성)
+export async function createProvision(payload) {
+  return fetch(`${BASE}/provisions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  }).then(json);
+}
+
+// 근거 조항 삭제
+export async function deleteProvision(provisionId) {
+  return fetch(`${BASE}/provisions/${encodeURIComponent(provisionId)}`, { method: "DELETE" }).then(json);
+}
+
+// ── 의미태그(semantic_tags) 추가/수정/삭제 ──
+export async function createTag(payload) {
+  return fetch(`${BASE}/taxonomy/tags`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  }).then(json);
+}
+export async function updateTag(code, label) {
+  return fetch(`${BASE}/taxonomy/tags/${encodeURIComponent(code)}`, {
+    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label }),
+  }).then(json);
+}
+export async function deleteTag(code) {
+  return fetch(`${BASE}/taxonomy/tags/${encodeURIComponent(code)}`, { method: "DELETE" }).then(json);
+}
+
 // 룰 편집 영속화 (변경 이력 append)
 export async function updateRule(ruleId, patch) {
   return fetch(`${BASE}/rules/${encodeURIComponent(ruleId)}`, {
@@ -30,6 +68,11 @@ export async function updateRule(ruleId, patch) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   }).then(json);
+}
+
+// 룰 삭제
+export async function deleteRule(ruleId) {
+  return fetch(`${BASE}/rules/${encodeURIComponent(ruleId)}`, { method: "DELETE" }).then(json);
 }
 
 // ── ST 인터페이스 (RS-2 loadRuleSet) ─────────────────────

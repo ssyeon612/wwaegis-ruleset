@@ -7,7 +7,9 @@ import db from "./db.js";
 import { buildGraph, toTurtle, toJsonLd, toCypher } from "./ontology.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TAXONOMY = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "taxonomy.json"), "utf8"));
+const TAX_PATH = path.join(__dirname, "data", "taxonomy.json");
+const TAXONOMY = JSON.parse(fs.readFileSync(TAX_PATH, "utf8"));
+const saveTaxonomy = () => fs.writeFileSync(TAX_PATH, JSON.stringify(TAXONOMY, null, 2) + "\n", "utf8");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -46,6 +48,61 @@ app.get("/api/provisions", (_req, res) => {
   res.json(db.prepare("SELECT * FROM provisions ORDER BY provision_id").all());
 });
 
+// 근거 조항 추가 (신규 생성) — provision_id 자동 부여 + 변경 이력 append
+app.post("/api/provisions", (req, res) => {
+  const b = req.body || {};
+  const heading = (b.heading || "").trim();
+  const text = (b.text || "").trim();
+  if (!heading || !text) return fail(res, 400, "bad_request", "heading and text are required");
+
+  const { c } = db.prepare("SELECT COUNT(*) AS c FROM provisions").get();
+  let provision_id = (b.provision_id || `PRV-USER-${String(c + 1).padStart(3, "0")}`).trim();
+  while (db.prepare("SELECT 1 FROM provisions WHERE provision_id = ?").get(provision_id)) provision_id += "_x";
+
+  const row = {
+    provision_id,
+    document_id: b.document_id || b.document_type || "내규",
+    document_type: b.document_type || "내규",
+    e_id: b.e_id || null,
+    heading, text,
+    effective_from: b.effective_from || null,
+    effective_to: null,
+    source_system: b.source_system || "관리자 입력",
+    source_page: null,
+    version: "1.0",
+    gist: gistOf(text),
+  };
+  db.prepare(`INSERT INTO provisions
+    (provision_id, document_id, document_type, e_id, heading, text, effective_from, effective_to, source_system, source_page, version, gist)
+    VALUES (@provision_id, @document_id, @document_type, @e_id, @heading, @text, @effective_from, @effective_to, @source_system, @source_page, @version, @gist)`).run(row);
+
+  db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
+              VALUES ('provision', @id, 'create', @changes, @actor, @reason, @at)`).run({
+    id: provision_id, changes: JSON.stringify({ heading, document_type: row.document_type }),
+    actor: b._actor || "admin", reason: b._reason || null, at: new Date().toISOString(),
+  });
+
+  res.status(201).json(row);
+});
+
+// 근거 조항 삭제 — 이 조항을 근거(basis)로 쓰는 룰이 있으면 차단
+app.delete("/api/provisions/:id", (req, res) => {
+  const existing = db.prepare("SELECT * FROM provisions WHERE provision_id = ?").get(req.params.id);
+  if (!existing) return fail(res, 404, "not_found", "provision not found");
+
+  const refs = db.prepare("SELECT basis FROM rules").all()
+    .filter((r) => { try { return JSON.parse(r.basis || "[]").includes(req.params.id); } catch { return false; } });
+  if (refs.length) return fail(res, 409, "conflict", `이 조항을 근거로 사용하는 룰이 ${refs.length}건 있어 삭제할 수 없습니다`);
+
+  db.prepare("DELETE FROM provisions WHERE provision_id = ?").run(req.params.id);
+  db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
+              VALUES ('provision', @id, 'delete', @changes, @actor, @reason, @at)`).run({
+    id: req.params.id, changes: JSON.stringify({ heading: existing.heading }),
+    actor: req.body?._actor || "admin", reason: req.body?._reason || null, at: new Date().toISOString(),
+  });
+  res.json(ok({ deleted: req.params.id }));
+});
+
 app.get("/api/rules", (_req, res) => {
   res.json(db.prepare("SELECT * FROM rules ORDER BY rule_seq").all().map(parseRule));
 });
@@ -54,6 +111,64 @@ app.get("/api/rules/:id", (req, res) => {
   const row = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
   if (!row) return fail(res, 404, "not_found", "rule not found");
   res.json(parseRule(row));
+});
+
+// 룰 추가 (신규 생성) — rule_id / rule_seq 자동 부여 + 변경 이력 append
+app.post("/api/rules", (req, res) => {
+  const b = req.body || {};
+  const content = (b.content || "").trim();
+  if (!content) return fail(res, 400, "bad_request", "content is required");
+
+  const { m } = db.prepare("SELECT COALESCE(MAX(rule_seq), 0) AS m FROM rules").get();
+  const rule_seq = m + 1;
+  let rule_id = (b.rule_id || `RULE_ADD_${String(rule_seq).padStart(3, "0")}`).trim();
+  while (db.prepare("SELECT 1 FROM rules WHERE rule_id = ?").get(rule_id)) rule_id += "_x";
+
+  const arr = (v) => JSON.stringify(Array.isArray(v) ? v : []);
+  const row = {
+    rule_id, rule_seq,
+    parent_seq: b.parent_seq ?? null,
+    content,
+    product_type: b.product_type || "공통",
+    is_deduct: b.is_deduct ? 1 : 0,
+    rule_version: "1.0.0",
+    ruleset_id: b.ruleset_id || null,
+    meta_title: b.meta_title || content,
+    meta_category: b.meta_category || null,
+    trigger_state: b.trigger_state || null,
+    condition_type: b.condition_type || null,
+    keywords: arr(b.keywords),
+    required_tags: arr(b.required_tags),
+    speech_act: b.speech_act || null,
+    jury_panel_id: b.jury_panel_id || "JURY_STD_5",
+    threshold: b.threshold ?? 3,
+    judge_prompt: b.judge_prompt || content,
+    verification_method: b.verification_method || "llm_judgment",
+    violation_type: b.violation_type || null,
+    basis: arr(b.basis),
+    review_status: "ok",
+    review_note: null,
+  };
+
+  db.prepare(`INSERT INTO rules
+    (rule_id, rule_seq, parent_seq, content, product_type, is_deduct, rule_version, ruleset_id,
+     meta_title, meta_category, trigger_state, condition_type, keywords, required_tags, speech_act,
+     jury_panel_id, threshold, judge_prompt, verification_method, violation_type, basis, review_status, review_note)
+    VALUES
+    (@rule_id, @rule_seq, @parent_seq, @content, @product_type, @is_deduct, @rule_version, @ruleset_id,
+     @meta_title, @meta_category, @trigger_state, @condition_type, @keywords, @required_tags, @speech_act,
+     @jury_panel_id, @threshold, @judge_prompt, @verification_method, @violation_type, @basis, @review_status, @review_note)`).run(row);
+
+  db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
+              VALUES ('rule', @id, 'create', @changes, @actor, @reason, @at)`).run({
+    id: rule_id,
+    changes: JSON.stringify({ content, required_tags: b.required_tags || [], basis: b.basis || [] }),
+    actor: b._actor || "admin",
+    reason: b._reason || null,
+    at: new Date().toISOString(),
+  });
+
+  res.status(201).json(parseRule(db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(rule_id)));
 });
 
 // 룰 수정 + 변경 이력 append (F4)
@@ -83,6 +198,24 @@ app.put("/api/rules/:id", (req, res) => {
   res.json(parseRule(db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id)));
 });
 
+// 룰 삭제 + 변경 이력 append
+app.delete("/api/rules/:id", (req, res) => {
+  const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
+  if (!existing) return fail(res, 404, "not_found", "rule not found");
+
+  db.prepare("DELETE FROM rules WHERE rule_id = ?").run(req.params.id);
+  db.prepare(`INSERT INTO change_log (entity_type, entity_id, action, changes, actor, reason, at)
+              VALUES ('rule', @id, 'delete', @changes, @actor, @reason, @at)`).run({
+    id: req.params.id,
+    changes: JSON.stringify({ content: existing.content }),
+    actor: req.body?._actor || "admin",
+    reason: req.body?._reason || null,
+    at: new Date().toISOString(),
+  });
+
+  res.json(ok({ deleted: req.params.id }));
+});
+
 // 룰 변경 이력 조회 (F4-4)
 app.get("/api/rules/:id/history", (req, res) => {
   res.json(db.prepare("SELECT * FROM change_log WHERE entity_type='rule' AND entity_id=? ORDER BY log_id DESC").all(req.params.id));
@@ -96,6 +229,42 @@ app.get("/api/vocabulary", (_req, res) => {
 });
 
 app.get("/api/taxonomy", (_req, res) => res.json(TAXONOMY));
+
+// ── 의미태그(semantic_tags) 추가/수정/삭제 — taxonomy.json 영속화 ──
+const tagUsage = (code) => db.prepare("SELECT required_tags FROM rules").all()
+  .filter((r) => { try { return JSON.parse(r.required_tags || "[]").includes(code); } catch { return false; } }).length;
+
+app.post("/api/taxonomy/tags", (req, res) => {
+  const code = (req.body?.code || "").trim();
+  const label = (req.body?.label || "").trim();
+  if (!code || !label) return fail(res, 400, "bad_request", "code and label are required");
+  if (!/^[A-Za-z0-9_]+$/.test(code)) return fail(res, 400, "bad_request", "코드는 영문/숫자/_ 만 사용할 수 있습니다");
+  TAXONOMY.semantic_tags = TAXONOMY.semantic_tags || {};
+  if (TAXONOMY.semantic_tags[code]) return fail(res, 409, "conflict", "이미 존재하는 태그 코드입니다");
+  TAXONOMY.semantic_tags[code] = label;
+  saveTaxonomy();
+  res.status(201).json(ok({ code, label }));
+});
+
+app.put("/api/taxonomy/tags/:code", (req, res) => {
+  const code = req.params.code;
+  const label = (req.body?.label || "").trim();
+  if (!TAXONOMY.semantic_tags?.[code]) return fail(res, 404, "not_found", "tag not found");
+  if (!label) return fail(res, 400, "bad_request", "label is required");
+  TAXONOMY.semantic_tags[code] = label;
+  saveTaxonomy();
+  res.json(ok({ code, label }));
+});
+
+app.delete("/api/taxonomy/tags/:code", (req, res) => {
+  const code = req.params.code;
+  if (!TAXONOMY.semantic_tags?.[code]) return fail(res, 404, "not_found", "tag not found");
+  const used = tagUsage(code);
+  if (used) return fail(res, 409, "conflict", `이 태그를 사용하는 룰이 ${used}건 있어 삭제할 수 없습니다`);
+  delete TAXONOMY.semantic_tags[code];
+  saveTaxonomy();
+  res.json(ok({ deleted: code }));
+});
 
 app.get("/api/products", (_req, res) => {
   res.json(db.prepare("SELECT * FROM products ORDER BY product_id").all().map(parseProduct));
