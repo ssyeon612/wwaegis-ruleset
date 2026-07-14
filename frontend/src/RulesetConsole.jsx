@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, clearRuleReview, fetchChangelog } from "./api";
+import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, importRules } from "./api";
 
-// 데이터는 백엔드 API 에서 로드한다. (knowledge / rules / vocabulary)
+// 데이터는 백엔드 API 에서 로드한다. (knowledge / rules / taxonomy / products / rulesets)
 
 // ─────────────────────────────────────────────
 // 테마 (라이트 / 다크) — Context 로 전역 공급
@@ -22,12 +22,6 @@ const makeTheme = (mode) => (mode === "dark" ? DARK : LIGHT);
 const ThemeCtx = React.createContext(LIGHT);
 const useT = () => React.useContext(ThemeCtx);
 
-// 배지 팔레트(자체 배경/글자색 보유 → 라이트·다크 공통)
-const METHOD = {
-  llm_judgment:  { label: "AI 판정",    fg: "#6D28D9", bg: "#EDE9FE" },
-  deterministic: { label: "시스템 판정", fg: "#047857", bg: "#D1FAE5" },
-  human_review:  { label: "사람 검토",   fg: "#B45309", bg: "#FEF3C7" },
-};
 const VIOLATION = {
   "누락형":   { fg: "#1D4ED8", bg: "#DBEAFE" },
   "감점형":   { fg: "#B91C1C", bg: "#FEE2E2" },
@@ -57,8 +51,8 @@ const PRINCIPLE_ART = Object.fromEntries(PRINCIPLES.map((p) => [p.key, p.art]));
 const PRINCIPLE_COLOR = Object.fromEntries(PRINCIPLES.map((p) => [p.key, { fg: p.fg, bg: p.bg }]));
 const principleBadge = (key) => PRINCIPLE_COLOR[key] || { fg: "#5A6577", bg: "#EEF1F5" };
 const principleOf = (r) => {
-  if (r.principle && PRINCIPLE_COLOR[r.principle]) return r.principle;
-  const b = (r.basis || []).join(" ");
+  if (r.sales_principle && PRINCIPLE_COLOR[r.sales_principle]) return r.sales_principle;
+  const b = (r.knowledge_ids || []).join(" ");
   const hit = PRINCIPLES.find((p) => p.test && p.test.test(b));
   return hit ? hit.key : "기타";
 };
@@ -115,19 +109,14 @@ const SCENARIOS = [
   { label: "빈 발화", hint: "발화 없음 → 판정 경계 확인", text: "" },
 ];
 
-// verification_method + violation_type 조합에 따라 판정을 다르게 낸다.
+// violation_type + 키워드 매칭으로 판정을 낸다.
 function simulate(rule, transcript) {
   const text = transcript || "";
   const keywords = rule.keywords || [];
   const hits = keywords.filter((k) => k && text.includes(k));
 
-  if (rule.verification_method === "human_review") {
+  if (rule.violation_type === "비계량형") {
     return { verdict: "사람 검토", detail: "비계량(정성) 항목이라 자동 판정 대상이 아닙니다. 검토자 큐로 이관합니다.", score: null };
-  }
-  if (rule.verification_method === "deterministic") {
-    return hits.length
-      ? { verdict: "시스템 확인", detail: `판매시스템 기록 대조 → 관련 처리 이력 확인 (근거: ${hits.join(", ")})`, score: 100 }
-      : { verdict: "기록 미확인", detail: "판매시스템에서 해당 처리 이력을 찾지 못했습니다. (실서비스에서는 로그 조회로 대체)", score: 0 };
   }
   if (rule.violation_type === "감점형") {
     return hits.length
@@ -150,28 +139,207 @@ const VERDICT_STYLE = {
 };
 
 // ─────────────────────────────────────────────
+// 마크다운/텍스트 → 룰 후보 파싱 (파일 업로드 임포트)
+//   · 헤딩(#~######) 또는 최상위 불릿(-,*,1.) = 룰 내용(content)
+//   · 그 아래 "- 키: 값" = 필드 (원칙·단계·판정·태그·근거 등)
+// ─────────────────────────────────────────────
+const IMPORT_FIELD_MAP = {
+  "원칙": "sales_principle", sales_principle: "sales_principle",
+  "단계": "sales_stage", sales_stage: "sales_stage",
+  "고객조건": "customer_condition", "조건": "customer_condition", customer_condition: "customer_condition",
+  "판정": "violation_type", "판정성격": "violation_type", violation_type: "violation_type",
+  "태그": "semantic_tags", semantic_tags: "semantic_tags", tags: "semantic_tags",
+  "근거": "knowledge_ids", knowledge_ids: "knowledge_ids",
+  "키워드": "keywords", keywords: "keywords",
+};
+const IMPORT_ARRAY_FIELDS = new Set(["semantic_tags", "knowledge_ids", "keywords"]);
+function parseRulesMarkdown(text) {
+  const lines = (text || "").split(/\r?\n/);
+  const rules = [];
+  let cur = null;
+  const push = () => { if (cur && cur.statement) rules.push(cur); cur = null; };
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    if (!line.trim()) continue;
+    const h = line.match(/^\s{0,3}#{1,6}\s+(.+?)\s*#*\s*$/);
+    if (h) { push(); cur = { statement: h[1].trim() }; continue; }
+    // "키: 값" (앞에 -,* 허용) — 인식된 키면 현재 룰의 필드
+    const f = line.match(/^\s*[-*+]?\s*([^:：]+?)\s*[:：]\s*(.+?)\s*$/);
+    if (f && cur) {
+      const key = IMPORT_FIELD_MAP[f[1].trim()] || IMPORT_FIELD_MAP[f[1].trim().toLowerCase()];
+      if (key) {
+        let val = f[2].trim();
+        if (IMPORT_ARRAY_FIELDS.has(key)) val = val.split(/[,;·/]+|\s{2,}/).map((s) => s.trim()).filter(Boolean);
+        cur[key] = val;
+        continue;
+      }
+    }
+    // 불릿/번호 항목 = 새 룰 (체크리스트 모드)
+    const b = line.match(/^\s{0,3}(?:[-*+]|\d+[.)])\s+(.+)$/);
+    if (b) { push(); cur = { statement: b[1].trim() }; continue; }
+    // 그 외 일반 문장 — 현재 룰 없으면 새 룰
+    if (!cur) cur = { statement: line.trim() };
+  }
+  push();
+  return rules;
+}
+
+// 파일 업로드 → 파싱 → 룰셋 배정 → 일괄 반영 (오른쪽 슬라이드 드로어)
+function ImportRulesDrawer({ open, onClose, rulesets, categories = [], catLabel = {}, onImport }) {
+  const T = useT();
+  const [fileName, setFileName] = useState("");
+  const [parsed, setParsed] = useState([]);
+  const [err, setErr] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [rsMode, setRsMode] = useState("existing"); // existing | new
+  const [rsId, setRsId] = useState("");
+  const [rsCat, setRsCat] = useState("");
+  const inputStyle = { width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink };
+
+  const reset = () => { setFileName(""); setParsed([]); setErr(null); setRsMode("existing"); setRsId(""); setRsCat(""); };
+  const close = () => { if (!busy) { reset(); onClose(); } };
+
+  async function onFile(e) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setErr(null); setFileName(file.name);
+    if (/\.pdf$/i.test(file.name)) { setParsed([]); setErr("PDF는 아직 지원하지 않습니다. 마크다운(.md)·텍스트(.txt)를 올려주세요. (PDF/산문은 이후 AI 연동 단계에서 지원)"); return; }
+    try {
+      const text = await file.text();
+      const rules = parseRulesMarkdown(text);
+      if (!rules.length) setErr("파싱된 룰이 없습니다. 헤딩(##) 또는 불릿(-) 형식인지 확인하세요.");
+      setParsed(rules);
+    } catch (e2) { setErr("파일을 읽지 못했습니다: " + (e2?.message || e2)); setParsed([]); }
+  }
+
+  async function submit() {
+    if (!parsed.length) { setErr("반영할 룰이 없습니다."); return; }
+    if (rsMode === "existing" && !rsId) { setErr("배정할 룰셋을 선택하세요."); return; }
+    if (rsMode === "new" && !rsCat.trim()) { setErr("새 룰셋의 카테고리를 선택하세요."); return; }
+    setBusy(true); setErr(null);
+    try {
+      const payload = rsMode === "new"
+        ? { rules: parsed, new_ruleset: { ruleset_category: rsCat.trim() } }
+        : { rules: parsed, ruleset_id: rsId };
+      const res = await onImport(payload);
+      reset(); onClose();
+      alert(`${res.created}건 반영 완료${res.skipped ? ` (건너뜀 ${res.skipped})` : ""}`);
+    } catch (e3) { setErr(e3?.message || "반영 실패"); }
+    finally { setBusy(false); }
+  }
+
+  const fieldChips = (r) => Object.keys(r).filter((k) => k !== "statement");
+
+  return (
+    <>
+      <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none", transition: "opacity .25s ease", zIndex: 62 }} />
+      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: "min(560px, 96vw)", background: T.surface, boxShadow: "-10px 0 40px -14px rgba(0,0,0,0.4)", transform: open ? "translateX(0)" : "translateX(100%)", transition: "transform .3s cubic-bezier(.4,0,.2,1)", zIndex: 63, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 20px", borderBottom: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 16, fontWeight: 700, lineHeight: 1 }}>⇪</span>
+          <div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>파일로 룰 추가</div>
+            <div style={{ fontSize: 11.5, color: T.faint, marginTop: 1 }}>마크다운·텍스트를 읽어 룰로 변환합니다</div>
+          </div>
+          <button onClick={close} disabled={busy} title="닫기" style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "2px 4px" }}>×</button>
+        </div>
+
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, padding: "18px 20px" }}>
+          {/* 파일 선택 */}
+          <div>
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, border: `1px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 9, padding: "12px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+              <input type="file" accept=".md,.markdown,.txt,.pdf,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
+              📄 파일 선택 (.md · .txt)
+            </label>
+            {fileName && <span style={{ marginLeft: 10, fontSize: 12, color: T.sub }}>{fileName} · <b style={{ color: T.accent }}>{parsed.length}건</b> 파싱</span>}
+            <details style={{ marginTop: 10, fontSize: 11.5, color: T.faint }}>
+              <summary style={{ cursor: "pointer", color: T.sub }}>입력 형식 도움말</summary>
+              <pre style={{ margin: "6px 0 0", background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "10px 12px", fontSize: 11, lineHeight: 1.5, fontFamily: T.mono, color: T.ink, whiteSpace: "pre-wrap" }}>{`## 원금손실 가능성 설명
+- 원칙: 설명의무
+- 단계: 설명의무 이행 단계
+- 판정: 누락형
+- 태그: RSK_LOSS, RSK_NODEP
+- 근거: KNW-금소법-art_19__para_1
+
+(또는 단순 체크리스트)
+- 예금자보호 비대상 상품임을 설명`}</pre>
+            </details>
+          </div>
+
+          {/* 미리보기 */}
+          {parsed.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4 }}>미리보기 · {parsed.length}건</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "30vh", overflowY: "auto", border: `1px solid ${T.line}`, borderRadius: 9, padding: 8, background: T.bg }}>
+                {parsed.map((r, i) => (
+                  <div key={i} style={{ borderLeft: `3px solid ${T.accent}`, background: T.surface, borderRadius: "0 7px 7px 0", padding: "7px 10px" }}>
+                    <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>{r.statement}</div>
+                    {fieldChips(r).length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                        {fieldChips(r).map((k) => <span key={k} style={{ fontSize: 10, color: T.sub, background: T.chipBg, borderRadius: 5, padding: "1px 6px" }}>{k}</span>)}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 룰셋 배정 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4 }}>룰셋 배정</span>
+            <div style={{ display: "flex", gap: 14 }}>
+              {["existing", "new"].map((m) => (
+                <label key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: T.ink, cursor: "pointer" }}>
+                  <input type="radio" checked={rsMode === m} onChange={() => setRsMode(m)} /> {m === "existing" ? "기존 룰셋" : "새 룰셋 생성"}
+                </label>
+              ))}
+            </div>
+            {rsMode === "existing" ? (
+              <select value={rsId} onChange={(e) => setRsId(e.target.value)} style={inputStyle}>
+                <option value="">— 룰셋 선택 —</option>
+                {(rulesets || []).map((rs) => <option key={rs.ruleset_id} value={rs.ruleset_id}>{catLabel[rs.ruleset_category] || rs.ruleset_category} 룰셋 · {rs.ruleset_id}</option>)}
+              </select>
+            ) : (
+              <select value={rsCat} onChange={(e) => setRsCat(e.target.value)} style={inputStyle}>
+                <option value="">— 카테고리 선택 —</option>
+                {(categories || []).map((c) => <option key={c.category} value={c.category}>{c.label}</option>)}
+              </select>
+            )}
+            {rsMode === "new" && <span style={{ fontSize: 11, color: T.faint }}>룰셋 이름은 선택한 카테고리 이름으로 자동 지정됩니다. 카테고리는 상품의 product_category와 매칭되어, 해당 카테고리를 가진 상품에 이 룰셋이 적용됩니다.</span>}
+          </div>
+
+          {err && <div style={{ color: "#DC2626", fontSize: 12, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "8px 11px", lineHeight: 1.5 }}>{err}</div>}
+        </div>
+
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", padding: "13px 20px", borderTop: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
+          <button onClick={close} disabled={busy} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>취소</button>
+          <button onClick={submit} disabled={busy || !parsed.length} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 20px", cursor: busy || !parsed.length ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: busy || !parsed.length ? 0.55 : 1 }}>{busy ? "반영 중…" : `${parsed.length}건 반영`}</button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
 // 룰북 — 키워드 검색 + 6대 원칙 그룹 + 인라인 상세 (한 페이지)
 //   · 공유 근거 조항은 그룹 헤더에서 1회만 표시(중복 제거)
 //   · 룰 클릭 시 인라인으로 펼쳐 체크 내용·태그·키워드 표시
 // ─────────────────────────────────────────────
-function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
+function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], categories = [], catLabel = {}, onImport, openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
   const T = useT();
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
-  // 상품 셀렉트 옵션 : 공통 + 등록된 products (조건 옵션은 표준 4분류 + 기존 값)
-  const productOptions = [...new Set(["공통", ...products.map((p) => p.product_name)])];
-  const conditionOptions = [...new Set(["모든 고객", "고령자(65+)", "초고령자(80+)", ...rules.map((r) => r.condition_type).filter(Boolean)])];
-  // 금소법 분류 (증권 완전판매 기본: 투자성상품 · 일반금융소비자)
-  const productClassOptions = ["예금성상품", "대출성상품", "투자성상품", "보장성상품"];
-  const consumerOptions = ["일반금융소비자", "전문금융소비자"];
+  // 고객조건 셀렉트 옵션 (표준 3분류 + 기존 값)
+  const conditionOptions = [...new Set(["모든 고객", "고령자(65+)", "초고령자(80+)", ...rules.map((r) => r.customer_condition).filter(Boolean)])];
   const fieldLabel = { fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase" };
-  const knowledgeOf = (r) => (r.basis || []).map((pid) => knowledge[pid]).filter(Boolean);
+  const knowledgeOf = (r) => (r.knowledge_ids || []).map((pid) => knowledge[pid]).filter(Boolean);
 
   const q = query.trim().toLowerCase();
   const matchInfo = (r) => {
     if (!q) return { hit: true, kw: [] };
     const kw = (r.keywords || []).filter((k) => k.toLowerCase().includes(q));
-    const tagHit = (r.required_tags || []).some((t) => t.toLowerCase().includes(q));
-    const textHit = r.content.toLowerCase().includes(q) || r.meta_title.toLowerCase().includes(q);
+    const tagHit = (r.semantic_tags || []).some((t) => t.toLowerCase().includes(q));
+    const textHit = r.statement.toLowerCase().includes(q);
     return { hit: kw.length || tagHit || textHit, kw };
   };
   const results = rules.map((r) => ({ r, ...matchInfo(r) })).filter((x) => x.hit)
@@ -186,7 +354,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
   // 그룹의 공유 근거 조항 (중복 제거)
   const groupKnowledge = (list) => {
     const m = {};
-    list.forEach((r) => (r.basis || []).forEach((pid) => { if (knowledge[pid]) m[pid] = knowledge[pid]; }));
+    list.forEach((r) => (r.knowledge_ids || []).forEach((pid) => { if (knowledge[pid]) m[pid] = knowledge[pid]; }));
     return Object.values(m);
   };
 
@@ -206,18 +374,19 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
   }
 
   // 룰 추가 폼
-  const EMPTY_NEW = { content: "", product_class: "투자성상품", consumer_type: "일반금융소비자", product_type: "공통", condition_type: "모든 고객", meta_title: "", required_tags: [], basis: [] };
+  const EMPTY_NEW = { statement: "", customer_condition: "모든 고객", semantic_tags: [], knowledge_ids: [] };
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [nf, setNf] = useState(EMPTY_NEW);
   const [creating, setCreating] = useState(false);
   const [createErr, setCreateErr] = useState(null);
   const setNfField = (patch) => setNf((f) => ({ ...f, ...patch }));
   const resetNew = () => { setNf(EMPTY_NEW); setCreateErr(null); };
   async function submitNew() {
-    if (!nf.content.trim()) { setCreateErr("제목(룰 내용)을 입력하세요"); return; }
+    if (!nf.statement.trim()) { setCreateErr("제목(룰 내용)을 입력하세요"); return; }
     setCreating(true); setCreateErr(null);
     try {
-      const saved = await onCreate({ ...nf, content: nf.content.trim() });
+      const saved = await onCreate({ ...nf, statement: nf.statement.trim() });
       setAdding(false); resetNew();
       setQuery(""); setStage("all"); setOpenId(saved.rule_id);
     } catch (e) { setCreateErr(e?.message || "추가 실패"); }
@@ -232,10 +401,10 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
   const KnowledgeCard = ({ p }) => (
     <div style={{ borderLeft: `3px solid ${DOCTYPE_COLOR[p.document_type] || T.line}`, padding: "7px 11px", background: T.surface, borderRadius: "0 7px 7px 0", border: `1px solid ${T.line}`, borderLeftWidth: 3 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 2 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.heading}</span>
-        <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_id && p.document_id !== p.document_type ? `${p.document_type} · ${p.document_id}` : p.document_type}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.title}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_type}</span>
       </div>
-      <p style={{ fontSize: 12.5, lineHeight: 1.65, margin: 0, color: T.sub }}>{p.text}</p>
+      <p style={{ fontSize: 12.5, lineHeight: 1.65, margin: 0, color: T.sub }}>{p.content}</p>
     </div>
   );
   const MetaRow = ({ label, children }) => (
@@ -250,38 +419,25 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
     <div style={{ padding: "10px 14px 14px", background: T.bg }}>
       {edit && (
         <MetaRow label="제목">
-          <textarea defaultValue={r.content}
-            onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== r.content) commit({ ...r, content: v }); }}
+          <textarea defaultValue={r.statement}
+            onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== r.statement) commit({ ...r, statement: v }); }}
             style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 48, resize: "vertical", lineHeight: 1.5, fontSize: 13 }} />
         </MetaRow>
       )}
-      {r.product_class && (
-        <MetaRow label="금융상품">
-          <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.product_class}</span>
-        </MetaRow>
-      )}
-      {r.consumer_type && (
-        <MetaRow label="금융소비자">
-          <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.consumer_type}</span>
-        </MetaRow>
-      )}
       <MetaRow label="고객조건">
-        <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.condition_type}</span>
-      </MetaRow>
-      <MetaRow label="상품">
-        <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.product_type}</span>
+        <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.customer_condition}</span>
       </MetaRow>
       <MetaRow label="태그">
         <div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
-          {(r.required_tags || []).map((code) => (
+          {(r.semantic_tags || []).map((code) => (
             <span key={code} title={code} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.accentBg, color: T.accent, fontSize: 12, fontWeight: 600, padding: edit ? "3px 6px 3px 9px" : "3px 9px", borderRadius: 8 }}>
               {koOf(code) || code}
-              {edit && <button onClick={() => commit({ ...r, required_tags: r.required_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>}
+              {edit && <button onClick={() => commit({ ...r, semantic_tags: r.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>}
             </span>
           ))}
-          {(r.required_tags || []).length === 0 && !edit && <span style={{ fontSize: 12, color: T.faint }}>태그없음</span>}
+          {(r.semantic_tags || []).length === 0 && !edit && <span style={{ fontSize: 12, color: T.faint }}>태그없음</span>}
           {edit && (
-            <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.required_tags || []; if (cur.includes(v)) return; commit({ ...r, required_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 220 }}>
+            <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.semantic_tags || []; if (cur.includes(v)) return; commit({ ...r, semantic_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 220 }}>
               <option value="">+ 태그</option>
               {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
             </select>
@@ -295,10 +451,6 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
         </div>
       )}
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-        {r.review_status === "pending" && (
-          <button onClick={async () => { try { const saved = await clearRuleReview(r.rule_id); onUpdate(saved); } catch {} }}
-            style={{ border: "none", background: "#B45309", color: "#fff", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>재검토 완료</button>
-        )}
         {confirmDel ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
             <span style={{ color: "#DC2626", fontSize: 12, fontWeight: 600 }}>이 룰을 삭제할까요?</span>
@@ -324,7 +476,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
 
   const RuleItem = ({ r, kw = [], showKnowledge }) => {
     const open = openId === r.rule_id;
-    const tags = r.required_tags || [];
+    const tags = r.semantic_tags || [];
     return (
       <div>
         <div onClick={() => toggleOpen(r.rule_id)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer", background: open ? T.accentBg : "transparent" }}
@@ -333,8 +485,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
           <span style={{ display: "inline-flex", gap: 4, minWidth: 116, flexShrink: 0 }}>
             {tags.length ? tags.slice(0, 2).map((t) => (<span key={t} style={{ fontFamily: T.mono, fontSize: 10.5, fontWeight: 600, color: T.accent, background: open ? T.surface : T.accentBg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>{t}</span>)) : <span style={{ fontFamily: T.mono, fontSize: 10.5, fontWeight: 600, color: T.faint, background: T.chipBg, borderRadius: 6, padding: "2px 7px", whiteSpace: "nowrap" }}>태그없음</span>}
           </span>
-          <span style={{ fontSize: 13, fontWeight: open ? 600 : 400, color: T.ink, flex: 1, overflow: open ? "visible" : "hidden", textOverflow: "ellipsis", whiteSpace: open ? "normal" : "nowrap" }}>{r.content}</span>
-          {r.review_status === "pending" && <Badge fg="#B45309" bg="#FEF3C7">재검토</Badge>}
+          <span style={{ fontSize: 13, fontWeight: open ? 600 : 400, color: T.ink, flex: 1, overflow: open ? "visible" : "hidden", textOverflow: "ellipsis", whiteSpace: open ? "normal" : "nowrap" }}>{r.statement}</span>
           <span style={{ color: T.faint, fontSize: 12, transform: open ? "rotate(90deg)" : "none", transition: "transform .15s" }}>›</span>
         </div>
         {open && <Panel r={r} showKnowledge={showKnowledge} />}
@@ -344,13 +495,19 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
 
   return (
     <div>
-      {/* 룰 추가 버튼 */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+      {/* 룰 추가 / 파일로 추가 버튼 */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 8 }}>
+        {/* <button onClick={() => setImporting(true)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+          <span style={{ fontSize: 14, lineHeight: 1 }}>⇪</span> 파일 업로드
+        </button> */}
         <button onClick={() => { setAdding(true); setCreateErr(null); }}
           style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none", background: T.accent, color: "#fff", borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
           <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> 룰 추가
         </button>
       </div>
+
+      <ImportRulesDrawer open={importing} onClose={() => setImporting(false)} rulesets={rulesets} categories={categories} catLabel={catLabel} onImport={onImport} />
 
       {/* 룰 추가 드로어 (오른쪽 → 왼쪽 슬라이드) */}
       <div onClick={() => { if (!creating) setAdding(false); }}
@@ -371,54 +528,31 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
             {/* 룰 내용 */}
             <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <span style={fieldLabel}>룰 내용 <span style={{ color: T.accent }}>*</span></span>
-              <textarea value={nf.content} onChange={(e) => setNfField({ content: e.target.value })}
+              <textarea value={nf.statement} onChange={(e) => setNfField({ statement: e.target.value })}
                 placeholder="예: 원금 손실 가능성을 설명하였는가"
                 style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 60, resize: "vertical", lineHeight: 1.55, fontSize: 13.5 }} />
             </label>
 
-            {/* 분류: 금융상품 · 금융소비자 · 상품 · 고객조건 */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={fieldLabel}>분류</span>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>금융상품</span>
-                  <select value={nf.product_class || "투자성상품"} onChange={(e) => setNfField({ product_class: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
-                    {productClassOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </label>
-                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>금융소비자</span>
-                  <select value={nf.consumer_type || "일반금융소비자"} onChange={(e) => setNfField({ consumer_type: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
-                    {consumerOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </label>
-                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>상품</span>
-                  <select value={nf.product_type || "공통"} onChange={(e) => setNfField({ product_type: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
-                    {productOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </label>
-                <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 600 }}>고객조건</span>
-                  <select value={nf.condition_type || "모든 고객"} onChange={(e) => setNfField({ condition_type: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
-                    {conditionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
-                  </select>
-                </label>
-              </div>
-            </div>
+            {/* 고객조건 */}
+            <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <span style={fieldLabel}>고객조건</span>
+              <select value={nf.customer_condition || "모든 고객"} onChange={(e) => setNfField({ customer_condition: e.target.value })} style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}>
+                {conditionOptions.map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </label>
 
             {/* 태그 */}
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               <span style={fieldLabel}>의미 태그</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", padding: 8, border: `1px solid ${T.line}`, borderRadius: 9, background: T.bg, minHeight: 40, boxSizing: "border-box" }}>
-                {nf.required_tags.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>선택된 태그 없음</span>}
-                {nf.required_tags.map((code) => (
+                {nf.semantic_tags.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>선택된 태그 없음</span>}
+                {nf.semantic_tags.map((code) => (
                   <span key={code} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.accentBg, color: T.accent, fontSize: 12, fontWeight: 600, padding: "3px 6px 3px 9px", borderRadius: 8 }}>
                     {koOf(code) || code}
-                    <button onClick={() => setNfField({ required_tags: nf.required_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
+                    <button onClick={() => setNfField({ semantic_tags: nf.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                   </span>
                 ))}
-                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.required_tags.includes(v)) setNfField({ required_tags: [...nf.required_tags, v] }); }} style={{ ...inputStyle, maxWidth: 200, marginLeft: "auto" }}>
+                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.semantic_tags.includes(v)) setNfField({ semantic_tags: [...nf.semantic_tags, v] }); }} style={{ ...inputStyle, maxWidth: 200, marginLeft: "auto" }}>
                   <option value="">+ 태그 추가</option>
                   {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
                 </select>
@@ -429,16 +563,16 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               <span style={fieldLabel}>근거 조항</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", padding: 8, border: `1px solid ${T.line}`, borderRadius: 9, background: T.bg, minHeight: 40, boxSizing: "border-box" }}>
-                {nf.basis.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>연결된 근거 조항 없음</span>}
-                {nf.basis.map((pid) => (
+                {nf.knowledge_ids.length === 0 && <span style={{ fontSize: 11.5, color: T.faint, paddingLeft: 3 }}>연결된 근거 조항 없음</span>}
+                {nf.knowledge_ids.map((pid) => (
                   <span key={pid} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.chipBg, color: T.sub, fontSize: 12, fontWeight: 600, padding: "3px 6px 3px 9px", borderRadius: 8 }}>
-                    {knowledge[pid]?.heading || pid}
-                    <button onClick={() => setNfField({ basis: nf.basis.filter((x) => x !== pid) })} style={{ border: "none", background: "none", color: T.sub, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
+                    {knowledge[pid]?.title || pid}
+                    <button onClick={() => setNfField({ knowledge_ids: nf.knowledge_ids.filter((x) => x !== pid) })} style={{ border: "none", background: "none", color: T.sub, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>
                   </span>
                 ))}
-                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.basis.includes(v)) setNfField({ basis: [...nf.basis, v] }); }} style={{ ...inputStyle, maxWidth: 260, marginLeft: "auto" }}>
+                <select value="" onChange={(e) => { const v = e.target.value; if (v && !nf.knowledge_ids.includes(v)) setNfField({ knowledge_ids: [...nf.knowledge_ids, v] }); }} style={{ ...inputStyle, maxWidth: 260, marginLeft: "auto" }}>
                   <option value="">+ 근거 조항 추가</option>
-                  {Object.values(knowledge).map((p) => <option key={p.knowledge_id} value={p.knowledge_id}>{p.heading} · {p.document_id && p.document_id !== p.document_type ? `${p.document_type}·${p.document_id}` : p.document_type}</option>)}
+                  {Object.values(knowledge).map((p) => <option key={p.knowledge_id} value={p.knowledge_id}>{p.title} · {p.document_type}</option>)}
                 </select>
               </div>
             </div>
@@ -523,7 +657,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], openId, setOpenId
 // ─────────────────────────────────────────────
 // ST 연동 — RS-2 loadRuleSet (상품 → 룰셋 본문 전체 + 룰별 판정 페이로드 크기)
 // ─────────────────────────────────────────────
-function LoadView({ products, taxonomy, form, setForm, result, setResult }) {
+function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, setResult }) {
   const T = useT();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -555,13 +689,12 @@ function LoadView({ products, taxonomy, form, setForm, result, setResult }) {
   // ST → iTrix 전송 페이로드 (JSON) — RuleSet 은 룰(체크리스트 + 근거 조항)만 내려줌 (위반 판정은 iTrix)
   //  · 태그 → 근거조항·출처·체크리스트 를 6대 원칙 기준으로 묶어 전달
   //  · 대화는 ST 가 별도로 붙임. 2000 − 대화여유 500 = 1500자 예산.
-  // ST 응답 페이로드 — 태그/조항/체크리스트를 각각 하나의 문자열로 합침 (구분자 " | ", 콤마 미사용)
-  const SEP = " | ";
-  const uniqueTags = [...new Set(shown.flatMap((r) => ((r.matched_tags?.length ? r.matched_tags : r.required_tags) || [])))].filter((t) => t && t !== "_no_tag");
-  const uniqueChecklist = [...new Set(shown.map((r) => r.content).filter(Boolean))];
-  const uniqueTexts = result ? [...new Set(shown.flatMap((r) => (r.knowledge || []).map((p) => p.text)))] : [];
+  // ST 응답 페이로드 — 태그/조항/체크리스트를 각각 하나의 문자열로 합침 (구분자 " / ", 콤마 미사용)
+  const SEP = " / ";
+  const uniqueTags = [...new Set(shown.flatMap((r) => ((r.matched_tags?.length ? r.matched_tags : r.semantic_tags) || [])))].filter((t) => t && t !== "_no_tag");
+  const uniqueChecklist = [...new Set(shown.map((r) => r.statement).filter(Boolean))];
+  const uniqueTexts = result ? [...new Set(shown.flatMap((r) => (r.knowledge || []).map((p) => p.content)))] : [];
   const stPayload = result && {
-    count: shown.length,
     tags: uniqueTags.join(SEP),
     knowledge: uniqueTexts.join(SEP),
     checklist: uniqueChecklist.join(SEP),
@@ -584,7 +717,7 @@ function LoadView({ products, taxonomy, form, setForm, result, setResult }) {
               <select value={productId} onChange={(e) => setForm({ product_id: e.target.value })}
                 style={{ padding: "9px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink }}>
                 <option value="">— 상품 선택 —</option>
-                {products.map((p) => <option key={p.product_id} value={p.product_id}>{p.product_name} · {p.product_categories.join("/")}</option>)}
+                {products.map((p) => <option key={p.product_id} value={p.product_id}>{p.product_name} · {catLabel[p.product_category] || p.product_category}</option>)}
               </select>
             </div>
 
@@ -674,7 +807,7 @@ function LoadView({ products, taxonomy, form, setForm, result, setResult }) {
           {result && (
             <div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
-                <Badge fg="#047857" bg="#D1FAE5">{result.product?.product_name} · 룰 {result.count}건</Badge>
+                <Badge fg="#047857" bg="#D1FAE5">{result.product_name} · 룰 {result.count}건</Badge>
                 {result.requested_tags?.length > 0 && <Badge fg="#5B21B6" bg="#EDE9FE">태그 매칭 {result.count}/{result.total_in_ruleset}건</Badge>}
               </div>
               {budget && <div style={{ fontSize: 11, color: T.faint, marginBottom: 10 }}>{budget.note}</div>}
@@ -688,18 +821,18 @@ function LoadView({ products, taxonomy, form, setForm, result, setResult }) {
                     return (
                       <div key={key} style={{ borderTop: `1px solid ${T.line}`, padding: "10px 4px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink, flex: 1 }}>{r.content}</span>
-                          {r.principle && <Badge {...principleBadge(r.principle)}>{r.principle}</Badge>}
+                          <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink, flex: 1 }}>{r.statement}</span>
+                          {r.sales_principle && <Badge {...principleBadge(r.sales_principle)}>{r.sales_principle}</Badge>}
                         </div>
                         <div style={{ marginTop: 7, display: "flex", flexDirection: "column", gap: 6 }}>
                           {(r.knowledge || []).length === 0 && <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>}
                           {(r.knowledge || []).map((p) => (
                             <div key={p.knowledge_id} style={{ borderLeft: `3px solid ${DOCTYPE_COLOR[p.document_type] || T.line}`, padding: "7px 11px", background: T.subtle, borderRadius: "0 7px 7px 0" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                                <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.heading}</span>
-                                <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_id && p.document_id !== p.document_type ? `${p.document_type} · ${p.document_id}` : p.document_type}</span>
+                                <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.title}</span>
+                                <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_type}</span>
                               </div>
-                              <p style={{ fontSize: 12.5, lineHeight: 1.65, margin: 0, color: T.sub }}>{p.text}</p>
+                              <p style={{ fontSize: 12.5, lineHeight: 1.65, margin: 0, color: T.sub }}>{p.content}</p>
                             </div>
                           ))}
                         </div>
@@ -788,7 +921,8 @@ function OntologyView({ form, setForm }) {
   useEffect(() => { fetchOntology().then(setGraph).catch((e) => setErr(String(e.message || e))); }, []);
 
   const rulesets = useMemo(() => graph ? graph.nodes.filter((n) => n.type === "ruleset") : [], [graph]);
-  const scope = form.scope || rulesets[0]?.id.replace(/^rset:/, "") || "all";
+  const defaultRs = useMemo(() => rulesets.find((r) => r.ruleset_category === "common") || rulesets[0], [rulesets]);
+  const scope = form.scope || defaultRs?.id.replace(/^rset:/, "") || "all";
   const sub = useMemo(() => subgraphForRuleset(graph, scope), [graph, scope]);
   const layout = useMemo(() => forceLayout(sub), [sub]);
   const nodeById = useMemo(() => Object.fromEntries((sub.nodes || []).map((n) => [n.id, n])), [sub]);
@@ -894,10 +1028,10 @@ function OntologyView({ form, setForm }) {
                 <button onClick={() => setSelected(null)} style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }} title="선택 해제">×</button>
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, lineHeight: 1.5, marginBottom: 8 }}>{selNode.label}</div>
-              {(selNode.modality_ko || selNode.trigger_state || selNode.document_type) && (
+              {(selNode.modality_ko || selNode.sales_stage || selNode.document_type) && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
                   {selNode.modality_ko && <span style={{ fontSize: 11, fontWeight: 600, color: MOD_COLOR[selNode.modality], background: T.accentBg, borderRadius: 8, padding: "2px 8px" }}>{selNode.modality_ko}</span>}
-                  {selNode.trigger_state && <Chip>{selNode.trigger_state}</Chip>}
+                  {selNode.sales_stage && <Chip>{selNode.sales_stage}</Chip>}
                   {selNode.document_type && <span style={{ fontSize: 11, color: DOCTYPE_COLOR[selNode.document_type], fontWeight: 600, alignSelf: "center" }}>{selNode.document_type}</span>}
                 </div>
               )}
@@ -1001,7 +1135,7 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
 
   const usage = useMemo(() => {
     const m = {};
-    rules.forEach((r) => (r.required_tags || []).forEach((t) => (m[t] = (m[t] || 0) + 1)));
+    rules.forEach((r) => (r.semantic_tags || []).forEach((t) => (m[t] = (m[t] || 0) + 1)));
     return m;
   }, [rules]);
   const groups = useMemo(() => {
@@ -1009,7 +1143,7 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
     Object.entries(sem).forEach(([code, label]) => { const p = code.split("_")[0]; (g[p] ??= []).push({ code, label }); });
     return g;
   }, [sem]);
-  const rulesForTag = selected ? rules.filter((r) => (r.required_tags || []).includes(selected)) : [];
+  const rulesForTag = selected ? rules.filter((r) => (r.semantic_tags || []).includes(selected)) : [];
 
   return (
     <div>
@@ -1141,9 +1275,9 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
               <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "62vh", overflowY: "auto" }}>
                 {rulesForTag.map((r) => (
                   <div key={r.rule_id} style={{ borderLeft: `3px solid ${T.accent}`, background: T.subtle, borderRadius: "0 7px 7px 0", padding: "8px 11px" }}>
-                    <div style={{ fontSize: 12.5, lineHeight: 1.6, color: T.ink }}>{r.content}</div>
+                    <div style={{ fontSize: 12.5, lineHeight: 1.6, color: T.ink }}>{r.statement}</div>
                     <div style={{ display: "flex", gap: 6, marginTop: 5, flexWrap: "wrap" }}>
-                      <span style={{ fontSize: 10.5, color: T.faint }}>{r.meta_category}</span>
+                      <span style={{ fontSize: 10.5, color: T.faint }}>{r.sales_principle}</span>
                     </div>
                   </div>
                 ))}
@@ -1160,85 +1294,6 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
   );
 }
 
-// ─────────────────────────────────────────────
-// 변경 이력 — change_log (append-only) 타임라인
-// ─────────────────────────────────────────────
-const ENTITY_KO = { rule: "룰", knowledge: "조항" };
-const ACTION_META = {
-  update: { ko: "수정", fg: "#1D4ED8", bg: "#DBEAFE" },
-  amend: { ko: "개정", fg: "#B45309", bg: "#FEF3C7" },
-  review_clear: { ko: "재검토 완료", fg: "#047857", bg: "#D1FAE5" },
-};
-
-function changeSummary(e) {
-  if (e.action === "amend" && e.changes && typeof e.changes === "object")
-    return `v${e.changes.from} → v${e.changes.to} · 영향 ${(e.changes.affected || []).length}룰`;
-  if (e.action === "update" && e.changes && typeof e.changes === "object")
-    return `변경 필드: ${Object.keys(e.changes).join(", ")}`;
-  if (e.action === "review_clear") return "재검토 완료 처리";
-  return "";
-}
-
-function HistoryView({ onOpen }) {
-  const T = useT();
-  const [data, setData] = useState(null);
-  const [err, setErr] = useState(null);
-  const [ef, setEf] = useState("all"); // entity filter
-
-  useEffect(() => { fetchChangelog({ limit: 500 }).then(setData).catch((e) => setErr(String(e.message || e))); }, []);
-
-  if (err) return <Centered>이력 로드 실패: {err}</Centered>;
-  if (!data) return <Centered>변경 이력 불러오는 중…</Centered>;
-
-  const entries = data.entries.filter((e) => ef === "all" || e.entity_type === ef);
-  const FILTERS = [["all", "전체"], ["rule", "룰"], ["knowledge", "조항"]];
-
-  return (
-    <div>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>변경 이력</div>
-        </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-          {FILTERS.map(([k, label]) => (
-            <button key={k} onClick={() => setEf(k)}
-              style={{ border: `1px solid ${ef === k ? T.accent : T.line}`, background: ef === k ? T.accentBg : T.surface, color: ef === k ? T.accent : T.sub, borderRadius: 20, padding: "5px 13px", cursor: "pointer", fontSize: 12, fontWeight: ef === k ? 600 : 400 }}>{label}</button>
-          ))}
-        </div>
-      </div>
-
-      <Card>
-        {entries.length === 0 && <div style={{ padding: 32, textAlign: "center", color: T.faint, fontSize: 13 }}>이력이 없습니다</div>}
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {entries.map((e, i) => {
-            const am = ACTION_META[e.action] || { ko: e.action, fg: T.sub, bg: T.chipBg };
-            const openable = e.entity_type === "rule";
-            return (
-              <div key={e.log_id} onClick={() => openable && onOpen(e.entity_id)}
-                style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "11px 6px", borderTop: i ? `1px solid ${T.line}` : "none", cursor: openable ? "pointer" : "default" }}
-                onMouseEnter={(ev) => { if (openable) ev.currentTarget.style.background = T.subtle; }}
-                onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}>
-                <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint, minWidth: 128, paddingTop: 1 }}>{(e.at || "").replace("T", " ").slice(0, 19)}</span>
-                <div style={{ display: "flex", gap: 5, alignItems: "center", minWidth: 118 }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 600, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "1px 6px" }}>{ENTITY_KO[e.entity_type] || e.entity_type}</span>
-                  <Badge fg={am.fg} bg={am.bg}>{am.ko}</Badge>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontFamily: T.mono, fontSize: 12, color: T.ink }}>{e.entity_id}</span>
-                  <div style={{ fontSize: 12, color: T.sub, marginTop: 2 }}>
-                    {changeSummary(e)}{e.reason ? <span style={{ color: T.faint }}> · 사유: {e.reason}</span> : ""}
-                  </div>
-                </div>
-                <span style={{ fontSize: 11, color: T.faint, whiteSpace: "nowrap" }}>{e.actor}</span>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
 const Centered = ({ children }) => {
   const T = useT();
   return <div style={{ padding: "80px 24px", textAlign: "center", color: T.sub, fontSize: 14 }}>{children}</div>;
@@ -1250,11 +1305,11 @@ const Centered = ({ children }) => {
 function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   const T = useT();
   const list = Object.values(knowledge);
-  const refCount = (pid) => rules.filter((r) => (r.basis || []).includes(pid)).length;
+  const refCount = (pid) => rules.filter((r) => (r.knowledge_ids || []).includes(pid)).length;
   const knowledgeTypes = [...new Set([...list.map((p) => p.document_type).filter(Boolean), "법률", "가이드라인", "내규"])];
   const inputStyle = { width: "100%", boxSizing: "border-box", padding: "7px 9px", border: `1px solid ${T.line}`, borderRadius: 7, fontSize: 12.5, fontFamily: T.font, background: T.surface, color: T.ink };
 
-  const EMPTY = { document_type: "내규", heading: "", text: "" };
+  const EMPTY = { document_type: "내규", title: "", content: "" };
   const [pf, setPf] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState(null);
@@ -1264,14 +1319,14 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   const [filter, setFilter] = useState("");
   // 조항 수정 (인라인)
   const [editId, setEditId] = useState(null);
-  const [ef, setEf] = useState({ heading: "", text: "", document_type: "", document_id: "" });
+  const [ef, setEf] = useState({ title: "", content: "", document_type: "" });
   const [editBusy, setEditBusy] = useState(false);
   const [editErr, setEditErr] = useState(null);
 
   async function submit() {
-    if (!pf.heading.trim() || !pf.text.trim()) { setErr("조항 제목과 원문을 입력하세요"); return; }
+    if (!pf.title.trim() || !pf.content.trim()) { setErr("조항 제목과 원문을 입력하세요"); return; }
     setSaving(true); setErr(null);
-    try { await onCreate({ ...pf, heading: pf.heading.trim(), text: pf.text.trim() }); setPf(EMPTY); }
+    try { await onCreate({ ...pf, title: pf.title.trim(), content: pf.content.trim() }); setPf(EMPTY); }
     catch (e) { setErr(e?.message || "추가 실패"); }
     finally { setSaving(false); }
   }
@@ -1283,20 +1338,20 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   }
   function startEdit(p) {
     setEditId(p.knowledge_id); setEditErr(null); setConfirmId(null);
-    setEf({ heading: p.heading || "", text: p.text || "", document_type: p.document_type || "내규", document_id: p.document_id || "" });
+    setEf({ title: p.title || "", content: p.content || "", document_type: p.document_type || "내규" });
   }
   async function saveEdit(pid) {
-    if (!ef.heading.trim() || !ef.text.trim()) { setEditErr("제목·원문을 입력하세요"); return; }
+    if (!ef.title.trim() || !ef.content.trim()) { setEditErr("제목·원문을 입력하세요"); return; }
     setEditBusy(true); setEditErr(null);
     try {
-      await onEdit(pid, { heading: ef.heading.trim(), text: ef.text.trim(), document_type: ef.document_type.trim() || "내규", document_id: ef.document_id.trim() || ef.document_type.trim() || "내규" });
+      await onEdit(pid, { title: ef.title.trim(), content: ef.content.trim(), document_type: ef.document_type.trim() || "내규" });
       setEditId(null);
     } catch (e) { setEditErr(e?.message || "수정 실패"); }
     finally { setEditBusy(false); }
   }
 
   const q = filter.trim().toLowerCase();
-  const shown = q ? list.filter((p) => `${p.heading}${p.text}${p.knowledge_id}`.toLowerCase().includes(q)) : list;
+  const shown = q ? list.filter((p) => `${p.title}${p.content}${p.knowledge_id}`.toLowerCase().includes(q)) : list;
 
   return (
     <div>
@@ -1316,12 +1371,12 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <span style={{ fontSize: 11, color: T.sub }}>제목</span>
-              <input value={pf.heading} onChange={(e) => setPf((f) => ({ ...f, heading: e.target.value }))} placeholder="예: 설명의무"
+              <input value={pf.title} onChange={(e) => setPf((f) => ({ ...f, title: e.target.value }))} placeholder="예: 설명의무"
                 style={{ padding: "9px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink }} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <span style={{ fontSize: 11, color: T.sub }}>원문</span>
-              <textarea value={pf.text} onChange={(e) => setPf((f) => ({ ...f, text: e.target.value }))} rows={5} placeholder="조항 원문"
+              <textarea value={pf.content} onChange={(e) => setPf((f) => ({ ...f, content: e.target.value }))} rows={5} placeholder="조항 원문"
                 style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, lineHeight: 1.6, resize: "vertical", background: T.surface, color: T.ink }} />
             </div>
             {err && <div style={{ color: "#DC2626", fontSize: 12 }}>{err}</div>}
@@ -1343,23 +1398,17 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                         <span style={{ fontSize: 11, color: T.sub }}>제목</span>
-                        <input value={ef.heading} onChange={(e) => setEf({ ...ef, heading: e.target.value })} style={inputStyle} />
+                        <input value={ef.title} onChange={(e) => setEf({ ...ef, title: e.target.value })} style={inputStyle} />
                       </div>
-                      <div style={{ display: "flex", gap: 8 }}>
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 3 }}>
-                          <span style={{ fontSize: 11, color: T.sub }}>유형</span>
-                          <select value={ef.document_type} onChange={(e) => setEf({ ...ef, document_type: e.target.value })} style={inputStyle}>
-                            {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-                          </select>
-                        </div>
-                        <div style={{ flex: 1.6, display: "flex", flexDirection: "column", gap: 3 }}>
-                          <span style={{ fontSize: 11, color: T.sub }}>문서명(출처)</span>
-                          <input value={ef.document_id} onChange={(e) => setEf({ ...ef, document_id: e.target.value })} placeholder="예: 금융소비자보호법 / 내규" style={inputStyle} />
-                        </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                        <span style={{ fontSize: 11, color: T.sub }}>유형</span>
+                        <select value={ef.document_type} onChange={(e) => setEf({ ...ef, document_type: e.target.value })} style={inputStyle}>
+                          {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                        </select>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                         <span style={{ fontSize: 11, color: T.sub }}>원문</span>
-                        <textarea value={ef.text} onChange={(e) => setEf({ ...ef, text: e.target.value })} rows={4} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                        <textarea value={ef.content} onChange={(e) => setEf({ ...ef, content: e.target.value })} rows={4} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
                       </div>
                       {editErr && <div style={{ color: "#DC2626", fontSize: 11.5 }}>{editErr}</div>}
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -1367,16 +1416,15 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
                           style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 7, padding: "6px 14px", cursor: editBusy ? "default" : "pointer", fontSize: 12.5, fontWeight: 700, opacity: editBusy ? 0.6 : 1 }}>{editBusy ? "저장 중…" : "저장"}</button>
                         <button onClick={() => setEditId(null)} disabled={editBusy}
                           style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>취소</button>
-                        <span style={{ marginLeft: "auto", fontSize: 11, color: T.faint }}>v{p.version || "1.0"} 유지</span>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.heading}</span>
-                        <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_id && p.document_id !== p.document_type ? `${p.document_type} · ${p.document_id}` : p.document_type}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.title}</span>
+                        <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_type}</span>
                       </div>
-                      <p style={{ fontSize: 12, lineHeight: 1.6, margin: "0 0 7px", color: T.sub }}>{p.text}</p>
+                      <p style={{ fontSize: 12, lineHeight: 1.6, margin: "0 0 7px", color: T.sub }}>{p.content}</p>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 11, color: T.faint }}>룰 {used}건에서 사용</span>
                         {confirmId === p.knowledge_id ? (
@@ -1427,7 +1475,7 @@ const Icon = ({ name, color }) => {
 // ─────────────────────────────────────────────
 // 해시 라우팅 (메뉴별 URL · 새로고침 유지)
 // ─────────────────────────────────────────────
-const SECTION_HASH = { rules: "rulebook", tags: "tags", knowledge: "knowledge", history: "history", ontology: "ontology", load: "st" };
+const SECTION_HASH = { rules: "rulebook", tags: "tags", knowledge: "knowledge", ontology: "ontology", load: "st" };
 const HASH_SECTION = Object.fromEntries(Object.entries(SECTION_HASH).map(([k, v]) => [v, k]));
 const readSectionFromHash = () => {
   if (typeof window === "undefined") return "rules";
@@ -1446,7 +1494,7 @@ function AppShell({ mode, setMode }) {
   const [section, setSection] = useState(readSectionFromHash); // rules | tags | amend | history | ontology | load
   const [selectedRuleId, setSelectedRuleId] = useState(null);
   const [listQuery, setListQuery] = useState("");
-  const [loadForm, setLoadForm] = useState({ product_id: "PRODisa000000001" }); // 기본: ISA 중개형
+  const [loadForm, setLoadForm] = useState({ product_id: "PROD_001" }); // 기본: ISA 중개형
   const [loadResult, setLoadResult] = useState(null);
   const [ontoForm, setOntoForm] = useState({ ruleId: "" });
   const [tagSel, setTagSel] = useState(null);
@@ -1493,13 +1541,9 @@ function AppShell({ mode, setMode }) {
   }
   async function persistRule(next) {
     const saved = await updateRule(next.rule_id, {
-      verification_method: next.verification_method,
-      judge_prompt: next.judge_prompt,
-      content: next.content,
-      required_tags: next.required_tags ?? [],
-      jury_panel_id: next.jury_panel_id ?? null,
-      threshold: next.threshold ?? null,
-      basis: next.basis ?? [],
+      statement: next.statement,
+      semantic_tags: next.semantic_tags ?? [],
+      knowledge_ids: next.knowledge_ids ?? [],
     });
     updateRuleLocal(saved);
   }
@@ -1507,6 +1551,11 @@ function AppShell({ mode, setMode }) {
     const saved = await createRule(payload);
     setBundle((b) => ({ ...b, rules: [...b.rules, saved] }));
     return saved;
+  }
+  async function importRulesLocal(payload) {
+    const res = await importRules(payload);
+    await load(); // 룰 + 룰셋 목록 갱신
+    return res;
   }
   async function createKnowledgeLocal(payload) {
     const saved = await createKnowledge(payload);
@@ -1540,7 +1589,6 @@ function AppShell({ mode, setMode }) {
   const goOnto = () => setSection("ontology");
   const goTags = () => setSection("tags");
   const goKnowledge = () => setSection("knowledge");
-  const goHistory = () => setSection("history");
   const openRule = (id) => { setSelectedRuleId(id); setSection("rules"); };
 
   const NAV = [
@@ -1549,7 +1597,6 @@ function AppShell({ mode, setMode }) {
     { key: "knowledge", label: "근거 조항", icon: "doc", onClick: goKnowledge, active: section === "knowledge" },
     { key: "load", label: "API 연동", icon: "resolve", onClick: goLoad, active: section === "load" },
     { key: "ontology", label: "규정 관계도", icon: "graph", onClick: goOnto, active: section === "ontology" },
-    // { key: "history", label: "변경 이력", icon: "history", onClick: goHistory, active: section === "history" },
   ];
 
   // ── 콘텐츠 ──
@@ -1564,21 +1611,20 @@ function AppShell({ mode, setMode }) {
       </Centered>
     );
   else {
-    const { knowledge, rules, vocabulary, taxonomy, products } = bundle;
+    const { knowledge, rules, taxonomy, products, rulesets, categories } = bundle;
+    const catLabel = Object.fromEntries((categories || []).map((c) => [c.category, c.label]));
     if (section === "tags") {
       content = <TagsView rules={rules} taxonomy={taxonomy} selected={tagSel} setSelected={setTagSel} onOpen={openRule}
         onCreateTag={createTagLocal} onUpdateTag={updateTagLocal} onDeleteTag={deleteTagLocal} />;
     } else if (section === "knowledge") {
       content = <KnowledgeView knowledge={knowledge} rules={rules} onCreate={createKnowledgeLocal} onDelete={deleteKnowledgeLocal} onEdit={updateKnowledgeLocal} />;
-    } else if (section === "history") {
-      content = <HistoryView onOpen={openRule} />;
     } else if (section === "ontology") {
       content = <OntologyView rules={rules} form={ontoForm} setForm={setOntoForm} />;
     } else if (section === "load") {
-      content = <LoadView products={products} taxonomy={taxonomy} form={loadForm} setForm={setLoadForm} result={loadResult} setResult={setLoadResult} />;
+      content = <LoadView products={products} taxonomy={taxonomy} catLabel={catLabel} form={loadForm} setForm={setLoadForm} result={loadResult} setResult={setLoadResult} />;
     } else {
       content = (
-        <ListView rules={rules} knowledge={knowledge} taxonomy={taxonomy} products={products}
+        <ListView rules={rules} knowledge={knowledge} taxonomy={taxonomy} products={products} rulesets={rulesets} categories={categories} catLabel={catLabel} onImport={importRulesLocal}
           openId={selectedRuleId} setOpenId={setSelectedRuleId}
           onUpdate={updateRuleLocal} onPersist={persistRule} onCreate={createRuleLocal} onDelete={deleteRuleLocal}
           query={listQuery} setQuery={setListQuery} />

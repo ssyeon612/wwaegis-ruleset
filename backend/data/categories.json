@@ -1,0 +1,6 @@
+{
+  "_comment": "카테고리 마스터. product.product_category · ruleset.ruleset_category 가 참조하는 사전 등록값(snake_case). label 은 화면 표시명.",
+  "common": { "category": "common", "label": "공통" },
+  "isa": { "category": "isa", "label": "ISA" },
+  "irp": { "category": "irp", "label": "IRP" }
+}

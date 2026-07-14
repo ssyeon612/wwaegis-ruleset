@@ -38,51 +38,50 @@ export function buildGraph(db, taxonomy) {
   const rules = db.prepare("SELECT * FROM rules ORDER BY rule_seq").all();
   const rulesets = db.prepare("SELECT * FROM rulesets").all();
   const products = db.prepare("SELECT * FROM products").all();
+  const catLabel = Object.fromEntries(db.prepare("SELECT category, label FROM categories").all().map((c) => [c.category, c.label]));
   const semTags = taxonomy.semantic_tags || {};
-  const juries = taxonomy.jury_panels || {};
 
   // documents ← knowledge
   const docs = new Set();
   for (const p of knowledge) {
-    addNode(N.knowledge(p.knowledge_id), "knowledge", p.heading, { e_id: p.e_id, document_type: p.document_type, document_id: p.document_id, text: p.text });
-    if (!docs.has(p.document_id)) {
-      docs.add(p.document_id);
-      addNode(N.document(p.document_id), "document", p.document_id, { document_type: p.document_type });
+    addNode(N.knowledge(p.knowledge_id), "knowledge", p.title, { document_type: p.document_type, content: p.content });
+    if (!docs.has(p.document_type)) {
+      docs.add(p.document_type);
+      addNode(N.document(p.document_type), "document", p.document_type, { document_type: p.document_type });
     }
-    addEdge(N.document(p.document_id), N.knowledge(p.knowledge_id), "CONTAINS");
+    addEdge(N.document(p.document_type), N.knowledge(p.knowledge_id), "CONTAINS");
   }
 
   // rulesets ← category
   for (const rs of rulesets) {
-    addNode(N.ruleset(rs.ruleset_id), "ruleset", rs.ruleset_name, { ruleset_version: rs.ruleset_version, ruleset_category: rs.ruleset_category });
-    addNode(N.category(rs.ruleset_category), "category", rs.ruleset_category);
+    addNode(N.ruleset(rs.ruleset_id), "ruleset", catLabel[rs.ruleset_category] || rs.ruleset_category, { ruleset_category: rs.ruleset_category });
+    addNode(N.category(rs.ruleset_category), "category", catLabel[rs.ruleset_category] || rs.ruleset_category);
     addEdge(N.ruleset(rs.ruleset_id), N.category(rs.ruleset_category), "HAS_CATEGORY");
   }
 
-  // products → category (APPLIES_TO)
+  // products → category (APPLIES_TO) — 상품은 단일 카테고리 보유
   for (const pr of products) {
-    const cats = JSON.parse(pr.product_categories || "[]");
     addNode(N.product(pr.product_id), "product", pr.product_name);
-    for (const c of cats) {
-      addNode(N.category(c), "category", c);
+    const c = pr.product_category;
+    if (c) {
+      addNode(N.category(c), "category", catLabel[c] || c);
       addEdge(N.product(pr.product_id), N.category(c), "APPLIES_TO");
     }
   }
 
   // rules + relations
   for (const r of rules) {
-    const basis = JSON.parse(r.basis || "[]");
-    const tags = JSON.parse(r.required_tags || "[]");
+    const knowledge_ids = JSON.parse(r.knowledge_ids || "[]");
+    const tags = JSON.parse(r.semantic_tags || "[]");
     const mod = modalityOf(r.violation_type);
-    addNode(N.rule(r.rule_id), "rule", r.content, {
-      rule_id: r.rule_id, meta_title: r.meta_title, trigger_state: r.trigger_state,
-      condition_type: r.condition_type, violation_type: r.violation_type,
-      modality: mod.code, modality_ko: mod.ko, threshold: r.threshold,
+    addNode(N.rule(r.rule_id), "rule", r.statement, {
+      rule_id: r.rule_id, sales_stage: r.sales_stage,
+      customer_condition: r.customer_condition, violation_type: r.violation_type,
+      modality: mod.code, modality_ko: mod.ko,
     });
     if (r.ruleset_id) { addNode(N.ruleset(r.ruleset_id), "ruleset", r.ruleset_id); addEdge(N.rule(r.rule_id), N.ruleset(r.ruleset_id), "IN_RULESET"); }
-    for (const pid of basis) addEdge(N.rule(r.rule_id), N.knowledge(pid), "BASED_ON");
+    for (const pid of knowledge_ids) addEdge(N.rule(r.rule_id), N.knowledge(pid), "BASED_ON");
     for (const t of tags) { addNode(N.tag(t), "tag", semTags[t] || t, { code: t }); addEdge(N.rule(r.rule_id), N.tag(t), "REQUIRES"); }
-    if (r.jury_panel_id) { addNode(N.jury(r.jury_panel_id), "jury_panel", juries[r.jury_panel_id]?.name || r.jury_panel_id, { jurors: juries[r.jury_panel_id]?.jurors }); addEdge(N.rule(r.rule_id), N.jury(r.jury_panel_id), "JUDGED_BY"); }
   }
 
   const nodeList = [...nodes.values()];
@@ -118,11 +117,9 @@ export function toTurtle(graph) {
   for (const n of graph.nodes) {
     const parts = [`a aegis:${CLASS[n.type] || "Node"}`, `rdfs:label "${esc(n.label)}"`, `aegis:sourceId "${esc(n.id)}"`];
     if (n.type === "rule" && n.modality) parts.push(`a deontic:${n.modality}`);
-    if (n.e_id) parts.push(`aegis:eId "${esc(n.e_id)}"`);
     if (n.document_type) parts.push(`aegis:documentType "${esc(n.document_type)}"`);
-    if (n.trigger_state) parts.push(`aegis:triggerState "${esc(n.trigger_state)}"`);
+    if (n.sales_stage) parts.push(`aegis:triggerState "${esc(n.sales_stage)}"`);
     if (n.violation_type) parts.push(`aegis:violationType "${esc(n.violation_type)}"`);
-    if (n.ruleset_version) parts.push(`aegis:version "${esc(n.ruleset_version)}"`);
     if (n.code) parts.push(`aegis:tagCode "${esc(n.code)}"`);
     L.push(`${iri(n.id)} ${parts.join(" ; ")} .`);
   }
@@ -147,13 +144,11 @@ export function toCypher(graph) {
     const labels = ["Node", CLASS[n.type] || "Entity"];
     if (n.type === "rule" && n.modality) labels.push(n.modality); // deontic 라벨 병기
     const props = [`label:'${q(n.label)}'`, `nodeType:'${q(n.type)}'`];
-    if (n.e_id) props.push(`eId:'${q(n.e_id)}'`);
     if (n.document_type) props.push(`documentType:'${q(n.document_type)}'`);
-    if (n.trigger_state) props.push(`triggerState:'${q(n.trigger_state)}'`);
+    if (n.sales_stage) props.push(`triggerState:'${q(n.sales_stage)}'`);
     if (n.violation_type) props.push(`violationType:'${q(n.violation_type)}'`);
     if (n.modality_ko) props.push(`modality:'${q(n.modality_ko)}'`);
     if (n.code) props.push(`tagCode:'${q(n.code)}'`);
-    if (n.ruleset_version) props.push(`version:'${q(n.ruleset_version)}'`);
     L.push(`MERGE (n:${labels.join(":")} {sourceId:'${q(n.id)}'}) SET n += {${props.join(", ")}};`);
   }
   L.push("");

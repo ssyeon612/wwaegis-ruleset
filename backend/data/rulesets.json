@@ -1,14 +1,14 @@
 {
-  "RSETisa000000001": {
-    "ruleset_id": "RSETisa000000001",
-    "ruleset_name": "ISA(중개형) 룰셋",
-    "ruleset_version": "1.0.0",
-    "ruleset_category": "ISA"
+  "RSET_001": {
+    "ruleset_id": "RSET_001",
+    "ruleset_category": "common"
   },
-  "RSETcommon000001": {
-    "ruleset_id": "RSETcommon000001",
-    "ruleset_name": "완전판매 실무바이블 공통 룰셋",
-    "ruleset_version": "1.0.0",
-    "ruleset_category": "공통"
+  "RSET_002": {
+    "ruleset_id": "RSET_002",
+    "ruleset_category": "isa"
+  },
+  "RSET_003": {
+    "ruleset_id": "RSET_003",
+    "ruleset_category": "irp"
   }
 }

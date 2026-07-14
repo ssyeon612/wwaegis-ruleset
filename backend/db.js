@@ -8,99 +8,60 @@ const DATA = path.join(__dirname, "data");
 const DB_PATH = path.join(DATA, "rule_mgnt.db");
 const read = (f) => JSON.parse(fs.readFileSync(path.join(DATA, f), "utf8"));
 
-// 근거 요지 자동 생성 (첫 문장, 최대 90자)
-const gistOf = (text) => {
-  const first = (text || "").split(/[.。]/)[0].trim();
-  return first.length > 90 ? first.slice(0, 90) + "…" : (first || text || "");
-};
-
-// meta_category → 판매원칙(principle) 매핑 : 룰 분류 1축 (프론트 PRINCIPLES 키와 일치)
-export const META_TO_PRINCIPLE = {
-  "적합성원칙": "적합성원칙",
-  "적정성원칙": "적정성원칙",
-  "설명의무": "설명의무",
-  "불공정영업금지": "불공정영업행위 금지",
-  "부당권유금지": "부당권유행위 금지",
-  "광고규제": "광고규제",
-  "녹취": "판매절차(녹취·숙려)",
-  "숙려제도": "판매절차(녹취·숙려)",
-  "청약철회권": "소비자 권리",
-  "위법계약해지권": "소비자 권리",
-  "자료보관": "사후관리",
-  "판매후확인콜": "사후관리",
-  "고령자": "고령투자자 보호",
-  "감점항목": "품질 평가(감점)",
-  "비계량": "품질 평가(감점)",
-};
 
 const db = new Database(DB_PATH);
 db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
 
 // ── 스키마 ───────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS knowledge (
     knowledge_id   TEXT PRIMARY KEY,
-    document_id    TEXT, document_type TEXT, e_id TEXT,
-    heading TEXT, text TEXT,
-    effective_from TEXT, effective_to TEXT,
-    source_system TEXT, source_page TEXT,
-    version        TEXT,  -- 조항 버전 (개정 시 증가)
-    gist           TEXT   -- 근거 요지 (iTrix 판정 페이로드용 · 전문 대신 짧게)
+    document_type  TEXT,
+    title TEXT, content TEXT,
+    created_at TEXT, updated_at TEXT
   );
 
-  -- RuleSet 단위 (식별정보 + 버전 + 카테고리) : F2-3 / F3-3
+  -- 카테고리 마스터 : product·ruleset 이 공유하는 사전 등록값(snake_case) + 표시명(label)
+  CREATE TABLE IF NOT EXISTS categories (
+    category  TEXT PRIMARY KEY,   -- snake_case (예: isa, irp, common)
+    label     TEXT,               -- 표시명 (예: ISA, IRP, 공통)
+    created_at TEXT, updated_at TEXT
+  );
+
+  -- RuleSet 단위 (식별정보 + 카테고리) : F2-3 / F3-3
+  --   표시명(ruleset_name)은 categories.label 에서 파생 — 별도 저장하지 않는다.
   CREATE TABLE IF NOT EXISTS rulesets (
     ruleset_id       TEXT PRIMARY KEY,
-    ruleset_name     TEXT,
-    ruleset_version  TEXT,
-    ruleset_category TEXT
+    ruleset_category TEXT REFERENCES categories(category),
+    created_at TEXT, updated_at TEXT
   );
 
-  -- 상품 마스터 : product_categories 로 룰셋 카테고리와 N:M 매칭 (F2-3)
+  -- 상품 마스터 : product_category(단일) 로 룰셋 카테고리와 매칭 (RS-2)
+  --   룰셋은 상품이 아닌 '카테고리' 단위로 정의되며, 상품은 자기 카테고리만 보유하고
+  --   RS-2 가 product_id → product_category → 해당 카테고리 룰셋으로 변환한다.
   CREATE TABLE IF NOT EXISTS products (
-    product_id         TEXT PRIMARY KEY,
-    product_name       TEXT,
-    product_categories TEXT   -- JSON array
+    product_id       TEXT PRIMARY KEY,
+    product_name     TEXT,
+    product_category TEXT REFERENCES categories(category),  -- 단일 카테고리 (FK)
+    created_at TEXT, updated_at TEXT
   );
 
   CREATE TABLE IF NOT EXISTS rules (
     rule_id             TEXT PRIMARY KEY,
     rule_seq            INTEGER,
-    content             TEXT,
-    product_type        TEXT,
-    is_deduct           INTEGER,
+    statement           TEXT,
     ruleset_id          TEXT,
-    meta_title          TEXT,
-    meta_category       TEXT,
-    principle           TEXT,   -- 판매원칙 (6대 원칙 + 절차 카테고리) : 룰 분류 1축
-    trigger_state       TEXT,
-    condition_type      TEXT,
-    product_class       TEXT,   -- 금융상품 유형 (예금성·대출성·투자성·보장성)
-    consumer_type       TEXT,   -- 금융소비자 유형 (일반·전문)
+    sales_principle           TEXT,   -- 판매원칙 (6대 원칙 + 절차 카테고리) : 룰 분류 1축
+    sales_stage       TEXT,
+    customer_condition      TEXT,
     keywords            TEXT,   -- JSON array (폴백)
     -- 매칭 메타 (ST/매칭AI 가 대화↔Rule 매칭에 사용) : 원칙 1
-    required_tags       TEXT,   -- JSON array of 태그 코드 (매칭AI 표준 태그)
-    -- 판정 메타 (iTrix 배심원 패널) : 원칙 1 / F2-7
-    jury_panel_id       TEXT,   -- 판정 패널 식별자
-    threshold           INTEGER,-- 위반 인정 배심원 수(5 중)
-    judge_prompt        TEXT,
-    verification_method TEXT,
+    semantic_tags       TEXT,   -- JSON array of 태그 코드 (매칭AI 표준 태그)
     violation_type      TEXT,
-    basis               TEXT,   -- JSON array of knowledge_id
-    review_status       TEXT,   -- ok | pending (근거 조항 개정 시 pending)
-    review_note         TEXT
-  );
-
-  CREATE TABLE IF NOT EXISTS vocabulary (
-    category TEXT, value TEXT, PRIMARY KEY (category, value)
-  );
-
-  -- 변경 이력 (append-only) : F4
-  CREATE TABLE IF NOT EXISTS change_log (
-    log_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-    entity_type TEXT, entity_id TEXT, action TEXT,
-    changes     TEXT,   -- JSON
-    actor       TEXT, reason TEXT, at TEXT
+    knowledge_ids               TEXT,   -- JSON array of knowledge_id
+    created_at          TEXT,
+    updated_at          TEXT
   );
 `);
 
@@ -110,51 +71,41 @@ function seed() {
   const tags = read("rule_tags.json");
   const rulesets = read("rulesets.json");
   const products = read("products.json");
-  const DEFAULT_PANEL = "JURY_STD_5";
-  const DEFAULT_THRESHOLD = 3;
 
+  const now = new Date().toISOString();
   const insP = db.prepare(`INSERT INTO knowledge
-    (knowledge_id, document_id, document_type, e_id, heading, text, effective_from, effective_to, source_system, source_page, version, gist)
-    VALUES (@knowledge_id, @document_id, @document_type, @e_id, @heading, @text, @effective_from, @effective_to, @source_system, @source_page, @version, @gist)`);
-  const insRuleset = db.prepare(`INSERT INTO rulesets (ruleset_id, ruleset_name, ruleset_version, ruleset_category)
-    VALUES (@ruleset_id, @ruleset_name, @ruleset_version, @ruleset_category)`);
-  const insProduct = db.prepare(`INSERT INTO products (product_id, product_name, product_categories)
-    VALUES (@product_id, @product_name, @product_categories)`);
+    (knowledge_id, document_type, title, content, created_at, updated_at)
+    VALUES (@knowledge_id, @document_type, @title, @content, @created_at, @updated_at)`);
+  const insRuleset = db.prepare(`INSERT INTO rulesets (ruleset_id, ruleset_category, created_at, updated_at)
+    VALUES (@ruleset_id, @ruleset_category, @created_at, @updated_at)`);
+  const insProduct = db.prepare(`INSERT INTO products (product_id, product_name, product_category, created_at, updated_at)
+    VALUES (@product_id, @product_name, @product_category, @created_at, @updated_at)`);
   const insR = db.prepare(`INSERT INTO rules
-    (rule_id, rule_seq, content, product_type, is_deduct, ruleset_id,
-     meta_title, meta_category, principle, trigger_state, condition_type, product_class, consumer_type, keywords, required_tags,
-     jury_panel_id, threshold, judge_prompt, verification_method, violation_type, basis, review_status, review_note)
+    (rule_id, rule_seq, statement, ruleset_id,
+     sales_principle, sales_stage, customer_condition, keywords, semantic_tags,
+     violation_type, knowledge_ids, created_at, updated_at)
     VALUES
-    (@rule_id, @rule_seq, @content, @product_type, @is_deduct, @ruleset_id,
-     @meta_title, @meta_category, @principle, @trigger_state, @condition_type, @product_class, @consumer_type, @keywords, @required_tags,
-     @jury_panel_id, @threshold, @judge_prompt, @verification_method, @violation_type, @basis, @review_status, @review_note)`);
-  const insV = db.prepare(`INSERT INTO vocabulary (category, value) VALUES (?, ?)`);
+    (@rule_id, @rule_seq, @statement, @ruleset_id,
+     @sales_principle, @sales_stage, @customer_condition, @keywords, @semantic_tags,
+     @violation_type, @knowledge_ids, @created_at, @updated_at)`);
 
   const tx = db.transaction(() => {
-    for (const p of Object.values(raw.knowledge)) insP.run({ ...p, version: p.version || "1.0", gist: p.gist || gistOf(p.text) });
-    for (const rs of Object.values(rulesets)) insRuleset.run(rs);
+    for (const p of Object.values(raw.knowledge)) insP.run({ ...p, created_at: now, updated_at: now });
+    for (const rs of Object.values(rulesets)) insRuleset.run({ ...rs, created_at: now, updated_at: now });
     for (const pr of Object.values(products)) {
-      if (pr.product_id) insProduct.run({ ...pr, product_categories: JSON.stringify(pr.product_categories || []) });
+      if (pr.product_id) insProduct.run({ ...pr, product_category: pr.product_category || null, created_at: now, updated_at: now });
     }
     for (const r of raw.rules) {
       const t = tags[r.rule_id] || {};
       const reqTags = t.semantic_tag ? [t.semantic_tag] : [];
       insR.run({
         ...r,
-        principle: r.principle || META_TO_PRINCIPLE[r.meta_category] || null,
-        product_class: r.product_class || "투자성상품",
-        consumer_type: r.consumer_type || "일반금융소비자",
+        sales_principle: r.sales_principle || null,
         keywords: JSON.stringify(r.keywords ?? []),
-        required_tags: JSON.stringify(reqTags),
-        jury_panel_id: DEFAULT_PANEL,
-        threshold: DEFAULT_THRESHOLD,
-        basis: JSON.stringify(r.basis ?? []),
-        review_status: "ok",
-        review_note: null,
+        semantic_tags: JSON.stringify(reqTags),
+        knowledge_ids: JSON.stringify(r.knowledge_ids ?? []),
+        created_at: now, updated_at: now,
       });
-    }
-    for (const [category, values] of Object.entries(raw.vocabulary)) {
-      for (const value of values) insV.run(category, value);
     }
   });
   tx();
@@ -166,18 +117,87 @@ function ensureCols(table, defs) {
   const have = new Set(db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name));
   for (const [name, ddl] of defs) if (!have.has(name)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${ddl}`);
 }
-ensureCols("knowledge", [["version", "TEXT"], ["gist", "TEXT"]]);
-ensureCols("rules", [["review_status", "TEXT"], ["review_note", "TEXT"], ["principle", "TEXT"], ["product_class", "TEXT"], ["consumer_type", "TEXT"]]);
-db.prepare("UPDATE knowledge SET version = '1.0' WHERE version IS NULL").run();
-db.prepare("UPDATE rules SET review_status = 'ok' WHERE review_status IS NULL").run();
-// principle 백필 : 기존 룰의 meta_category → 판매원칙 (룰 분류 1축)
-for (const r of db.prepare("SELECT rule_id, meta_category FROM rules WHERE principle IS NULL").all())
-  db.prepare("UPDATE rules SET principle = ? WHERE rule_id = ?").run(META_TO_PRINCIPLE[r.meta_category] || null, r.rule_id);
-// 금융상품·금융소비자 유형 백필 : 증권 완전판매 콘솔 기본값(투자성상품 · 일반금융소비자)
-db.prepare("UPDATE rules SET product_class = '투자성상품' WHERE product_class IS NULL").run();
-db.prepare("UPDATE rules SET consumer_type = '일반금융소비자' WHERE consumer_type IS NULL").run();
-for (const p of db.prepare("SELECT knowledge_id, text FROM knowledge WHERE gist IS NULL OR gist = ''").all())
-  db.prepare("UPDATE knowledge SET gist = ? WHERE knowledge_id = ?").run(gistOf(p.text), p.knowledge_id);
+// rules: 컬럼명 정비 (구명 → 신명, 멱등) — 데이터에 맞는 이름으로 통일
+{
+  const cols = new Set(db.prepare("PRAGMA table_info(rules)").all().map((c) => c.name));
+  const RENAMES = [
+    ["content", "statement"], ["principle", "sales_principle"], ["trigger_state", "sales_stage"],
+    ["condition_type", "customer_condition"], ["required_tags", "semantic_tags"], ["basis", "knowledge_ids"],
+  ];
+  for (const [from, to] of RENAMES) if (cols.has(from) && !cols.has(to)) db.exec(`ALTER TABLE rules RENAME COLUMN ${from} TO ${to}`);
+}
+// created_at / updated_at 컬럼 보강 + 기존 행 백필 (멱등)
+const NOW = new Date().toISOString();
+for (const table of ["knowledge", "rules", "rulesets", "products"]) {
+  ensureCols(table, [["created_at", "TEXT"], ["updated_at", "TEXT"]]);
+  db.prepare(`UPDATE ${table} SET created_at = ? WHERE created_at IS NULL`).run(NOW);
+  db.prepare(`UPDATE ${table} SET updated_at = ? WHERE updated_at IS NULL`).run(NOW);
+}
+
+// products: product_categories(배열) → product_category(단일) 정규화 (멱등)
+{
+  const cols = new Set(db.prepare("PRAGMA table_info(products)").all().map((c) => c.name));
+  if (!cols.has("product_category")) {
+    db.exec("ALTER TABLE products ADD COLUMN product_category TEXT");
+    if (cols.has("product_categories")) {
+      // 배열에서 '공통'을 제외한 첫 카테고리를 대표 카테고리로 승격
+      for (const pr of db.prepare("SELECT product_id, product_categories FROM products").all()) {
+        let cat = null;
+        try { const arr = JSON.parse(pr.product_categories || "[]"); cat = arr.find((c) => c !== "공통") || arr[0] || null; } catch { /* noop */ }
+        db.prepare("UPDATE products SET product_category = ? WHERE product_id = ?").run(cat, pr.product_id);
+      }
+    }
+  }
+  if (cols.has("product_categories")) db.exec("ALTER TABLE products DROP COLUMN product_categories");
+}
+
+// rulesets: ruleset_name 제거 (categories.label 에서 파생) — 멱등
+{
+  const cols = new Set(db.prepare("PRAGMA table_info(rulesets)").all().map((c) => c.name));
+  if (cols.has("ruleset_name")) db.exec("ALTER TABLE rulesets DROP COLUMN ruleset_name");
+}
+
+// ── 카테고리 마스터 정규화 + FK 보강 (멱등) ───────────────
+db.pragma("foreign_keys = OFF");
+{
+  // 1) categories 시드 (사전 등록값)
+  const catData = read("categories.json");
+  const insCat = db.prepare("INSERT OR IGNORE INTO categories (category, label, created_at, updated_at) VALUES (@category, @label, @created_at, @updated_at)");
+  for (const c of Object.values(catData)) if (c.category) insCat.run({ ...c, created_at: NOW, updated_at: NOW });
+
+  // 2) 기존 카테고리 값 표준화 (대문자/한글 → snake_case)
+  const MAP = { "ISA": "isa", "IRP": "irp", "공통": "common" };
+  for (const [from, to] of Object.entries(MAP)) {
+    db.prepare("UPDATE products SET product_category = ? WHERE product_category = ?").run(to, from);
+    db.prepare("UPDATE rulesets SET ruleset_category = ? WHERE ruleset_category = ?").run(to, from);
+  }
+  // 표준화 후에도 마스터에 없는 카테고리는 label=코드로 보강 (FK 위반 방지)
+  const known = new Set(db.prepare("SELECT category FROM categories").all().map((r) => r.category));
+  const used = new Set([
+    ...db.prepare("SELECT DISTINCT product_category AS c FROM products WHERE product_category IS NOT NULL").all().map((r) => r.c),
+    ...db.prepare("SELECT DISTINCT ruleset_category AS c FROM rulesets WHERE ruleset_category IS NOT NULL").all().map((r) => r.c),
+  ]);
+  for (const c of used) if (!known.has(c)) insCat.run({ category: c, label: c, created_at: NOW, updated_at: NOW });
+
+  // 3) products / rulesets 에 FK 없으면 테이블 재작성으로 추가
+  const hasFk = (t) => db.prepare(`PRAGMA foreign_key_list(${t})`).all().length > 0;
+  const rebuild = db.transaction((t, createSql) => {
+    db.exec(createSql);
+    const cols = db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name).join(", ");
+    db.exec(`INSERT INTO ${t}_new (${cols}) SELECT ${cols} FROM ${t};`);
+    db.exec(`DROP TABLE ${t};`);
+    db.exec(`ALTER TABLE ${t}_new RENAME TO ${t};`);
+  });
+  if (!hasFk("products")) rebuild("products", `CREATE TABLE products_new (
+    product_id TEXT PRIMARY KEY, product_name TEXT,
+    product_category TEXT REFERENCES categories(category),
+    created_at TEXT, updated_at TEXT);`);
+  if (!hasFk("rulesets")) rebuild("rulesets", `CREATE TABLE rulesets_new (
+    ruleset_id TEXT PRIMARY KEY,
+    ruleset_category TEXT REFERENCES categories(category),
+    created_at TEXT, updated_at TEXT);`);
+}
+db.pragma("foreign_keys = ON");
 
 const { c: ruleCount } = db.prepare("SELECT COUNT(*) AS c FROM rules").get();
 if (ruleCount === 0) seed();

@@ -1,18 +1,23 @@
 {
-  "_comment": "상품 마스터. product_categories 와 일치하는 ruleset_category 를 가진 모든 룰셋이 적용 대상 (F2-3 카테고리 기준 N:M).",
-  "PRODisa000000001": {
-    "product_id": "PRODisa000000001",
+  "_comment": "상품 마스터. 상품은 단일 product_category 만 보유하고, RS-2 가 product_id → product_category → 해당 카테고리 룰셋으로 변환한다. '공통' 룰셋은 전 상품 공통 base 로 항상 병합.",
+  "PROD_001": {
+    "product_id": "PROD_001",
     "product_name": "ISA 중개형",
-    "product_categories": ["ISA", "공통"]
+    "product_category": "isa"
   },
-  "PRODfnd000000001": {
-    "product_id": "PRODfnd000000001",
-    "product_name": "일반 공모펀드",
-    "product_categories": ["공통"]
+  "PROD_002": {
+    "product_id": "PROD_002",
+    "product_name": "ISA 서민형",
+    "product_category": "isa"
   },
-  "PRODels000000001": {
-    "product_id": "PRODels000000001",
-    "product_name": "ELS 스텝다운",
-    "product_categories": ["ISA", "공통"]
+  "PROD_003": {
+    "product_id": "PROD_003",
+    "product_name": "IRP 개인형",
+    "product_category": "irp"
+  },
+  "PROD_004": {
+    "product_id": "PROD_004",
+    "product_name": "IRP 기업형",
+    "product_category": "irp"
   }
 }

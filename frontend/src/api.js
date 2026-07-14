@@ -10,17 +10,25 @@ async function json(res) {
   return res.json();
 }
 
-// 관리 데이터 일괄 로드 (knowledge / rules / vocabulary / taxonomy / products)
+// 관리 데이터 일괄 로드 (knowledge / rules / taxonomy / products / rulesets)
 export async function fetchBundle() {
-  const [knowledge, rules, vocabulary, taxonomy, products] = await Promise.all([
+  const [knowledge, rules, taxonomy, products, rulesetsRes, categories] = await Promise.all([
     fetch(`${BASE}/knowledge`).then(json),
     fetch(`${BASE}/rules`).then(json),
-    fetch(`${BASE}/vocabulary`).then(json),
     fetch(`${BASE}/taxonomy`).then(json),
     fetch(`${BASE}/products`).then(json),
+    fetch(`${BASE}/rulesets`).then(json),
+    fetch(`${BASE}/categories`).then(json),
   ]);
   const knowledgeMap = Object.fromEntries(knowledge.map((p) => [p.knowledge_id, p]));
-  return { knowledge: knowledgeMap, rules, vocabulary, taxonomy, products };
+  return { knowledge: knowledgeMap, rules, taxonomy, products, categories, rulesets: rulesetsRes.ruleset_identities || [] };
+}
+
+// 룰 일괄 임포트 (파일 파싱 결과) — { rules, ruleset_id? , new_ruleset? }
+export async function importRules(payload) {
+  return fetch(`${BASE}/rules/import`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  }).then(json);
 }
 
 // 룰 추가 (신규 생성)
@@ -92,16 +100,6 @@ export async function updateKnowledge(knowledgeId, patch) {
     body: JSON.stringify(patch),
   }).then(json);
 }
-// 전체 변경 이력
-export async function fetchChangelog(params = {}) {
-  const qs = Object.entries(params).filter(([, v]) => v).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join("&");
-  return fetch(`${BASE}/changelog${qs ? `?${qs}` : ""}`).then(json);
-}
-// 룰 재검토 완료
-export async function clearRuleReview(ruleId) {
-  return fetch(`${BASE}/rules/${encodeURIComponent(ruleId)}/review/clear`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }).then(json);
-}
-
 // RS-1 listRuleSets
 export async function listRuleSets(category) {
   const q = category ? `?ruleset_category=${encodeURIComponent(category)}` : "";
