@@ -125,7 +125,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_002",
@@ -136,7 +136,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_003",
@@ -147,18 +147,18 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_004",
-      "statement": "작성 취지/내용: 투자자정보 파악 목적 설명 (연령대·소득현황 등)",
+      "statement": "투자자정보 파악 목적 설명 (연령대·소득현황 등)",
       "category": "common",
       "customer_condition": "모든 고객",
       "violation_type": "누락형",
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_005",
@@ -169,7 +169,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_006",
@@ -180,7 +180,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_007",
@@ -191,7 +191,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_008",
@@ -202,7 +202,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_009",
@@ -213,7 +213,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_010",
@@ -224,7 +224,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_011",
@@ -235,7 +235,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_012",
@@ -246,7 +246,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_013",
@@ -257,7 +257,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_014",
@@ -268,7 +268,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_015",
@@ -279,7 +279,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_016",
@@ -290,7 +290,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_017",
@@ -301,7 +301,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_018",
@@ -312,7 +312,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_019",
@@ -323,7 +323,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_020",
@@ -334,7 +334,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_021",
@@ -345,7 +345,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_022",
@@ -356,7 +356,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_023",
@@ -367,7 +367,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_024",
@@ -378,7 +378,7 @@
       "knowledge_ids": [
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_025",
@@ -389,7 +389,7 @@
       "knowledge_ids": [
         "KN_002"
       ],
-      "sales_principle": "적정성원칙"
+      "sales_principle": "ADEQUACY"
     },
     {
       "rule_id": "RULE_026",
@@ -400,7 +400,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_027",
@@ -411,7 +411,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_028",
@@ -422,7 +422,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_029",
@@ -433,7 +433,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_030",
@@ -444,7 +444,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_031",
@@ -455,7 +455,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_032",
@@ -466,7 +466,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_033",
@@ -477,7 +477,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_034",
@@ -488,7 +488,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_035",
@@ -499,7 +499,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_036",
@@ -510,7 +510,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_037",
@@ -521,7 +521,7 @@
       "knowledge_ids": [
         "KN_003"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_038",
@@ -533,7 +533,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_039",
@@ -545,7 +545,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_040",
@@ -557,7 +557,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_041",
@@ -569,7 +569,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_042",
@@ -581,7 +581,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_043",
@@ -593,7 +593,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_044",
@@ -605,7 +605,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_045",
@@ -617,7 +617,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_046",
@@ -629,7 +629,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_047",
@@ -641,7 +641,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_048",
@@ -653,7 +653,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_049",
@@ -665,7 +665,7 @@
         "KN_003",
         "KN_004"
       ],
-      "sales_principle": "설명의무"
+      "sales_principle": "EXPLANATION"
     },
     {
       "rule_id": "RULE_050",
@@ -676,7 +676,7 @@
       "knowledge_ids": [
         "KN_022"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_051",
@@ -687,7 +687,7 @@
       "knowledge_ids": [
         "KN_022"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_052",
@@ -698,7 +698,7 @@
       "knowledge_ids": [
         "KN_022"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_053",
@@ -709,7 +709,7 @@
       "knowledge_ids": [
         "KN_007"
       ],
-      "sales_principle": "부당권유행위 금지"
+      "sales_principle": "IMPROPER_SOLICITATION"
     },
     {
       "rule_id": "RULE_054",
@@ -720,7 +720,7 @@
       "knowledge_ids": [
         "KN_007"
       ],
-      "sales_principle": "부당권유행위 금지"
+      "sales_principle": "IMPROPER_SOLICITATION"
     },
     {
       "rule_id": "RULE_055",
@@ -731,7 +731,7 @@
       "knowledge_ids": [
         "KN_013"
       ],
-      "sales_principle": "품질 평가(감점)"
+      "sales_principle": "QUALITY_EVALUATION"
     },
     {
       "rule_id": "RULE_056",
@@ -742,7 +742,7 @@
       "knowledge_ids": [
         "KN_013"
       ],
-      "sales_principle": "품질 평가(감점)"
+      "sales_principle": "QUALITY_EVALUATION"
     },
     {
       "rule_id": "RULE_057",
@@ -753,7 +753,7 @@
       "knowledge_ids": [
         "KN_013"
       ],
-      "sales_principle": "품질 평가(감점)"
+      "sales_principle": "QUALITY_EVALUATION"
     },
     {
       "rule_id": "RULE_058",
@@ -764,7 +764,7 @@
       "knowledge_ids": [
         "KN_013"
       ],
-      "sales_principle": "품질 평가(감점)"
+      "sales_principle": "QUALITY_EVALUATION"
     },
     {
       "rule_id": "RULE_059",
@@ -776,7 +776,7 @@
         "KN_015",
         "KN_010"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_060",
@@ -788,7 +788,7 @@
         "KN_015",
         "KN_010"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_061",
@@ -799,11 +799,11 @@
       "knowledge_ids": [
         "KN_015"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_062",
-      "statement": "오상담·오설 설명사항 누락·부당권유 등 위법 발언 부존재",
+      "statement": "오상담·오설명·설명사항 누락·부당권유 등 위법 발언 부존재",
       "category": "common",
       "customer_condition": "모든 고객",
       "violation_type": "감점형",
@@ -811,7 +811,7 @@
         "KN_015",
         "KN_010"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_063",
@@ -822,7 +822,7 @@
       "knowledge_ids": [
         "KN_017"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_064",
@@ -833,7 +833,7 @@
       "knowledge_ids": [
         "KN_017"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_065",
@@ -844,7 +844,7 @@
       "knowledge_ids": [
         "KN_017"
       ],
-      "sales_principle": "판매절차(녹취·숙려)"
+      "sales_principle": "SALES_PROCEDURE"
     },
     {
       "rule_id": "RULE_066",
@@ -856,7 +856,7 @@
         "KN_011",
         "KN_020"
       ],
-      "sales_principle": "소비자 권리"
+      "sales_principle": "CONSUMER_RIGHTS"
     },
     {
       "rule_id": "RULE_067",
@@ -868,7 +868,7 @@
         "KN_011",
         "KN_020"
       ],
-      "sales_principle": "소비자 권리"
+      "sales_principle": "CONSUMER_RIGHTS"
     },
     {
       "rule_id": "RULE_068",
@@ -880,7 +880,7 @@
         "KN_012",
         "KN_018"
       ],
-      "sales_principle": "소비자 권리"
+      "sales_principle": "CONSUMER_RIGHTS"
     },
     {
       "rule_id": "RULE_069",
@@ -892,7 +892,7 @@
         "KN_012",
         "KN_018"
       ],
-      "sales_principle": "소비자 권리"
+      "sales_principle": "CONSUMER_RIGHTS"
     },
     {
       "rule_id": "RULE_070",
@@ -904,7 +904,7 @@
         "KN_009",
         "KN_019"
       ],
-      "sales_principle": "사후관리"
+      "sales_principle": "POST_MANAGEMENT"
     },
     {
       "rule_id": "RULE_071",
@@ -915,7 +915,7 @@
       "knowledge_ids": [
         "KN_021"
       ],
-      "sales_principle": "사후관리"
+      "sales_principle": "POST_MANAGEMENT"
     },
     {
       "rule_id": "RULE_072",
@@ -926,7 +926,7 @@
       "knowledge_ids": [
         "KN_021"
       ],
-      "sales_principle": "사후관리"
+      "sales_principle": "POST_MANAGEMENT"
     },
     {
       "rule_id": "RULE_073",
@@ -937,7 +937,7 @@
       "knowledge_ids": [
         "KN_014"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_074",
@@ -948,18 +948,18 @@
       "knowledge_ids": [
         "KN_014"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_075",
-      "statement": "고령층 지정인 알림 서비스: 대상상품(파생결합증권·투자일임·조건부자본증권 등) 판매 시 건별 신청의사 확인, 신청 시 신청서 지구·발송·전달 확인",
+      "statement": "고령층 지정인 알림 서비스: 대상상품(파생결합증권·투자일임·조건부자본증권 등) 판매 시 건별 신청의사 확인, 신청 시 신청서 징구·발송·전달 확인",
       "category": "common",
       "customer_condition": "고령자",
       "violation_type": "누락형",
       "knowledge_ids": [
         "KN_014"
       ],
-      "sales_principle": "고령투자자 보호"
+      "sales_principle": "ELDERLY_PROTECTION"
     },
     {
       "rule_id": "RULE_076",
@@ -971,7 +971,7 @@
         "KN_016",
         "KN_001"
       ],
-      "sales_principle": "적합성원칙"
+      "sales_principle": "SUITABILITY"
     },
     {
       "rule_id": "RULE_077",
@@ -983,7 +983,7 @@
         "KN_016",
         "KN_002"
       ],
-      "sales_principle": "적정성원칙"
+      "sales_principle": "ADEQUACY"
     }
   ]
 }

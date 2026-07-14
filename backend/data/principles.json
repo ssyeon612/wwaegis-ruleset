@@ -1,14 +1,14 @@
 {
-  "_comment": "판매원칙 마스터. 금소법 6대 원칙 + 절차/사후 분류. rules.sales_principle 이 code 를 참조(FK). article 은 근거 조문(없으면 null).",
-  "적합성원칙": { "code": "적합성원칙", "article": "제17조" },
-  "적정성원칙": { "code": "적정성원칙", "article": "제18조" },
-  "설명의무": { "code": "설명의무", "article": "제19조" },
-  "불공정영업행위 금지": { "code": "불공정영업행위 금지", "article": "제20조" },
-  "부당권유행위 금지": { "code": "부당권유행위 금지", "article": "제21조" },
-  "광고규제": { "code": "광고규제", "article": "제22조" },
-  "판매절차(녹취·숙려)": { "code": "판매절차(녹취·숙려)", "article": null },
-  "소비자 권리": { "code": "소비자 권리", "article": null },
-  "고령투자자 보호": { "code": "고령투자자 보호", "article": null },
-  "사후관리": { "code": "사후관리", "article": null },
-  "품질 평가(감점)": { "code": "품질 평가(감점)", "article": null }
+  "_comment": "판매원칙 마스터. code(짧은 PK) + label(표시명) + article(근거 조문). rules.sales_principle 이 code 를 참조(FK).",
+  "SUITABILITY": { "code": "SUITABILITY", "label": "적합성원칙", "article": "제17조" },
+  "ADEQUACY": { "code": "ADEQUACY", "label": "적정성원칙", "article": "제18조" },
+  "EXPLANATION": { "code": "EXPLANATION", "label": "설명의무", "article": "제19조" },
+  "UNFAIR_BUSINESS": { "code": "UNFAIR_BUSINESS", "label": "불공정영업행위 금지", "article": "제20조" },
+  "IMPROPER_SOLICITATION": { "code": "IMPROPER_SOLICITATION", "label": "부당권유행위 금지", "article": "제21조" },
+  "ADVERTISING": { "code": "ADVERTISING", "label": "광고규제", "article": "제22조" },
+  "SALES_PROCEDURE": { "code": "SALES_PROCEDURE", "label": "판매절차(녹취·숙려)", "article": null },
+  "CONSUMER_RIGHTS": { "code": "CONSUMER_RIGHTS", "label": "소비자 권리", "article": null },
+  "ELDERLY_PROTECTION": { "code": "ELDERLY_PROTECTION", "label": "고령투자자 보호", "article": null },
+  "POST_MANAGEMENT": { "code": "POST_MANAGEMENT", "label": "사후관리", "article": null },
+  "QUALITY_EVALUATION": { "code": "QUALITY_EVALUATION", "label": "품질 평가(감점)", "article": null }
 }

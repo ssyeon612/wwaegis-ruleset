@@ -42,6 +42,8 @@ export function buildGraph(db, taxonomy) {
   const semTags = Object.fromEntries(db.prepare("SELECT tag_code, label FROM tags").all().map((t) => [t.tag_code, t.label]));
   const ruleTagMap = {};
   for (const rt of db.prepare("SELECT rule_id, tag_code FROM rule_tags").all()) (ruleTagMap[rt.rule_id] ??= []).push(rt.tag_code);
+  const ruleKnowMap = {};
+  for (const rk of db.prepare("SELECT rule_id, knowledge_id FROM rule_knowledge").all()) (ruleKnowMap[rk.rule_id] ??= []).push(rk.knowledge_id);
 
   // documents ← knowledge
   const docs = new Set();
@@ -73,7 +75,7 @@ export function buildGraph(db, taxonomy) {
 
   // rules + relations
   for (const r of rules) {
-    const knowledge_ids = JSON.parse(r.knowledge_ids || "[]");
+    const knowledge_ids = ruleKnowMap[r.rule_id] || [];
     const tags = ruleTagMap[r.rule_id] || [];
     const mod = modalityOf(r.violation_type);
     addNode(N.rule(r.rule_id), "rule", r.statement, {

@@ -34,9 +34,10 @@ db.exec(`
     label     TEXT               -- 표시명 (예: 전문·일반 투자자 구분 확인)
   );
 
-  -- 판매원칙 마스터 : 금소법 6대 원칙 + 절차/사후. rules.sales_principle 이 참조
+  -- 판매원칙 마스터 : 금소법 6대 원칙 + 절차/사후. rules.sales_principle 이 code 참조
   CREATE TABLE IF NOT EXISTS principles (
-    code     TEXT PRIMARY KEY,   -- 예: 적합성원칙
+    code     TEXT PRIMARY KEY,   -- 짧은 코드 (예: SUITABILITY)
+    label    TEXT,               -- 표시명 (예: 적합성원칙)
     article  TEXT                -- 근거 조문 (예: 제17조, 없으면 NULL)
   );
 
@@ -56,7 +57,6 @@ db.exec(`
     sales_principle     TEXT REFERENCES principles(code),      -- 판매원칙 (FK) : 룰 분류 1축
     customer_condition      TEXT,
     violation_type      TEXT,
-    knowledge_ids               TEXT,   -- JSON array of knowledge_id
     created_at          TEXT,
     updated_at          TEXT
   );
@@ -66,6 +66,13 @@ db.exec(`
     rule_id   TEXT REFERENCES rules(rule_id),
     tag_code  TEXT REFERENCES tags(tag_code),
     PRIMARY KEY (rule_id, tag_code)
+  );
+
+  -- 룰 ↔ 근거 조항 (N:M 조인) : 룰의 판정 근거 (하나의 근거를 여러 룰이 공유)
+  CREATE TABLE IF NOT EXISTS rule_knowledge (
+    rule_id      TEXT REFERENCES rules(rule_id),
+    knowledge_id TEXT REFERENCES knowledge(knowledge_id),
+    PRIMARY KEY (rule_id, knowledge_id)
   );
 `);
 
@@ -85,15 +92,16 @@ function seed() {
     VALUES (@product_id, @product_name, @product_category)`);
   const insTag = db.prepare(`INSERT OR IGNORE INTO tags (tag_code, label) VALUES (?, ?)`);
   const insRuleTag = db.prepare(`INSERT OR IGNORE INTO rule_tags (rule_id, tag_code) VALUES (?, ?)`);
-  const insPrin = db.prepare(`INSERT OR IGNORE INTO principles (code, article) VALUES (?, ?)`);
+  const insRuleKnow = db.prepare(`INSERT OR IGNORE INTO rule_knowledge (rule_id, knowledge_id) VALUES (?, ?)`);
+  const insPrin = db.prepare(`INSERT OR IGNORE INTO principles (code, label, article) VALUES (?, ?, ?)`);
   const insR = db.prepare(`INSERT INTO rules
     (rule_id, statement, category,
      sales_principle, customer_condition,
-     violation_type, knowledge_ids, created_at, updated_at)
+     violation_type, created_at, updated_at)
     VALUES
     (@rule_id, @statement, @category,
      @sales_principle, @customer_condition,
-     @violation_type, @knowledge_ids, @created_at, @updated_at)`);
+     @violation_type, @created_at, @updated_at)`);
 
   const tx = db.transaction(() => {
     for (const p of Object.values(raw.knowledge)) insP.run({ ...p, created_at: now, updated_at: now });
@@ -103,14 +111,16 @@ function seed() {
     // 태그 마스터 (taxonomy.json → tags)
     for (const [code, label] of Object.entries(taxonomy.semantic_tags || {})) insTag.run(code, label);
     // 판매원칙 마스터 (principles.json)
-    for (const p of Object.values(principles)) if (p.code) insPrin.run(p.code, p.article ?? null);
+    for (const p of Object.values(principles)) if (p.code) insPrin.run(p.code, p.label ?? p.code, p.article ?? null);
     for (const r of raw.rules) {
+      const { knowledge_ids: kids, ...rrest } = r;
       insR.run({
-        ...r,
+        ...rrest,
         sales_principle: r.sales_principle || null,
-        knowledge_ids: JSON.stringify(r.knowledge_ids ?? []),
         created_at: now, updated_at: now,
       });
+      // 룰 ↔ 근거 조항 (seed.json knowledge_ids)
+      for (const kid of (kids || [])) insRuleKnow.run(r.rule_id, kid);
       // 룰 ↔ 태그 배정 (rule_tags.json)
       const code = (tags[r.rule_id] || {}).semantic_tag;
       if (code) { insTag.run(code, taxonomy.semantic_tags?.[code] || code); insRuleTag.run(r.rule_id, code); }
@@ -250,12 +260,30 @@ db.pragma("foreign_keys = OFF");
     db.exec("DROP TABLE rulesets");
   }
 
-  // ── principles 마스터 시드 + rules.sales_principle FK 보강 (멱등) ──
+  // ── principles 마스터(code+label+article) 정규화 + rules.sales_principle 리매핑(한글→code) (멱등) ──
   const princData = read("principles.json");
-  const insPrin = db.prepare("INSERT OR IGNORE INTO principles (code, article) VALUES (?, ?)");
-  for (const p of Object.values(princData)) if (p.code) insPrin.run(p.code, p.article ?? null);
-  // 마스터에 없는 기존 sales_principle 값 보강 (FK 위반 방지)
-  for (const row of db.prepare("SELECT DISTINCT sales_principle AS c FROM rules WHERE sales_principle IS NOT NULL").all()) insPrin.run(row.c, null);
+  const labelToCode = {};
+  for (const p of Object.values(princData)) if (p.code) labelToCode[p.label] = p.code;
+  const pcols = new Set(db.prepare("PRAGMA table_info(principles)").all().map((c) => c.name));
+  if (!pcols.has("label")) {
+    // 구 스키마(PK=한글, label 없음) → code PK + label 로 재작성
+    db.exec("CREATE TABLE principles_new (code TEXT PRIMARY KEY, label TEXT, article TEXT)");
+    const insPn = db.prepare("INSERT OR IGNORE INTO principles_new (code, label, article) VALUES (?, ?, ?)");
+    for (const p of Object.values(princData)) if (p.code) insPn.run(p.code, p.label ?? p.code, p.article ?? null);
+    // 마스터에 없는 기존 sales_principle(한글) 값 보강
+    for (const row of db.prepare("SELECT DISTINCT sales_principle AS v FROM rules WHERE sales_principle IS NOT NULL").all()) {
+      const code = labelToCode[row.v] || row.v;
+      insPn.run(code, row.v, null);
+    }
+    db.exec("DROP TABLE principles");
+    db.exec("ALTER TABLE principles_new RENAME TO principles");
+    // rules 값 리매핑 (한글 label → code)
+    for (const [label, code] of Object.entries(labelToCode)) db.prepare("UPDATE rules SET sales_principle = ? WHERE sales_principle = ?").run(code, label);
+  } else {
+    // 이미 정규화됨 → 마스터만 갱신
+    const insPrin = db.prepare("INSERT OR IGNORE INTO principles (code, label, article) VALUES (?, ?, ?)");
+    for (const p of Object.values(princData)) if (p.code) insPrin.run(p.code, p.label ?? p.code, p.article ?? null);
+  }
   // rules.sales_principle 에 FK 없으면 재작성으로 추가
   if (!db.prepare("PRAGMA foreign_key_list(rules)").all().some((f) => f.from === "sales_principle")) {
     db.exec(`CREATE TABLE rules_new2 (
@@ -268,6 +296,26 @@ db.pragma("foreign_keys = OFF");
              SELECT rule_id, statement, category, sales_principle, customer_condition, violation_type, knowledge_ids, created_at, updated_at FROM rules`);
     db.exec("DROP TABLE rules");
     db.exec("ALTER TABLE rules_new2 RENAME TO rules");
+  }
+
+  // ── rules.knowledge_ids(JSON) → rule_knowledge 조인 이관 + 컬럼 제거 (멱등) ──
+  if (new Set(db.prepare("PRAGMA table_info(rules)").all().map((c) => c.name)).has("knowledge_ids")) {
+    const insRK = db.prepare("INSERT OR IGNORE INTO rule_knowledge (rule_id, knowledge_id) VALUES (?, ?)");
+    for (const r of db.prepare("SELECT rule_id, knowledge_ids FROM rules").all()) {
+      let arr = []; try { arr = JSON.parse(r.knowledge_ids || "[]"); } catch { /* noop */ }
+      for (const kid of arr) if (db.prepare("SELECT 1 FROM knowledge WHERE knowledge_id = ?").get(kid)) insRK.run(r.rule_id, kid);
+    }
+    // rules 재작성: knowledge_ids 컬럼 제거
+    db.exec(`CREATE TABLE rules_new3 (
+      rule_id TEXT PRIMARY KEY, statement TEXT,
+      category TEXT REFERENCES categories(category),
+      sales_principle TEXT REFERENCES principles(code),
+      customer_condition TEXT, violation_type TEXT,
+      created_at TEXT, updated_at TEXT)`);
+    db.exec(`INSERT INTO rules_new3 (rule_id, statement, category, sales_principle, customer_condition, violation_type, created_at, updated_at)
+             SELECT rule_id, statement, category, sales_principle, customer_condition, violation_type, created_at, updated_at FROM rules`);
+    db.exec("DROP TABLE rules");
+    db.exec("ALTER TABLE rules_new3 RENAME TO rules");
   }
 }
 db.pragma("foreign_keys = ON");

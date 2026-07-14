@@ -46,13 +46,37 @@ const setRuleTags = (rule_id, codes) => {
     if (db.prepare("SELECT 1 FROM tags WHERE tag_code = ?").get(code)) ins.run(rule_id, code);
   }
 };
+// 룰의 근거 조항 (rule_knowledge 조인) — knowledge_ids 배열은 여기서 파생
+const knowledgeIdsOfRule = (rule_id) => db.prepare("SELECT knowledge_id FROM rule_knowledge WHERE rule_id = ? ORDER BY knowledge_id").all(rule_id).map((r) => r.knowledge_id);
+const allRuleKnowledgeMap = () => {
+  const m = {};
+  for (const rk of db.prepare("SELECT rule_id, knowledge_id FROM rule_knowledge").all()) (m[rk.rule_id] ??= []).push(rk.knowledge_id);
+  return m;
+};
+// 룰의 근거 배정 교체 — 없는 조항(knowledge)은 무시
+const setRuleKnowledge = (rule_id, ids) => {
+  db.prepare("DELETE FROM rule_knowledge WHERE rule_id = ?").run(rule_id);
+  const ins = db.prepare("INSERT OR IGNORE INTO rule_knowledge (rule_id, knowledge_id) VALUES (?, ?)");
+  for (const kid of (Array.isArray(ids) ? ids : [])) {
+    if (db.prepare("SELECT 1 FROM knowledge WHERE knowledge_id = ?").get(kid)) ins.run(rule_id, kid);
+  }
+};
+
+// 판매원칙 : DB 저장은 code, API/화면은 label. 입력은 code·label 모두 허용
+const principleLabel = (code) => db.prepare("SELECT label FROM principles WHERE code = ?").get(code)?.label ?? code;
+const principleCode = (v) => {
+  if (!v) return null;
+  if (db.prepare("SELECT 1 FROM principles WHERE code = ?").get(v)) return v;
+  return db.prepare("SELECT code FROM principles WHERE label = ?").get(v)?.code ?? v;
+};
 
 function parseRule(row) {
   if (!row) return row;
   return {
     ...row,
-    knowledge_ids: JSON.parse(row.knowledge_ids || "[]"),
+    knowledge_ids: knowledgeIdsOfRule(row.rule_id),
     semantic_tags: tagsOfRule(row.rule_id),
+    sales_principle: principleLabel(row.sales_principle),
   };
 }
 // products 는 단일 product_category(문자열)만 보유 — 별도 파싱 불필요
@@ -116,14 +140,13 @@ app.put("/api/knowledge/:id", (req, res) => {
   res.json(db.prepare("SELECT * FROM knowledge WHERE knowledge_id = ?").get(req.params.id));
 });
 
-// 근거 조항 삭제 — 이 조항을 근거(knowledge_ids)로 쓰는 룰이 있으면 차단
+// 근거 조항 삭제 — 이 조항을 근거로 쓰는 룰이 있으면 차단 (rule_knowledge 참조)
 app.delete("/api/knowledge/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM knowledge WHERE knowledge_id = ?").get(req.params.id);
   if (!existing) return fail(res, 404, "not_found", "knowledge not found");
 
-  const refs = db.prepare("SELECT knowledge_ids FROM rules").all()
-    .filter((r) => { try { return JSON.parse(r.knowledge_ids || "[]").includes(req.params.id); } catch { return false; } });
-  if (refs.length) return fail(res, 409, "conflict", `이 조항을 근거로 사용하는 룰이 ${refs.length}건 있어 삭제할 수 없습니다`);
+  const refs = db.prepare("SELECT COUNT(*) AS c FROM rule_knowledge WHERE knowledge_id = ?").get(req.params.id).c;
+  if (refs) return fail(res, 409, "conflict", `이 조항을 근거로 사용하는 룰이 ${refs}건 있어 삭제할 수 없습니다`);
 
   db.prepare("DELETE FROM knowledge WHERE knowledge_id = ?").run(req.params.id);
   res.json(ok({ deleted: req.params.id }));
@@ -149,61 +172,61 @@ app.post("/api/rules", (req, res) => {
   let rule_id = (b.rule_id || `RULE_${String(m + 1).padStart(3, "0")}`).trim();
   while (db.prepare("SELECT 1 FROM rules WHERE rule_id = ?").get(rule_id)) rule_id += "_x";
 
-  const arr = (v) => JSON.stringify(Array.isArray(v) ? v : []);
   const now = new Date().toISOString();
   const row = {
     rule_id,
     statement,
     category: b.category || b.ruleset_id || null,
-    sales_principle: b.sales_principle || null,
+    sales_principle: principleCode(b.sales_principle),
     customer_condition: b.customer_condition || null,
     violation_type: b.violation_type || null,
-    knowledge_ids: arr(b.knowledge_ids),
     created_at: now, updated_at: now,
   };
 
   db.prepare(`INSERT INTO rules
     (rule_id, statement, category,
      sales_principle, customer_condition,
-     violation_type, knowledge_ids, created_at, updated_at)
+     violation_type, created_at, updated_at)
     VALUES
     (@rule_id, @statement, @category,
      @sales_principle, @customer_condition,
-     @violation_type, @knowledge_ids, @created_at, @updated_at)`).run(row);
+     @violation_type, @created_at, @updated_at)`).run(row);
   setRuleTags(rule_id, b.semantic_tags);
+  setRuleKnowledge(rule_id, b.knowledge_ids);
 
   res.status(201).json(parseRule(db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(rule_id)));
 });
 
 // 룰 수정 + 변경 이력 append (F4)
-// semantic_tags 는 rule_tags 조인으로 별도 처리 (컬럼 아님)
-const EDITABLE = ["statement", "sales_principle", "customer_condition", "violation_type", "knowledge_ids"];
-const JSON_FIELDS = new Set(["knowledge_ids"]);
+// semantic_tags·knowledge_ids 는 조인(rule_tags·rule_knowledge)으로 별도 처리 (컬럼 아님)
+const EDITABLE = ["statement", "sales_principle", "customer_condition", "violation_type"];
 app.put("/api/rules/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
   if (!existing) return fail(res, 404, "not_found", "rule not found");
 
   const patch = {};
-  for (const key of EDITABLE) {
-    if (key in req.body) patch[key] = JSON_FIELDS.has(key) ? JSON.stringify(req.body[key] || []) : req.body[key];
-  }
+  for (const key of EDITABLE) if (key in req.body) patch[key] = req.body[key];
+  if ("sales_principle" in patch) patch.sales_principle = principleCode(patch.sales_principle);
   const hasTags = "semantic_tags" in req.body;
-  if (Object.keys(patch).length === 0 && !hasTags) return fail(res, 400, "bad_request", "no editable fields provided");
+  const hasKnow = "knowledge_ids" in req.body;
+  if (Object.keys(patch).length === 0 && !hasTags && !hasKnow) return fail(res, 400, "bad_request", "no editable fields provided");
   patch.updated_at = new Date().toISOString();
 
   const setClause = Object.keys(patch).map((k) => `${k} = @${k}`).join(", ");
   db.prepare(`UPDATE rules SET ${setClause} WHERE rule_id = @rule_id`).run({ ...patch, rule_id: req.params.id });
   if (hasTags) setRuleTags(req.params.id, req.body.semantic_tags);
+  if (hasKnow) setRuleKnowledge(req.params.id, req.body.knowledge_ids);
 
   res.json(parseRule(db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id)));
 });
 
-// 룰 삭제 — 태그 배정(rule_tags) 먼저 정리 후 룰 삭제
+// 룰 삭제 — 태그·근거 배정(rule_tags·rule_knowledge) 먼저 정리 후 룰 삭제
 app.delete("/api/rules/:id", (req, res) => {
   const existing = db.prepare("SELECT * FROM rules WHERE rule_id = ?").get(req.params.id);
   if (!existing) return fail(res, 404, "not_found", "rule not found");
 
   db.prepare("DELETE FROM rule_tags WHERE rule_id = ?").run(req.params.id);
+  db.prepare("DELETE FROM rule_knowledge WHERE rule_id = ?").run(req.params.id);
   db.prepare("DELETE FROM rules WHERE rule_id = ?").run(req.params.id);
   res.json(ok({ deleted: req.params.id }));
 });
@@ -298,16 +321,15 @@ app.post("/api/rules/import", (req, res) => {
     if (category && !db.prepare("SELECT 1 FROM categories WHERE category = ?").get(category)) return fail(res, 400, "bad_request", `unknown category: ${category}`);
   }
 
-  const arr = (v) => JSON.stringify(Array.isArray(v) ? v : []);
   const now = new Date().toISOString();
   const ins = db.prepare(`INSERT INTO rules
     (rule_id, statement, category,
      sales_principle, customer_condition,
-     violation_type, knowledge_ids, created_at, updated_at)
+     violation_type, created_at, updated_at)
     VALUES
     (@rule_id, @statement, @category,
      @sales_principle, @customer_condition,
-     @violation_type, @knowledge_ids, @created_at, @updated_at)`);
+     @violation_type, @created_at, @updated_at)`);
 
   const created = [];
   let skipped = 0;
@@ -322,13 +344,13 @@ app.post("/api/rules/import", (req, res) => {
       ins.run({
         rule_id, statement,
         category,
-        sales_principle: r.sales_principle || null,
+        sales_principle: principleCode(r.sales_principle),
         customer_condition: r.customer_condition || "모든 고객",
         violation_type: r.violation_type || "누락형",
-        knowledge_ids: arr(r.knowledge_ids),
         created_at: now, updated_at: now,
       });
       setRuleTags(rule_id, r.semantic_tags);
+      setRuleKnowledge(rule_id, r.knowledge_ids);
       created.push(rule_id);
     }
   })();
@@ -347,9 +369,8 @@ const RULE_LIMIT = JUDGE_BUDGET - DIALOGUE_RESERVE; // 룰 판정정보 상한 =
 // 판매원칙 조문 — principles 마스터에서 조회 (sales_principle 은 rules 저장값 사용)
 const principleArticle = (code) => db.prepare("SELECT article FROM principles WHERE code = ?").get(code)?.article ?? null;
 
-function buildJudge(r, knowledgeFull) {
-  const basisIds = JSON.parse(r.knowledge_ids || "[]");
-  const basisItems = basisIds.map((pid) => knowledgeFull[pid]).filter(Boolean);
+function buildJudge(r, knowledgeFull, basisIds) {
+  const basisItems = (basisIds || []).map((pid) => knowledgeFull[pid]).filter(Boolean);
   const basisView = basisItems.map((p) => ({ document_type: p.document_type, title: p.title, gist: gistOf(p.content) }));
   // ST 가 iTrix 에 넘길 "룰 판정정보" (대화는 ST가 붙임)
   const judge_payload =
@@ -379,6 +400,7 @@ app.get("/api/ruleset/load", (req, res) => {
   const ruleset_identity = { ...rulesetIdentityOf(category), version };
   const knowledgeFull = Object.fromEntries(db.prepare("SELECT * FROM knowledge").all().map((p) => [p.knowledge_id, p]));
   const rtMap = allRuleTagsMap(); // rule_id → [tag_code]
+  const rkMap = allRuleKnowledgeMap(); // rule_id → [knowledge_id]
 
   const allRows = db.prepare("SELECT * FROM rules ORDER BY rule_id").all().filter((r) => appliedCats.includes(r.category));
   const totalInRuleset = allRows.length;
@@ -387,19 +409,19 @@ app.get("/api/ruleset/load", (req, res) => {
     : allRows;
   // 조항(근거 법령) 원문 뷰 — iTrix 위반 판정용
   const knowledgeOf = (r) =>
-    JSON.parse(r.knowledge_ids || "[]").map((pid) => knowledgeFull[pid]).filter(Boolean)
+    (rkMap[r.rule_id] || []).map((pid) => knowledgeFull[pid]).filter(Boolean)
       .map((p) => ({ knowledge_id: p.knowledge_id, document_type: p.document_type, title: p.title, content: p.content }));
 
   const rules = rows.map((r) => {
-    const { basisView, judge_payload } = buildJudge(r, knowledgeFull);
+    const { basisView, judge_payload } = buildJudge(r, knowledgeFull, rkMap[r.rule_id] || []);
     const judge_chars = judge_payload.length;
     const ruleTags = rtMap[r.rule_id] || [];
     return {
       id: r.rule_id.replace(/^RULE_/, ""),
       rule_id: r.rule_id,
       statement: r.statement,
-      // 판매원칙 (rules 저장값) + 조문(principles 마스터)
-      sales_principle: r.sales_principle,
+      // 판매원칙 : 저장 code → 표시 label, 조문(principles 마스터)
+      sales_principle: principleLabel(r.sales_principle),
       principle_article: principleArticle(r.sales_principle),
       customer_condition: r.customer_condition,
       violation_type: r.violation_type,
