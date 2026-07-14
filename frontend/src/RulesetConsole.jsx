@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, importRules } from "./api";
+import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, importRules, analyzeRulesFile } from "./api";
 
 // 데이터는 백엔드 API 에서 로드한다. (knowledge / rules / taxonomy / products / rulesets)
 
@@ -156,6 +156,8 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
   const [cands, setCands] = useState([]);
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzer, setAnalyzer] = useState(""); // 어떤 분석기가 돌았는지 표기
 
   const tagsMap = taxonomy.semantic_tags || {};
   const tagCodes = Object.keys(tagsMap);
@@ -163,8 +165,10 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
   const inputStyle = { width: "100%", boxSizing: "border-box", padding: "7px 9px", border: `1px solid ${T.line}`, borderRadius: 7, fontSize: 12.5, fontFamily: T.font, background: T.surface, color: T.ink };
   const defaultCat = categories.some((c) => c.category === "common") ? "common" : (categories[0]?.category || "");
 
-  const reset = () => { setStep("upload"); setFileName(""); setCands([]); setErr(null); };
-  const close = () => { if (!busy) { reset(); onClose(); } };
+  const reset = () => { setStep("upload"); setFileName(""); setCands([]); setErr(null); setAnalyzer(""); };
+  const close = () => { if (!busy && !analyzing) { reset(); onClose(); } };
+
+  const localAnalyze = (text) => analyzeRules(text, { categories, principles, tags: tagsMap, knowledgeIds: knowList.map((k) => k.knowledge_id) });
 
   async function onFile(e) {
     const file = e.target.files?.[0];
@@ -172,12 +176,23 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
     if (!file) return;
     setErr(null); setFileName(file.name);
     if (!/\.(md|markdown|txt)$/i.test(file.name)) { setErr("마크다운(.md)·텍스트(.txt) 파일만 지원합니다."); return; }
+    let text;
+    try { text = await file.text(); } catch (e2) { setErr("파일을 읽지 못했습니다: " + (e2?.message || e2)); return; }
+    setAnalyzing(true);
+    let cs = [], who = "";
     try {
-      const text = await file.text();
-      const cs = analyzeRules(text, { categories, principles, tags: tagsMap, knowledgeIds: knowList.map((k) => k.knowledge_id) });
-      if (!cs.length) { setErr("분석된 룰이 없습니다. 헤딩(##) 또는 불릿(-) 형식인지 확인하세요."); return; }
-      setCands(cs); setStep("review");
-    } catch (e2) { setErr("파일을 읽지 못했습니다: " + (e2?.message || e2)); }
+      // 1) AI(Gemini) 분석 시도 → 2) 실패 시 규칙기반 폴백
+      try {
+        const r = await analyzeRulesFile(text);
+        cs = r.rules || [];
+        who = `AI 분석 (${r.model || "gemini"})`;
+      } catch (aiErr) {
+        cs = localAnalyze(text);
+        who = "규칙기반 분석 (AI 미연동·실패)";
+      }
+      if (!cs.length) { setErr("분석된 룰이 없습니다. 헤딩(##)·불릿(-) 형식이거나 AI가 룰을 찾지 못했습니다."); return; }
+      setCands(cs); setAnalyzer(who); setStep("review");
+    } finally { setAnalyzing(false); }
   }
 
   const patch = (i, p) => setCands((cs) => cs.map((c, j) => (j === i ? { ...c, ...p } : c)));
@@ -241,12 +256,20 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
         <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14, padding: "18px 20px" }}>
           {step === "upload" && (
             <>
-              <label style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "34px 16px", cursor: "pointer", fontSize: 13.5, fontWeight: 600 }}>
-                <input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
-                <span style={{ fontSize: 30 }}>📄</span>
-                파일 선택 (.md · .txt)
-                <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>업로드하면 자동으로 분석해 룰 후보를 만듭니다</span>
-              </label>
+              {analyzing ? (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "40px 16px", fontSize: 13.5, fontWeight: 600 }}>
+                  <span style={{ fontSize: 26 }}>🤖</span>
+                  AI 분석 중…
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>{fileName} · 문서에서 룰을 추출하고 있습니다</span>
+                </div>
+              ) : (
+                <label style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "34px 16px", cursor: "pointer", fontSize: 13.5, fontWeight: 600 }}>
+                  <input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
+                  <span style={{ fontSize: 30 }}>📄</span>
+                  파일 선택 (.md · .txt)
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>업로드하면 AI가 분석해 룰 후보를 만듭니다 (미연동 시 규칙기반)</span>
+                </label>
+              )}
               <details style={{ fontSize: 11.5, color: T.faint }}>
                 <summary style={{ cursor: "pointer", color: T.sub }}>입력 형식 도움말</summary>
                 <pre style={{ margin: "6px 0 0", background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "10px 12px", fontSize: 11, lineHeight: 1.5, fontFamily: T.mono, color: T.ink, whiteSpace: "pre-wrap" }}>{`## 원금손실 가능성 설명
@@ -265,8 +288,9 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
 
           {step === "review" && (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12.5, color: T.sub }}><b style={{ color: T.accent }}>{cands.length}건</b> 분석됨 · <span style={{ color: T.faint }}>{fileName}</span></span>
+                {analyzer && <span style={{ fontSize: 10.5, fontWeight: 600, color: analyzer.startsWith("AI") ? "#059669" : T.faint, background: analyzer.startsWith("AI") ? "#D1FAE5" : T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{analyzer.startsWith("AI") ? "🤖 " : ""}{analyzer}</span>}
                 <button onClick={addBlank} style={{ marginLeft: "auto", border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>+ 빈 룰 추가</button>
               </div>
               {cands.length === 0 && <div style={{ padding: "24px", textAlign: "center", color: T.faint, fontSize: 13 }}>검토할 룰이 없습니다. "빈 룰 추가"로 직접 만들 수 있습니다.</div>}
@@ -343,6 +367,11 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
   // 고객조건 셀렉트 옵션 (표준 3분류 + 기존 값)
   const conditionOptions = [...new Set(["모든 고객", "고령자", "초고령자", ...rules.map((r) => r.customer_condition).filter(Boolean)])];
+  const VIOL_COLOR = { "누락형": "#2D5BE3", "감점형": "#DC2626", "비계량형": "#5A6577" };
+  const uniq = (arr) => [...new Set(arr.filter(Boolean))];
+  const prinOpts = useMemo(() => uniq(rules.map((r) => r.sales_principle)), [rules]);
+  const catOpts = useMemo(() => uniq(rules.map((r) => r.category)), [rules]);
+  const violOpts = ["누락형", "감점형", "비계량형"];
   const fieldLabel = { fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase" };
   const knowledgeOf = (r) => (r.knowledge_ids || []).map((pid) => knowledge[pid]).filter(Boolean);
 
@@ -370,6 +399,18 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
   };
 
   const [stage, setStage] = useState("all");
+  const [fPrin, setFPrin] = useState("");   // 판매원칙(label)
+  const [fCat, setFCat] = useState("");     // 카테고리
+  const [fCond, setFCond] = useState("");   // 고객조건
+  const [fViol, setFViol] = useState("");   // 위반유형
+  const tableRows = rules.filter((r) => {
+    if (q && !(r.statement.toLowerCase().includes(q) || (r.semantic_tags || []).some((t) => t.toLowerCase().includes(q)))) return false;
+    if (fPrin && r.sales_principle !== fPrin) return false;
+    if (fCat && r.category !== fCat) return false;
+    if (fCond && r.customer_condition !== fCond) return false;
+    if (fViol && r.violation_type !== fViol) return false;
+    return true;
+  }).sort((a, b) => (a.rule_id || "").localeCompare(b.rule_id || ""));
   const [openKnowledge, setOpenKnowledge] = useState(() => new Set());
   const [edit, setEdit] = useState(false);
   const [saveState, setSaveState] = useState("idle");
@@ -600,67 +641,73 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
         </div>
       </div>
 
-      {/* 키워드 검색 */}
-      <div style={{ position: "relative", marginBottom: 6 }}>
-        <span style={{ position: "absolute", left: 16, top: "50%", transform: "translateY(-50%)", color: T.faint }}>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-        </span>
-        <input value={query} onChange={(e) => setQuery(e.target.value)} autoFocus
-          placeholder="키워드로 룰 찾기 — 예: 원금손실, 녹취, 청약철회, RSK_LOSS"
-          style={{ width: "100%", boxSizing: "border-box", padding: "13px 16px 13px 42px", border: `1px solid ${q ? T.accent : T.line}`, borderRadius: 12, fontSize: 15, fontFamily: T.font, outline: "none", background: T.surface, color: T.ink }} />
-        {q && <button onClick={() => setQuery("")} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: T.faint, fontSize: 18, cursor: "pointer" }}>×</button>}
+      {/* 검색 + 필터 툴바 */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T.faint }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          </span>
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="점검문·태그 검색"
+            style={{ width: "100%", boxSizing: "border-box", padding: "8px 30px 8px 34px", border: `1px solid ${q ? T.accent : T.line}`, borderRadius: 9, fontSize: 13, fontFamily: T.font, outline: "none", background: T.surface, color: T.ink }} />
+          {q && <button onClick={() => setQuery("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", color: T.faint, fontSize: 16, cursor: "pointer" }}>×</button>}
+        </div>
+        {[["원칙", fPrin, setFPrin, prinOpts.map((p) => [p, p])], ["카테고리", fCat, setFCat, catOpts.map((c) => [c, catLabel[c] || c])], ["조건", fCond, setFCond, conditionOptions.map((c) => [c, c])], ["위반", fViol, setFViol, violOpts.map((v) => [v, v])]].map(([label, val, set, opts]) => (
+          <select key={label} value={val} onChange={(e) => set(e.target.value)}
+            style={{ padding: "8px 10px", border: `1px solid ${val ? T.accent : T.line}`, borderRadius: 9, fontSize: 12.5, fontFamily: T.font, background: T.surface, color: val ? T.accent : T.sub, fontWeight: val ? 600 : 400 }}>
+            <option value="">{label}: 전체</option>
+            {opts.map(([v, lb]) => <option key={v} value={v}>{lb}</option>)}
+          </select>
+        ))}
+        {(q || fPrin || fCat || fCond || fViol) && <button onClick={() => { setQuery(""); setFPrin(""); setFCat(""); setFCond(""); setFViol(""); }} style={{ border: "none", background: "none", color: T.accent, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>초기화</button>}
       </div>
 
-      {q ? (
-        <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden" }}>
-          <div style={{ padding: "9px 14px", borderBottom: `1px solid ${T.line}`, fontSize: 12, color: T.sub }}>
-            <b style={{ color: T.accent }}>{results.length}건</b> 매칭 · "{query}"
-          </div>
-          {results.map(({ r }, i) => (<div key={r.rule_id} style={{ borderTop: i ? `1px solid ${T.line}` : "none" }}><RuleItem r={r} showKnowledge /></div>))}
-          {results.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.faint, fontSize: 13 }}>매칭되는 룰이 없습니다</div>}
+      {/* 룰 테이블 */}
+      <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden" }}>
+        <div style={{ padding: "8px 14px", borderBottom: `1px solid ${T.line}`, fontSize: 12, color: T.sub }}>
+          <b style={{ color: T.ink }}>{tableRows.length}</b> / {rules.length}건
         </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 3fr) minmax(0, 9fr)", gap: 12, alignItems: "start" }}>
-          {/* 6대 판매원칙 사이드바 */}
-          <div style={{ position: "sticky", top: 20, alignSelf: "start", display: "flex", flexDirection: "column", gap: 2, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 10, padding: 6, maxHeight: "calc(100vh - 40px)", overflowY: "auto" }}>
-            {[["all", "전체", null, rules.length], ...grouped.map(([s, l]) => [s, s, PRINCIPLE_ART[s], l.length])].map(([key, label, art, n]) => {
-              const active = stage === key;
-              return (
-                <button key={key} onClick={() => setStage(key)}
-                  style={{ display: "flex", alignItems: "center", gap: 8, border: "none", background: active ? T.accentBg : "transparent", color: active ? T.accent : T.sub, borderRadius: 7, padding: "8px 10px", cursor: "pointer", fontSize: 12.5, fontWeight: active ? 600 : 400, textAlign: "left" }}>
-                  <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
-                  {art && <span style={{ fontSize: 10, fontWeight: 600, color: active ? T.accent : T.faint, fontFamily: T.mono, opacity: 0.8 }}>{art}</span>}
-                  <span style={{ fontSize: 11, fontWeight: 700, color: active ? T.accent : T.faint }}>{n}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 룰 목록 */}
-          <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden" }}>
-            {(stage === "all" ? grouped : grouped.filter(([s]) => s === stage)).map(([state, list], gi) => {
-              const knowledgeItems = groupKnowledge(list);
-              const knowledgeOpen = openKnowledge.has(state);
-              return (
-                <div key={state}>
-                  <div style={{ position: "sticky", top: 0, zIndex: 1, background: "#475569", borderTop: gi ? `2px solid ${T.surface}` : "none", padding: "8px 14px", fontSize: 12.5, fontWeight: 700, color: "#fff", display: "flex", alignItems: "center", gap: 8 }}>
-                    <span>{state}</span>
-                    <span style={{ fontSize: 10.5, fontWeight: 600, color: "#CBD5E1", fontFamily: T.mono }}>{PRINCIPLE_ART[state]}</span>
-                    {knowledgeItems.length > 0 && <button onClick={() => toggleGroupKnowledge(state)} style={{ border: "none", background: "rgba(255,255,255,0.18)", color: "#fff", borderRadius: 6, padding: "2px 8px", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>근거 조항 {knowledgeItems.length} {knowledgeOpen ? "▲" : "▼"}</button>}
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#475569", background: "#fff", borderRadius: 10, padding: "1px 8px", marginLeft: "auto" }}>{list.length}</span>
-                  </div>
-                  {knowledgeOpen && (
-                    <div style={{ padding: "10px 14px", background: T.subtle, borderBottom: `1px solid ${T.line}`, display: "flex", flexDirection: "column", gap: 6 }}>
-                      {knowledgeItems.map((p) => <KnowledgeCard key={p.knowledge_id} p={p} />)}
-                    </div>
-                  )}
-                  {list.map((r, i) => (<div key={r.rule_id} style={{ borderTop: i ? `1px solid ${T.line}` : "none" }}><RuleItem r={r} /></div>))}
-                </div>
-              );
-            })}
-          </div>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+            <thead>
+              <tr style={{ background: T.subtle }}>
+                {["ID", "점검 문장", "원칙", "조건", "위반", "태그", "근거"].map((h, i) => (
+                  <th key={h} style={{ padding: "8px 12px", fontSize: 10.5, fontWeight: 700, letterSpacing: 0.3, color: T.faint, textTransform: "uppercase", whiteSpace: "nowrap", borderBottom: `1px solid ${T.line}`, textAlign: i === 6 ? "center" : "left", position: "sticky", top: 0 }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.length === 0 && <tr><td colSpan={7} style={{ padding: 40, textAlign: "center", color: T.faint }}>조건에 맞는 룰이 없습니다</td></tr>}
+              {tableRows.map((r) => {
+                const open = openId === r.rule_id;
+                const tags = r.semantic_tags || [];
+                const pb = principleBadge(r.sales_principle);
+                return (
+                  <React.Fragment key={r.rule_id}>
+                    <tr onClick={() => toggleOpen(r.rule_id)} style={{ cursor: "pointer", background: open ? T.accentBg : "transparent", borderBottom: `1px solid ${T.line}` }}
+                      onMouseEnter={(e) => { if (!open) e.currentTarget.style.background = T.subtle; }}
+                      onMouseLeave={(e) => { if (!open) e.currentTarget.style.background = "transparent"; }}>
+                      <td style={{ padding: "8px 12px", fontFamily: T.mono, fontSize: 11, color: T.faint, whiteSpace: "nowrap", verticalAlign: "top" }}>{r.rule_id.replace(/^RULE_/, "")}</td>
+                      <td style={{ padding: "8px 12px", color: T.ink, fontWeight: open ? 600 : 400, minWidth: 240, lineHeight: 1.5 }}>{r.statement}</td>
+                      <td style={{ padding: "8px 12px", whiteSpace: "nowrap", verticalAlign: "top" }}>{r.sales_principle ? <span style={{ fontSize: 11, fontWeight: 600, color: pb.fg, background: pb.bg, borderRadius: 6, padding: "2px 7px" }}>{r.sales_principle}</span> : <span style={{ color: T.faint }}>—</span>}</td>
+                      <td style={{ padding: "8px 12px", color: T.sub, whiteSpace: "nowrap", verticalAlign: "top" }}>{r.customer_condition}</td>
+                      <td style={{ padding: "8px 12px", whiteSpace: "nowrap", verticalAlign: "top" }}><span style={{ fontSize: 11, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub }}>{r.violation_type}</span></td>
+                      <td style={{ padding: "8px 12px", verticalAlign: "top" }}>
+                        <span style={{ display: "inline-flex", gap: 4, flexWrap: "wrap" }}>
+                          {tags.slice(0, 2).map((t) => <span key={t} style={{ fontFamily: T.mono, fontSize: 10, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 5, padding: "1px 6px" }}>{t}</span>)}
+                          {tags.length > 2 && <span style={{ fontSize: 10, color: T.faint }}>+{tags.length - 2}</span>}
+                          {tags.length === 0 && <span style={{ fontSize: 11, color: T.faint }}>—</span>}
+                        </span>
+                      </td>
+                      <td style={{ padding: "8px 12px", textAlign: "center", color: T.sub, verticalAlign: "top" }}>{(r.knowledge_ids || []).length || "—"}</td>
+                    </tr>
+                    {open && <tr><td colSpan={7} style={{ padding: 0, borderBottom: `1px solid ${T.line}`, background: T.bg }}><Panel r={r} showKnowledge /></td></tr>}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -696,6 +743,7 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
   }
   const budget = result?.budget;
   const shown = result ? result.rules : [];
+  const VIOL_COLOR = { "누락형": "#2D5BE3", "감점형": "#DC2626", "비계량형": "#5A6577" };
 
   // ST → iTrix 전송 페이로드 (JSON) — RuleSet 은 룰(체크리스트 + 근거 조항)만 내려줌 (위반 판정은 iTrix)
   //  · 태그 → 근거조항·출처·체크리스트 를 6대 원칙 기준으로 묶어 전달
@@ -716,8 +764,13 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
 
   return (
     <div>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>ST ↔ RuleSet</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>ST ↔ RuleSet 연동 <span style={{ fontSize: 10.5, fontWeight: 700, color: T.accent, background: T.accentBg, borderRadius: 5, padding: "1px 7px", verticalAlign: "middle" }}>RS-2</span></div>
+        </div>
+        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: T.mono, fontSize: 11.5, color: T.sub, background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "6px 11px" }}>
+          <span style={{ fontWeight: 700, color: "#059669" }}>GET</span> /api/ruleset/load
+        </span>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 4fr) minmax(0, 8fr)", gap: 12, alignItems: "start" }}>
@@ -817,11 +870,13 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
           )}
           {result && (
             <div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "#059669", borderRadius: 5, padding: "2px 8px" }}>200 OK</span>
                 <Badge fg="#047857" bg="#D1FAE5">{result.product_name} · 룰 {result.count}건</Badge>
-                {result.requested_tags?.length > 0 && <Badge fg="#5B21B6" bg="#EDE9FE">태그 매칭 {result.count}/{result.total_in_ruleset}건</Badge>}
+                {result.ruleset_identity && <Badge fg="#0F766E" bg="#CCFBF1">{result.ruleset_identity.ruleset_name} 룰셋 · {result.ruleset_identity.ruleset_id} · v{result.ruleset_identity.version}</Badge>}
+                {result.requested_tags?.length > 0 && <Badge fg="#5B21B6" bg="#EDE9FE">태그 매칭 {result.count}/{result.total_in_ruleset}</Badge>}
+                {result.over_budget > 0 && <Badge fg="#B91C1C" bg="#FEE2E2">예산 초과 {result.over_budget}건</Badge>}
               </div>
-              {budget && <div style={{ fontSize: 11, color: T.faint, marginBottom: 10 }}>{budget.note}</div>}
               {viewMode === "json" ? (
                 <pre style={{ margin: 0, background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "12px 14px", fontSize: 12, lineHeight: 1.55, fontFamily: T.mono, color: T.ink, overflowX: "auto", maxHeight: "56vh", overflowY: "auto", whiteSpace: "pre" }}>{JSON.stringify(stPayload, null, 2)}</pre>
               ) : (
@@ -834,6 +889,14 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink, flex: 1 }}>{r.statement}</span>
                           {r.sales_principle && <Badge {...principleBadge(r.sales_principle)}>{r.sales_principle}</Badge>}
+                        </div>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 5 }}>
+                          {r.violation_type && <span style={{ fontSize: 10.5, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub }}>{r.violation_type}</span>}
+                          {r.customer_condition && r.customer_condition !== "모든 고객" && <span style={{ fontSize: 10.5, color: T.sub, background: T.chipBg, borderRadius: 5, padding: "1px 6px" }}>{r.customer_condition}</span>}
+                          {((r.matched_tags?.length ? r.matched_tags : r.semantic_tags) || []).filter((t) => t && t !== "_no_tag").map((t) => (
+                            <span key={t} style={{ fontFamily: T.mono, fontSize: 9.5, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 4, padding: "1px 5px" }}>{t}</span>
+                          ))}
+                          {typeof r.judge_chars === "number" && <span style={{ marginLeft: "auto", fontSize: 10, color: r.within_budget === false ? "#DC2626" : T.faint }}>판정 {r.judge_chars}자{r.within_budget === false ? " ⚠" : ""}</span>}
                         </div>
                         <div style={{ marginTop: 7, display: "flex", flexDirection: "column", gap: 6 }}>
                           {(r.knowledge || []).length === 0 && <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>}
@@ -863,11 +926,11 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
 // ─────────────────────────────────────────────
 // 온톨로지 — 그래프DB 스타일 탐색기 (force-directed) + deontic + Cypher/RDF 내보내기
 // ─────────────────────────────────────────────
-const NODE_COLOR = { knowledge: "#2D5BE3", tag: "#6D28D9", ruleset: "#0D9488", category: "#0D9488", jury_panel: "#B45309", product: "#0891B2", document: "#5A6577" };
+const NODE_COLOR = { knowledge: "#2D5BE3", tag: "#6D28D9", principle: "#B45309", ruleset: "#0D9488", category: "#0D9488", product: "#0891B2", document: "#5A6577" };
 const MOD_COLOR = { Obligation: "#2D5BE3", Prohibition: "#DC2626", Advisory: "#5A6577" };
-const EDGE_KO = { CONTAINS: "포함", BASED_ON: "근거", REQUIRES: "요구태그", IN_RULESET: "소속", HAS_CATEGORY: "카테고리", APPLIES_TO: "적용", JUDGED_BY: "판정" };
-const NODE_KO = { rule: "룰", knowledge: "근거 조항", tag: "의미태그", ruleset: "룰셋", category: "카테고리", jury_panel: "배심원단", product: "상품", document: "문서" };
-const R_OF = { rule: 10, ruleset: 13, category: 12, knowledge: 8, tag: 6, jury_panel: 9, document: 11, product: 11 };
+const EDGE_KO = { CONTAINS: "포함", BASED_ON: "근거", REQUIRES: "요구태그", IN_RULESET: "소속", HAS_CATEGORY: "카테고리", APPLIES_TO: "적용", HAS_PRINCIPLE: "판매원칙" };
+const NODE_KO = { rule: "룰", knowledge: "근거 조항", tag: "의미태그", principle: "판매원칙", ruleset: "룰셋", category: "카테고리", product: "상품", document: "문서" };
+const R_OF = { rule: 10, ruleset: 13, category: 12, principle: 11, knowledge: 8, tag: 6, document: 11, product: 11 };
 
 // 룰셋 스코프로 부분그래프 추출 (전체는 노드가 많아 기본은 룰셋 단위)
 function subgraphForRuleset(graph, rulesetId) {
@@ -932,8 +995,7 @@ function OntologyView({ form, setForm }) {
   useEffect(() => { fetchOntology().then(setGraph).catch((e) => setErr(String(e.message || e))); }, []);
 
   const rulesets = useMemo(() => graph ? graph.nodes.filter((n) => n.type === "ruleset") : [], [graph]);
-  const defaultRs = useMemo(() => rulesets.find((r) => r.ruleset_category === "common") || rulesets[0], [rulesets]);
-  const scope = form.scope || defaultRs?.id.replace(/^rset:/, "") || "all";
+  const scope = form.scope || "all";
   const sub = useMemo(() => subgraphForRuleset(graph, scope), [graph, scope]);
   const layout = useMemo(() => forceLayout(sub), [sub]);
   const nodeById = useMemo(() => Object.fromEntries((sub.nodes || []).map((n) => [n.id, n])), [sub]);
@@ -959,7 +1021,6 @@ function OntologyView({ form, setForm }) {
   const shortLabel = (n) => {
     if (n.type === "tag") return n.code || n.label;
     if (n.type === "rule") return (n.rule_id || n.id).replace(/^(rule:)?RULE_/, "");
-    if (n.type === "jury_panel") return "5배심원";
     const s = n.label || "";
     return s.length > 14 ? s.slice(0, 14) + "…" : s;
   };
@@ -988,8 +1049,8 @@ function OntologyView({ form, setForm }) {
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
               <select value={scope} onChange={(e) => changeScope(e.target.value)}
                 style={{ padding: "5px 8px", border: `1px solid ${T.line}`, borderRadius: 7, fontSize: 12, fontFamily: T.font, background: T.surface, color: T.ink }}>
-                {rulesets.map((rs) => <option key={rs.id} value={rs.id.replace(/^rset:/, "")}>{rs.label}</option>)}
                 <option value="all">전체 그래프</option>
+                {rulesets.map((rs) => <option key={rs.id} value={rs.id.replace(/^rset:/, "")}>{rs.label}</option>)}
               </select>
               {["-", "＋", "⟲"].map((z, i) => (
                 <button key={i} onClick={() => setView((v) => i === 2 ? { tx: 0, ty: 0, s: 1 } : { ...v, s: Math.min(2.6, Math.max(0.4, v.s * (i === 1 ? 1.15 : 0.87))) })}
@@ -1039,9 +1100,12 @@ function OntologyView({ form, setForm }) {
                 <button onClick={() => setSelected(null)} style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }} title="선택 해제">×</button>
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, lineHeight: 1.5, marginBottom: 8 }}>{selNode.label}</div>
-              {(selNode.modality_ko || selNode.document_type) && (
+              {(selNode.modality_ko || selNode.document_type || selNode.sales_principle || selNode.customer_condition || selNode.article) && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
                   {selNode.modality_ko && <span style={{ fontSize: 11, fontWeight: 600, color: MOD_COLOR[selNode.modality], background: T.accentBg, borderRadius: 8, padding: "2px 8px" }}>{selNode.modality_ko}</span>}
+                  {selNode.sales_principle && <span style={{ fontSize: 11, color: NODE_COLOR.principle, fontWeight: 600, alignSelf: "center" }}>{selNode.sales_principle}</span>}
+                  {selNode.customer_condition && selNode.customer_condition !== "모든 고객" && <Chip>{selNode.customer_condition}</Chip>}
+                  {selNode.article && <span style={{ fontSize: 11, color: T.sub, alignSelf: "center" }}>{selNode.article}</span>}
                   {selNode.document_type && <span style={{ fontSize: 11, color: DOCTYPE_COLOR[selNode.document_type], fontWeight: 600, alignSelf: "center" }}>{selNode.document_type}</span>}
                 </div>
               )}
@@ -1209,62 +1273,60 @@ function TagsView({ rules, taxonomy, selected, setSelected, onOpen, onCreateTag,
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 8fr) minmax(0, 4fr)", gap: 12, alignItems: "start" }}>
-        {/* 태그 그룹 — 섹션별 읽기 리스트 (한글 라벨 우선) */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* 태그 그룹 — 카드 그리드 */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {Object.entries(groups).filter(([prefix]) => tab === "전체" || tab === prefix).map(([prefix, tags]) => {
             const gc = GROUP_COLOR[prefix] || T.accent;
-            const gtot = tags.reduce((a, t) => a + (usage[t.code] || 0), 0);
             return (
               <div key={prefix}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <span style={{ width: 9, height: 9, borderRadius: 3, background: gc }} />
                   <span style={{ fontSize: 13.5, fontWeight: 700, color: T.ink }}>{TAG_GROUPS[prefix] || prefix}</span>
                   <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint }}>{prefix}</span>
+                  <span style={{ fontSize: 11, color: T.faint }}>· {tags.length}</span>
                 </div>
-                <div style={{ border: `1px solid ${T.line}`, borderRadius: 10, overflow: "hidden", background: T.surface }}>
-                  {tags.map((t, i) => {
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(158px, 1fr))", gap: 8 }}>
+                  {tags.map((t) => {
                     const n = usage[t.code] || 0;
                     const active = selected === t.code;
                     const editingThis = editCode === t.code;
                     return (
                       <div key={t.code} onClick={() => { if (!managing) setSelected(active ? null : t.code); }}
-                        style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", cursor: managing ? "default" : "pointer",
-                          borderTop: i ? `1px solid ${T.line}` : "none",
-                          borderLeft: `3px solid ${active && !managing ? gc : "transparent"}`,
-                          background: active && !managing ? T.accentBg : "transparent" }}
+                        style={{ position: "relative", border: `1px solid ${active && !managing ? gc : T.line}`, borderTop: `3px solid ${gc}`, borderRadius: 9, padding: "10px 11px", cursor: managing ? "default" : "pointer", background: active && !managing ? T.accentBg : T.surface, display: "flex", flexDirection: "column", gap: 6, minHeight: 76, boxShadow: active && !managing ? `0 0 0 1px ${gc}` : "none" }}
                         onMouseEnter={(e) => { if (!active && !managing) e.currentTarget.style.background = T.subtle; }}
-                        onMouseLeave={(e) => { if (!active && !managing) e.currentTarget.style.background = "transparent"; }}>
-                        <span style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 8 }}>
-                          {editingThis ? (
-                            <input value={editLabel} autoFocus onClick={(e) => e.stopPropagation()}
-                              onChange={(e) => setEditLabel(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditCode(null); }}
-                              style={{ ...inputStyle, flex: 1, minWidth: 0 }} />
-                          ) : (
-                            <span style={{ fontSize: 13.5, fontWeight: 600, color: T.ink }}>{t.label}</span>
-                          )}
-                          <span style={{ fontFamily: T.mono, fontSize: 11, color: T.faint }}>{t.code}</span>
-                        </span>
-                        {!managing ? (
-                          <span style={{ fontSize: 11, fontWeight: 700, color: n ? gc : T.faint, background: n ? T.chipBg : "transparent", borderRadius: 20, padding: "2px 9px", whiteSpace: "nowrap", flexShrink: 0 }}>룰 {n}</span>
-                        ) : editingThis ? (
-                          <span style={{ display: "inline-flex", gap: 6, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                            <button onClick={saveEdit} disabled={busy} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 700 }}>저장</button>
-                            <button onClick={() => setEditCode(null)} disabled={busy} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
-                          </span>
-                        ) : delCode === t.code ? (
-                          <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                            <span style={{ color: "#DC2626", fontSize: 11.5, fontWeight: 600 }}>삭제?</span>
-                            <button onClick={() => doDeleteTag(t.code)} disabled={busy} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 700 }}>삭제</button>
-                            <button onClick={() => setDelCode(null)} disabled={busy} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
-                          </span>
+                        onMouseLeave={(e) => { if (!active && !managing) e.currentTarget.style.background = T.surface; }}>
+                        {editingThis ? (
+                          <input value={editLabel} autoFocus onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => setEditLabel(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditCode(null); }}
+                            style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} />
                         ) : (
-                          <span style={{ display: "inline-flex", gap: 6, alignItems: "center", flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
-                            <span style={{ fontSize: 11, color: T.faint }}>룰 {n}</span>
-                            <button onClick={() => { setEditCode(t.code); setEditLabel(t.label); }} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>수정</button>
-                            <button onClick={() => { setDelCode(t.code); setTagErr(null); }} disabled={n > 0} title={n > 0 ? "이 태그를 쓰는 룰이 있어 삭제할 수 없습니다" : ""}
-                              style={{ border: `1px solid ${n > 0 ? T.line : "#FCA5A5"}`, background: T.surface, color: n > 0 ? T.faint : "#DC2626", borderRadius: 6, padding: "4px 10px", cursor: n > 0 ? "not-allowed" : "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
-                          </span>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: T.ink, lineHeight: 1.35 }}>{t.label}</div>
+                        )}
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: "auto" }}>
+                          <span style={{ fontFamily: T.mono, fontSize: 10.5, color: T.faint, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{t.code}</span>
+                          <span style={{ fontSize: 10.5, fontWeight: 700, color: n ? gc : T.faint, background: n ? T.chipBg : "transparent", borderRadius: 20, padding: "1px 8px", whiteSpace: "nowrap" }}>룰 {n}</span>
+                        </div>
+                        {managing && (
+                          <div style={{ display: "flex", gap: 5, marginTop: 2 }} onClick={(e) => e.stopPropagation()}>
+                            {editingThis ? (
+                              <>
+                                <button onClick={saveEdit} disabled={busy} style={{ flex: 1, border: "none", background: T.accent, color: "#fff", borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>저장</button>
+                                <button onClick={() => setEditCode(null)} disabled={busy} style={{ flex: 1, border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>취소</button>
+                              </>
+                            ) : delCode === t.code ? (
+                              <>
+                                <button onClick={() => doDeleteTag(t.code)} disabled={busy} style={{ flex: 1, border: "none", background: "#DC2626", color: "#fff", borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 11, fontWeight: 700 }}>삭제</button>
+                                <button onClick={() => setDelCode(null)} disabled={busy} style={{ flex: 1, border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>취소</button>
+                              </>
+                            ) : (
+                              <>
+                                <button onClick={() => { setEditCode(t.code); setEditLabel(t.label); }} style={{ flex: 1, border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 0", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>수정</button>
+                                <button onClick={() => { setDelCode(t.code); setTagErr(null); }} disabled={n > 0} title={n > 0 ? "사용 중이라 삭제 불가" : ""}
+                                  style={{ flex: 1, border: `1px solid ${n > 0 ? T.line : "#FCA5A5"}`, background: T.surface, color: n > 0 ? T.faint : "#DC2626", borderRadius: 6, padding: "4px 0", cursor: n > 0 ? "not-allowed" : "pointer", fontSize: 11, fontWeight: 600 }}>삭제</button>
+                              </>
+                            )}
+                          </div>
                         )}
                       </div>
                     );
@@ -1327,6 +1389,8 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   const [busyDel, setBusyDel] = useState(false);
   const [delErr, setDelErr] = useState(null);
   const [filter, setFilter] = useState("");
+  const [adding, setAdding] = useState(false);   // 추가 드로어
+  const [docTab, setDocTab] = useState("전체");    // 유형 필터
   // 조항 수정 (인라인)
   const [editId, setEditId] = useState(null);
   const [ef, setEf] = useState({ title: "", content: "", document_type: "" });
@@ -1336,7 +1400,7 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   async function submit() {
     if (!pf.title.trim() || !pf.content.trim()) { setErr("조항 제목과 원문을 입력하세요"); return; }
     setSaving(true); setErr(null);
-    try { await onCreate({ ...pf, title: pf.title.trim(), content: pf.content.trim() }); setPf(EMPTY); }
+    try { await onCreate({ ...pf, title: pf.title.trim(), content: pf.content.trim() }); setPf(EMPTY); setAdding(false); }
     catch (e) { setErr(e?.message || "추가 실패"); }
     finally { setSaving(false); }
   }
@@ -1361,105 +1425,130 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
   }
 
   const q = filter.trim().toLowerCase();
-  const shown = q ? list.filter((p) => `${p.title}${p.content}${p.knowledge_id}`.toLowerCase().includes(q)) : list;
+  const shown = list
+    .filter((p) => !q || `${p.title}${p.content}${p.knowledge_id}`.toLowerCase().includes(q))
+    .filter((p) => docTab === "전체" || p.document_type === docTab);
+  const docTabs = ["전체", ...new Set(list.map((p) => p.document_type).filter(Boolean))];
 
   return (
     <div>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>근거 조항</div>
-        <div style={{ fontSize: 12, color: T.faint, marginTop: 2 }}>룰의 근거가 되는 법령·가이드라인·내규 조항을 추가·삭제합니다.</div>
+      {/* 헤더 + 추가 버튼 */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>근거 조항</div>
+          <div style={{ fontSize: 12, color: T.faint, marginTop: 2 }}>룰의 근거가 되는 법령·가이드라인·내규 조항</div>
+        </div>
+        <button onClick={() => { setAdding(true); setErr(null); }}
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, border: "none", background: T.accent, color: "#fff", borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
+          <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> 조항 추가
+        </button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 5fr) minmax(0, 7fr)", gap: 12, alignItems: "start" }}>
-        <Card title="새 근거 조항 추가">
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 11, color: T.sub }}>유형</span>
-              <select value={pf.document_type} onChange={(e) => setPf((f) => ({ ...f, document_type: e.target.value }))}
-                style={{ padding: "9px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink }}>
-                {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 11, color: T.sub }}>제목</span>
-              <input value={pf.title} onChange={(e) => setPf((f) => ({ ...f, title: e.target.value }))} placeholder="예: 설명의무"
-                style={{ padding: "9px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink }} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontSize: 11, color: T.sub }}>원문</span>
-              <textarea value={pf.content} onChange={(e) => setPf((f) => ({ ...f, content: e.target.value }))} rows={5} placeholder="조항 원문"
-                style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, lineHeight: 1.6, resize: "vertical", background: T.surface, color: T.ink }} />
-            </div>
-            {err && <div style={{ color: "#DC2626", fontSize: 12 }}>{err}</div>}
-            <button onClick={submit} disabled={saving}
-              style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "10px 0", cursor: saving ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: saving ? 0.6 : 1 }}>{saving ? "추가 중…" : "조항 추가"}</button>
-          </div>
-        </Card>
-        <Card title={`조항 목록 · ${list.length}건`}>
-          <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="조항 검색"
-            style={{ width: "100%", boxSizing: "border-box", padding: "8px 11px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink, marginBottom: 10 }} />
-          {delErr && <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 8 }}>{delErr}</div>}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: "62vh", overflowY: "auto" }}>
-            {shown.map((p) => {
-              const used = refCount(p.knowledge_id);
-              const isEditing = editId === p.knowledge_id;
-              return (
-                <div key={p.knowledge_id} style={{ border: `1px solid ${isEditing ? T.accent : T.line}`, borderLeft: `3px solid ${isEditing ? T.accent : (DOCTYPE_COLOR[p.document_type] || T.line)}`, borderRadius: "0 8px 8px 0", padding: "9px 11px", background: T.surface }}>
-                  {isEditing ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        <span style={{ fontSize: 11, color: T.sub }}>제목</span>
-                        <input value={ef.title} onChange={(e) => setEf({ ...ef, title: e.target.value })} style={inputStyle} />
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        <span style={{ fontSize: 11, color: T.sub }}>유형</span>
-                        <select value={ef.document_type} onChange={(e) => setEf({ ...ef, document_type: e.target.value })} style={inputStyle}>
-                          {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
-                        </select>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        <span style={{ fontSize: 11, color: T.sub }}>원문</span>
-                        <textarea value={ef.content} onChange={(e) => setEf({ ...ef, content: e.target.value })} rows={4} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
-                      </div>
-                      {editErr && <div style={{ color: "#DC2626", fontSize: 11.5 }}>{editErr}</div>}
-                      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <button onClick={() => saveEdit(p.knowledge_id)} disabled={editBusy}
-                          style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 7, padding: "6px 14px", cursor: editBusy ? "default" : "pointer", fontSize: 12.5, fontWeight: 700, opacity: editBusy ? 0.6 : 1 }}>{editBusy ? "저장 중…" : "저장"}</button>
-                        <button onClick={() => setEditId(null)} disabled={editBusy}
-                          style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>취소</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.title}</span>
-                        <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_type}</span>
-                      </div>
-                      <p style={{ fontSize: 12, lineHeight: 1.6, margin: "0 0 7px", color: T.sub }}>{p.content}</p>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, color: T.faint }}>룰 {used}건에서 사용</span>
-                        {confirmId === p.knowledge_id ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
-                            <span style={{ color: "#DC2626", fontSize: 11.5, fontWeight: 600 }}>삭제할까요?</span>
-                            <button onClick={() => doDelete(p.knowledge_id)} disabled={busyDel} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: busyDel ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, opacity: busyDel ? 0.6 : 1 }}>{busyDel ? "삭제 중…" : "삭제"}</button>
-                            <button onClick={() => setConfirmId(null)} disabled={busyDel} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
-                          </span>
-                        ) : (
-                          <span style={{ display: "inline-flex", gap: 6, marginLeft: "auto" }}>
-                            <button onClick={() => startEdit(p)} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>수정</button>
-                            <button onClick={() => { setConfirmId(p.knowledge_id); setDelErr(null); }} disabled={used > 0}
-                              title={used > 0 ? "이 조항을 근거로 쓰는 룰이 있어 삭제할 수 없습니다" : ""}
-                              style={{ border: `1px solid ${used > 0 ? T.line : "#FCA5A5"}`, background: T.surface, color: used > 0 ? T.faint : "#DC2626", borderRadius: 7, padding: "4px 10px", cursor: used > 0 ? "not-allowed" : "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
-                          </span>
-                        )}
-                      </div>
-                    </>
-                  )}
+
+      {/* 검색 + 유형 필터 */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ position: "relative", flex: "1 1 220px", minWidth: 180 }}>
+          <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T.faint }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="7" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+          </span>
+          <input value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="조항 검색 — 제목·원문"
+            style={{ width: "100%", boxSizing: "border-box", padding: "8px 12px 8px 34px", border: `1px solid ${q ? T.accent : T.line}`, borderRadius: 9, fontSize: 13, fontFamily: T.font, outline: "none", background: T.surface, color: T.ink }} />
+        </div>
+        {docTabs.map((dt) => {
+          const active = docTab === dt;
+          const c = dt === "전체" ? T.accent : (DOCTYPE_COLOR[dt] || T.accent);
+          const n = dt === "전체" ? list.length : list.filter((p) => p.document_type === dt).length;
+          return (
+            <button key={dt} onClick={() => setDocTab(dt)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none", cursor: "pointer", background: active ? c : T.subtle, color: active ? "#fff" : T.sub, borderRadius: 8, padding: "7px 12px", fontSize: 12.5, fontWeight: active ? 700 : 500 }}>
+              {dt}<span style={{ fontSize: 11, fontWeight: 700, opacity: active ? 0.85 : 0.6 }}>{n}</span>
+            </button>
+          );
+        })}
+      </div>
+      {delErr && <div style={{ color: "#DC2626", fontSize: 12, marginBottom: 10 }}>{delErr}</div>}
+
+      {/* 조항 카드 그리드 */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 10, alignItems: "start" }}>
+        {shown.map((p) => {
+          const used = refCount(p.knowledge_id);
+          const isEditing = editId === p.knowledge_id;
+          const dc = DOCTYPE_COLOR[p.document_type] || T.line;
+          return (
+            <div key={p.knowledge_id} style={{ border: `1px solid ${isEditing ? T.accent : T.line}`, borderTop: `3px solid ${isEditing ? T.accent : dc}`, borderRadius: 9, padding: "11px 13px", background: T.surface, display: "flex", flexDirection: "column", gap: 7 }}>
+              {isEditing ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <input value={ef.title} onChange={(e) => setEf({ ...ef, title: e.target.value })} placeholder="제목" style={inputStyle} />
+                  <select value={ef.document_type} onChange={(e) => setEf({ ...ef, document_type: e.target.value })} style={inputStyle}>
+                    {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <textarea value={ef.content} onChange={(e) => setEf({ ...ef, content: e.target.value })} rows={5} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.6 }} />
+                  {editErr && <div style={{ color: "#DC2626", fontSize: 11.5 }}>{editErr}</div>}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => saveEdit(p.knowledge_id)} disabled={editBusy} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 7, padding: "6px 14px", cursor: editBusy ? "default" : "pointer", fontSize: 12.5, fontWeight: 700, opacity: editBusy ? 0.6 : 1 }}>{editBusy ? "저장 중…" : "저장"}</button>
+                    <button onClick={() => setEditId(null)} disabled={editBusy} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>취소</button>
+                  </div>
                 </div>
-              );
-            })}
-            {shown.length === 0 && <div style={{ padding: "24px 8px", textAlign: "center", color: T.faint, fontSize: 12 }}>조항이 없습니다</div>}
+              ) : (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{p.title}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: dc, borderRadius: 5, padding: "1px 7px", whiteSpace: "nowrap" }}>{p.document_type}</span>
+                  </div>
+                  <p style={{ fontSize: 12, lineHeight: 1.6, margin: 0, color: T.sub, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.content}</p>
+                  <div style={{ fontFamily: T.mono, fontSize: 10, color: T.faint }}>{p.knowledge_id}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: "auto", paddingTop: 6, borderTop: `1px solid ${T.line}` }}>
+                    <span style={{ fontSize: 11, color: used ? T.sub : T.faint }}>룰 {used}건 사용</span>
+                    {confirmId === p.knowledge_id ? (
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: "auto" }}>
+                        <button onClick={() => doDelete(p.knowledge_id)} disabled={busyDel} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 6, padding: "4px 10px", cursor: busyDel ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, opacity: busyDel ? 0.6 : 1 }}>{busyDel ? "삭제 중…" : "삭제"}</button>
+                        <button onClick={() => setConfirmId(null)} disabled={busyDel} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 6, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
+                      </span>
+                    ) : (
+                      <span style={{ display: "inline-flex", gap: 6, marginLeft: "auto" }}>
+                        <button onClick={() => startEdit(p)} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "4px 10px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>수정</button>
+                        <button onClick={() => { setConfirmId(p.knowledge_id); setDelErr(null); }} disabled={used > 0} title={used > 0 ? "이 조항을 근거로 쓰는 룰이 있어 삭제할 수 없습니다" : ""}
+                          style={{ border: `1px solid ${used > 0 ? T.line : "#FCA5A5"}`, background: T.surface, color: used > 0 ? T.faint : "#DC2626", borderRadius: 7, padding: "4px 10px", cursor: used > 0 ? "not-allowed" : "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })}
+        {shown.length === 0 && <div style={{ gridColumn: "1 / -1", padding: "40px 8px", textAlign: "center", color: T.faint, fontSize: 13 }}>조항이 없습니다</div>}
+      </div>
+
+      {/* 조항 추가 드로어 */}
+      <div onClick={() => { if (!saving) setAdding(false); }}
+        style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", opacity: adding ? 1 : 0, pointerEvents: adding ? "auto" : "none", transition: "opacity .25s ease", zIndex: 60 }} />
+      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: "min(480px, 94vw)", background: T.surface, boxShadow: "-10px 0 40px -14px rgba(0,0,0,0.4)", transform: adding ? "translateX(0)" : "translateX(100%)", transition: "transform .3s cubic-bezier(.4,0,.2,1)", zIndex: 61, display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 20px", borderBottom: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
+          <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 18, fontWeight: 700, lineHeight: 1 }}>+</span>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>새 근거 조항 추가</div>
+          <button onClick={() => { setAdding(false); setPf(EMPTY); setErr(null); }} disabled={saving} title="닫기" style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "2px 4px" }}>×</button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 11, color: T.sub }}>유형</span>
+            <select value={pf.document_type} onChange={(e) => setPf((f) => ({ ...f, document_type: e.target.value }))} style={{ ...inputStyle, padding: "9px 10px", fontSize: 13 }}>
+              {knowledgeTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
           </div>
-        </Card>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 11, color: T.sub }}>제목</span>
+            <input value={pf.title} onChange={(e) => setPf((f) => ({ ...f, title: e.target.value }))} placeholder="예: 설명의무" style={{ ...inputStyle, padding: "9px 10px", fontSize: 13 }} />
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: 11, color: T.sub }}>원문</span>
+            <textarea value={pf.content} onChange={(e) => setPf((f) => ({ ...f, content: e.target.value }))} rows={7} placeholder="조항 원문" style={{ ...inputStyle, padding: "9px 11px", fontSize: 13, lineHeight: 1.6, resize: "vertical" }} />
+          </div>
+          {err && <div style={{ color: "#DC2626", fontSize: 12 }}>{err}</div>}
+        </div>
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", padding: "13px 20px", borderTop: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
+          <button onClick={() => { setAdding(false); setPf(EMPTY); setErr(null); }} disabled={saving} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>취소</button>
+          <button onClick={submit} disabled={saving} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 20px", cursor: saving ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: saving ? 0.6 : 1 }}>{saving ? "추가 중…" : "조항 추가"}</button>
+        </div>
       </div>
     </div>
   );

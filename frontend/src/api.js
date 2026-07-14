@@ -25,6 +25,13 @@ export async function fetchBundle() {
   return { knowledge: knowledgeMap, rules, taxonomy, products, categories, principles, rulesets: rulesetsRes.ruleset_identities || [] };
 }
 
+// AI 분석 (Google Gemini) — 파일 텍스트 → 룰 후보 (키 미설정 시 503 → 프론트에서 규칙기반 폴백)
+export async function analyzeRulesFile(text) {
+  return fetch(`${BASE}/rules/analyze`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }),
+  }).then(json);
+}
+
 // 룰 일괄 임포트 (파일 파싱 결과) — { rules, ruleset_id? , new_ruleset? }
 export async function importRules(payload) {
   return fetch(`${BASE}/rules/import`, {

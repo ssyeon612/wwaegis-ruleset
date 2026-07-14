@@ -7,6 +7,18 @@ import db from "./db.js";
 import { buildGraph, toTurtle, toJsonLd, toCypher } from "./ontology.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// .env 로더 (의존성 없음) — backend/.env 의 KEY=VALUE 를 process.env 로 (기존 값 우선)
+try {
+  const envPath = path.join(__dirname, ".env");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Za-z0-9_]+)\s*=\s*(.*)\s*$/);
+      if (m && !(m[1] in process.env)) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+    }
+  }
+} catch { /* noop */ }
+
 const TAX_PATH = path.join(__dirname, "data", "taxonomy.json");
 const TAXONOMY = JSON.parse(fs.readFileSync(TAX_PATH, "utf8"));
 const saveTaxonomy = () => fs.writeFileSync(TAX_PATH, JSON.stringify(TAXONOMY, null, 2) + "\n", "utf8");
@@ -22,7 +34,7 @@ const gistOf = (text) => {
 };
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "4mb" }));
 
 // ── 표준 응답 봉투 (공통 §8 / FR §4.4) ──────────────────────
 const ok = (extra = {}) => ({ module_id: MODULE_ID, responded_at: new Date().toISOString(), result: "success", ...extra });
@@ -358,6 +370,97 @@ app.post("/api/rules/import", (req, res) => {
   })();
 
   res.json(ok({ category, ruleset_id: category, created: created.length, created_ids: created, skipped }));
+});
+
+// ── AI 분석 (Google Gemini) — 파일 텍스트 → 현재 DB 어휘에 맞춘 룰 후보 ──
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const CONDS = ["모든 고객", "고령자", "초고령자"];
+const VIOLS = ["누락형", "감점형", "비계량형"];
+
+app.post("/api/rules/analyze", async (req, res) => {
+  const text = (req.body?.text || "").trim();
+  if (!text) return fail(res, 400, "bad_request", "text is required");
+  if (!GEMINI_KEY) return fail(res, 503, "no_ai", "GEMINI_API_KEY 미설정 (backend/.env). 규칙기반 분석으로 진행하세요.");
+
+  // 현재 DB 어휘 (모델이 이 값만 쓰도록 제약)
+  const cats = db.prepare("SELECT category, label FROM categories ORDER BY category").all();
+  const prins = db.prepare("SELECT code, label FROM principles ORDER BY code").all();
+  const tags = db.prepare("SELECT tag_code, label FROM tags ORDER BY tag_code").all();
+  const knows = db.prepare("SELECT knowledge_id, title FROM knowledge ORDER BY knowledge_id").all();
+
+  const vocab = [
+    `category(카테고리·코드만): ${cats.map((c) => `${c.category}(${c.label})`).join(", ")}`,
+    `sales_principle(판매원칙·라벨만): ${prins.map((p) => p.label).join(", ")}`,
+    `customer_condition(고객조건): ${CONDS.join(", ")}`,
+    `violation_type(위반유형): ${VIOLS.join(", ")}`,
+    `semantic_tags(의미태그·코드만): ${tags.map((t) => `${t.tag_code}(${t.label})`).join(", ")}`,
+    `knowledge_ids(근거조항·ID만): ${knows.map((k) => `${k.knowledge_id}(${k.title})`).join(", ")}`,
+  ].join("\n");
+
+  const prompt = `너는 금융 완전판매 컴플라이언스 룰북 편집 도우미다. 아래 [문서]에서 상담 시 지켜야 할 "점검 룰"들을 추출해 스키마에 맞는 JSON으로 변환하라.
+- statement: 점검 문장(간결한 지시문).
+- category/sales_principle/customer_condition/violation_type/semantic_tags/knowledge_ids 는 반드시 아래 [허용 어휘]에서만 고른다. 해당 없으면 ""(빈문자열) 또는 [](빈배열).
+- semantic_tags 는 코드만, knowledge_ids 는 ID만. 없는 코드/ID를 지어내지 마라.
+- 문서에 필드값이 명시 안 됐으면 문맥으로 추론하되, 불확실하면 비운다.
+
+[허용 어휘]
+${vocab}
+
+[문서]
+${text}`;
+
+  const ruleSchema = {
+    type: "object",
+    properties: {
+      statement: { type: "string" },
+      category: { type: "string" },
+      sales_principle: { type: "string" },
+      customer_condition: { type: "string" },
+      violation_type: { type: "string" },
+      semantic_tags: { type: "array", items: { type: "string" } },
+      knowledge_ids: { type: "array", items: { type: "string" } },
+    },
+    required: ["statement"],
+  };
+  const schema = { type: "object", properties: { rules: { type: "array", items: ruleSchema } }, required: ["rules"] };
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`;
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.2 },
+      }),
+    });
+    if (!resp.ok) { const t = await resp.text(); return fail(res, 502, "ai_error", `Gemini ${resp.status}: ${t.slice(0, 200)}`); }
+    const data = await resp.json();
+    const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    let parsed; try { parsed = JSON.parse(raw); } catch { return fail(res, 502, "ai_error", "AI 응답 JSON 파싱 실패"); }
+
+    // DB 어휘로 검증·정규화 (환각 방지)
+    const catSet = new Set(cats.map((c) => c.category));
+    const prinLabels = new Set(prins.map((p) => p.label));
+    const tagSet = new Set(tags.map((t) => t.tag_code));
+    const knowSet = new Set(knows.map((k) => k.knowledge_id));
+    const defCat = catSet.has("common") ? "common" : (cats[0]?.category || "");
+    const rules = (Array.isArray(parsed.rules) ? parsed.rules : [])
+      .filter((r) => (r.statement || "").trim())
+      .map((r) => ({
+        statement: String(r.statement).trim(),
+        category: catSet.has(r.category) ? r.category : defCat,
+        sales_principle: prinLabels.has(r.sales_principle) ? r.sales_principle : "",
+        customer_condition: CONDS.includes(r.customer_condition) ? r.customer_condition : "모든 고객",
+        violation_type: VIOLS.includes(r.violation_type) ? r.violation_type : "누락형",
+        semantic_tags: (Array.isArray(r.semantic_tags) ? r.semantic_tags : []).filter((t) => tagSet.has(t)),
+        knowledge_ids: (Array.isArray(r.knowledge_ids) ? r.knowledge_ids : []).filter((k) => knowSet.has(k)),
+      }));
+    res.json(ok({ rules, source: "gemini", model: GEMINI_MODEL }));
+  } catch (e) {
+    return fail(res, 502, "ai_error", `AI 호출 실패: ${e.message}`);
+  }
 });
 
 // RS-2 loadRuleSet — 상품 식별자로 룰셋 "본문 전체" 로드 (세션 시작 1회, 고정)

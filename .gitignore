@@ -9,3 +9,7 @@ backend/data/rule_mgnt.db-wal
 
 # 내부 요구사항 문서 — 원격 저장소에 올리지 않음(민감)
 기능요구사항/
+
+# 환경변수(API 키) — 커밋 금지
+.env
+**/.env

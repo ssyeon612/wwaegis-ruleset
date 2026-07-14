@@ -1,6 +1,6 @@
 // 온톨로지 — 관계형 룰셋 데이터를 타입드 지식그래프로 표현하고 RDF(Turtle/JSON-LD)로 내보낸다.
-// 노드: document / knowledge / rule / tag / ruleset / category / product / jury_panel
-// 엣지: CONTAINS · BASED_ON · REQUIRES · IN_RULESET · HAS_CATEGORY · APPLIES_TO · JUDGED_BY
+// 노드: document / knowledge / rule / principle / tag / ruleset / category / product
+// 엣지: CONTAINS · BASED_ON · REQUIRES · IN_RULESET · HAS_CATEGORY · APPLIES_TO · HAS_PRINCIPLE
 // deontic 양상(의무/금지/권고)은 rule 노드 속성.
 
 const NS = "https://wiseagis.aegis/ontology#";
@@ -18,15 +18,15 @@ const N = {
   document: (id) => `doc:${id}`,
   knowledge: (id) => `knowledge:${id}`,
   rule: (id) => `rule:${id}`,
+  principle: (code) => `prin:${code}`,
   tag: (code) => `tag:${code}`,
   ruleset: (id) => `rset:${id}`,
   category: (c) => `cat:${c}`,
   product: (id) => `prod:${id}`,
-  jury: (id) => `jury:${id}`,
 };
 
-const NODE_TYPES = ["document", "knowledge", "rule", "tag", "ruleset", "category", "product", "jury_panel"];
-const EDGE_TYPES = ["CONTAINS", "BASED_ON", "REQUIRES", "IN_RULESET", "HAS_CATEGORY", "APPLIES_TO", "JUDGED_BY"];
+const NODE_TYPES = ["document", "knowledge", "rule", "principle", "tag", "ruleset", "category", "product"];
+const EDGE_TYPES = ["CONTAINS", "BASED_ON", "REQUIRES", "IN_RULESET", "HAS_CATEGORY", "APPLIES_TO", "HAS_PRINCIPLE"];
 
 export function buildGraph(db, taxonomy) {
   const nodes = new Map();
@@ -40,6 +40,7 @@ export function buildGraph(db, taxonomy) {
   const products = db.prepare("SELECT * FROM products").all();
   const catLabel = Object.fromEntries(categoriesTbl.map((c) => [c.category, c.label]));
   const semTags = Object.fromEntries(db.prepare("SELECT tag_code, label FROM tags").all().map((t) => [t.tag_code, t.label]));
+  const prinMaster = Object.fromEntries(db.prepare("SELECT code, label, article FROM principles").all().map((p) => [p.code, p]));
   const ruleTagMap = {};
   for (const rt of db.prepare("SELECT rule_id, tag_code FROM rule_tags").all()) (ruleTagMap[rt.rule_id] ??= []).push(rt.tag_code);
   const ruleKnowMap = {};
@@ -78,12 +79,19 @@ export function buildGraph(db, taxonomy) {
     const knowledge_ids = ruleKnowMap[r.rule_id] || [];
     const tags = ruleTagMap[r.rule_id] || [];
     const mod = modalityOf(r.violation_type);
+    const prin = prinMaster[r.sales_principle];
     addNode(N.rule(r.rule_id), "rule", r.statement, {
       rule_id: r.rule_id,
+      sales_principle: prin?.label || r.sales_principle || null,
       customer_condition: r.customer_condition, violation_type: r.violation_type,
       modality: mod.code, modality_ko: mod.ko,
     });
     if (r.category) addEdge(N.rule(r.rule_id), N.ruleset(r.category), "IN_RULESET");
+    // 판매원칙 (principles 마스터)
+    if (r.sales_principle) {
+      addNode(N.principle(r.sales_principle), "principle", prin?.label || r.sales_principle, { article: prin?.article || null });
+      addEdge(N.rule(r.rule_id), N.principle(r.sales_principle), "HAS_PRINCIPLE");
+    }
     for (const pid of knowledge_ids) addEdge(N.rule(r.rule_id), N.knowledge(pid), "BASED_ON");
     for (const t of tags) { addNode(N.tag(t), "tag", semTags[t] || t, { code: t }); addEdge(N.rule(r.rule_id), N.tag(t), "REQUIRES"); }
   }
@@ -100,8 +108,8 @@ export function buildGraph(db, taxonomy) {
 // ── RDF 내보내기 ─────────────────────────────────────────
 // IRI 지역명은 노드 인덱스 기반(n0,n1…)으로 고유하게 발급하고, 원본 식별자는 aegis:sourceId 리터럴로 보존한다.
 const esc = (s) => String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, " ");
-const CLASS = { document: "Document", knowledge: "Knowledge", rule: "Rule", tag: "SemanticTag", ruleset: "RuleSet", category: "Category", product: "Product", jury_panel: "JuryPanel" };
-const PRED = { CONTAINS: "contains", BASED_ON: "basedOn", REQUIRES: "requiresTag", IN_RULESET: "inRuleSet", HAS_CATEGORY: "hasCategory", APPLIES_TO: "appliesTo", JUDGED_BY: "judgedBy" };
+const CLASS = { document: "Document", knowledge: "Knowledge", rule: "Rule", principle: "SalesPrinciple", tag: "SemanticTag", ruleset: "RuleSet", category: "Category", product: "Product" };
+const PRED = { CONTAINS: "contains", BASED_ON: "basedOn", REQUIRES: "requiresTag", IN_RULESET: "inRuleSet", HAS_CATEGORY: "hasCategory", APPLIES_TO: "appliesTo", HAS_PRINCIPLE: "hasPrinciple" };
 const localName = (graph) => new Map(graph.nodes.map((n, i) => [n.id, `n${i}`]));
 
 export function toTurtle(graph) {
@@ -123,6 +131,8 @@ export function toTurtle(graph) {
     if (n.type === "rule" && n.modality) parts.push(`a deontic:${n.modality}`);
     if (n.document_type) parts.push(`aegis:documentType "${esc(n.document_type)}"`);
     if (n.violation_type) parts.push(`aegis:violationType "${esc(n.violation_type)}"`);
+    if (n.sales_principle) parts.push(`aegis:salesPrinciple "${esc(n.sales_principle)}"`);
+    if (n.article) parts.push(`aegis:article "${esc(n.article)}"`);
     if (n.code) parts.push(`aegis:tagCode "${esc(n.code)}"`);
     L.push(`${iri(n.id)} ${parts.join(" ; ")} .`);
   }
@@ -149,6 +159,8 @@ export function toCypher(graph) {
     const props = [`label:'${q(n.label)}'`, `nodeType:'${q(n.type)}'`];
     if (n.document_type) props.push(`documentType:'${q(n.document_type)}'`);
     if (n.violation_type) props.push(`violationType:'${q(n.violation_type)}'`);
+    if (n.sales_principle) props.push(`salesPrinciple:'${q(n.sales_principle)}'`);
+    if (n.article) props.push(`article:'${q(n.article)}'`);
     if (n.modality_ko) props.push(`modality:'${q(n.modality_ko)}'`);
     if (n.code) props.push(`tagCode:'${q(n.code)}'`);
     L.push(`MERGE (n:${labels.join(":")} {sourceId:'${q(n.id)}'}) SET n += {${props.join(", ")}};`);
