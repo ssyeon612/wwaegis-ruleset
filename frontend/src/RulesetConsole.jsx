@@ -86,6 +86,7 @@ const Card = ({ title, right, children, pad = 16 }) => {
 //   · 그 아래 "- 키: 값" = 필드 (원칙·단계·판정·태그·근거 등)
 // ─────────────────────────────────────────────
 const IMPORT_FIELD_MAP = {
+  "카테고리": "category", "룰셋": "category", category: "category",
   "원칙": "sales_principle", sales_principle: "sales_principle",
   "고객조건": "customer_condition", "조건": "customer_condition", customer_condition: "customer_condition",
   "판정": "violation_type", "판정성격": "violation_type", violation_type: "violation_type",
@@ -124,19 +125,45 @@ function parseRulesMarkdown(text) {
   return rules;
 }
 
-// 파일 업로드 → 파싱 → 룰셋 배정 → 일괄 반영 (오른쪽 슬라이드 드로어)
-function ImportRulesDrawer({ open, onClose, rulesets, categories = [], catLabel = {}, onImport }) {
+// ── 2단계 "AI 분석" (현재: 규칙기반 목업) ────────────────────
+//   parseRulesMarkdown 결과를 현재 DB 구조(카테고리·원칙·조건·판정·태그·근거)에 맞춰
+//   "룰 후보"로 정규화한다. ★ 나중에 이 함수만 백엔드 AI 분석 호출로 교체하면 됨.
+const CONDITION_OPTS = ["모든 고객", "고령자", "초고령자"];
+const VIOLATION_OPTS = ["누락형", "감점형", "비계량형"];
+function analyzeRules(text, ctx = {}) {
+  const cats = new Set((ctx.categories || []).map((c) => c.category));
+  const prinLabels = new Set((ctx.principles || []).map((p) => p.label));
+  const tagSet = new Set(Object.keys(ctx.tags || {}));
+  const knowSet = new Set(ctx.knowledgeIds || []);
+  const defCat = cats.has("common") ? "common" : ([...cats][0] || "");
+  const asArr = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+  return parseRulesMarkdown(text).map((r) => ({
+    statement: r.statement || "",
+    category: r.category && cats.has(r.category) ? r.category : defCat,
+    sales_principle: r.sales_principle && prinLabels.has(r.sales_principle) ? r.sales_principle : "",
+    customer_condition: CONDITION_OPTS.includes(r.customer_condition) ? r.customer_condition : "모든 고객",
+    violation_type: VIOLATION_OPTS.includes(r.violation_type) ? r.violation_type : "누락형",
+    semantic_tags: asArr(r.semantic_tags).filter((t) => tagSet.has(t)),
+    knowledge_ids: asArr(r.knowledge_ids).filter((k) => knowSet.has(k)),
+  }));
+}
+
+// 파일 업로드 → AI 분석 → 검토(수정·삭제) → 룰 적용 (오른쪽 슬라이드 드로어)
+function ImportRulesDrawer({ open, onClose, categories = [], principles = [], taxonomy = {}, knowledge = {}, onImport }) {
   const T = useT();
+  const [step, setStep] = useState("upload"); // upload | review
   const [fileName, setFileName] = useState("");
-  const [parsed, setParsed] = useState([]);
+  const [cands, setCands] = useState([]);
   const [err, setErr] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [rsMode, setRsMode] = useState("existing"); // existing | new
-  const [rsId, setRsId] = useState("");
-  const [rsCat, setRsCat] = useState("");
-  const inputStyle = { width: "100%", boxSizing: "border-box", padding: "8px 10px", border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, fontFamily: T.font, background: T.surface, color: T.ink };
 
-  const reset = () => { setFileName(""); setParsed([]); setErr(null); setRsMode("existing"); setRsId(""); setRsCat(""); };
+  const tagsMap = taxonomy.semantic_tags || {};
+  const tagCodes = Object.keys(tagsMap);
+  const knowList = Object.values(knowledge || {});
+  const inputStyle = { width: "100%", boxSizing: "border-box", padding: "7px 9px", border: `1px solid ${T.line}`, borderRadius: 7, fontSize: 12.5, fontFamily: T.font, background: T.surface, color: T.ink };
+  const defaultCat = categories.some((c) => c.category === "common") ? "common" : (categories[0]?.category || "");
+
+  const reset = () => { setStep("upload"); setFileName(""); setCands([]); setErr(null); };
   const close = () => { if (!busy) { reset(); onClose(); } };
 
   async function onFile(e) {
@@ -144,129 +171,174 @@ function ImportRulesDrawer({ open, onClose, rulesets, categories = [], catLabel 
     e.target.value = "";
     if (!file) return;
     setErr(null); setFileName(file.name);
-    if (/\.pdf$/i.test(file.name)) { setParsed([]); setErr("PDF는 아직 지원하지 않습니다. 마크다운(.md)·텍스트(.txt)를 올려주세요. (PDF/산문은 이후 AI 연동 단계에서 지원)"); return; }
+    if (!/\.(md|markdown|txt)$/i.test(file.name)) { setErr("마크다운(.md)·텍스트(.txt) 파일만 지원합니다."); return; }
     try {
       const text = await file.text();
-      const rules = parseRulesMarkdown(text);
-      if (!rules.length) setErr("파싱된 룰이 없습니다. 헤딩(##) 또는 불릿(-) 형식인지 확인하세요.");
-      setParsed(rules);
-    } catch (e2) { setErr("파일을 읽지 못했습니다: " + (e2?.message || e2)); setParsed([]); }
+      const cs = analyzeRules(text, { categories, principles, tags: tagsMap, knowledgeIds: knowList.map((k) => k.knowledge_id) });
+      if (!cs.length) { setErr("분석된 룰이 없습니다. 헤딩(##) 또는 불릿(-) 형식인지 확인하세요."); return; }
+      setCands(cs); setStep("review");
+    } catch (e2) { setErr("파일을 읽지 못했습니다: " + (e2?.message || e2)); }
   }
 
+  const patch = (i, p) => setCands((cs) => cs.map((c, j) => (j === i ? { ...c, ...p } : c)));
+  const remove = (i) => setCands((cs) => cs.filter((_, j) => j !== i));
+  const addBlank = () => setCands((cs) => [...cs, { statement: "", category: defaultCat, sales_principle: "", customer_condition: "모든 고객", violation_type: "누락형", semantic_tags: [], knowledge_ids: [] }]);
+  const toggleArr = (i, field, val) => setCands((cs) => cs.map((c, j) => j === i ? { ...c, [field]: c[field].includes(val) ? c[field].filter((x) => x !== val) : [...c[field], val] } : c));
+
   async function submit() {
-    if (!parsed.length) { setErr("반영할 룰이 없습니다."); return; }
-    if (rsMode === "existing" && !rsId) { setErr("배정할 룰셋을 선택하세요."); return; }
-    if (rsMode === "new" && !rsCat.trim()) { setErr("새 룰셋의 카테고리를 선택하세요."); return; }
+    const valid = cands.filter((c) => c.statement.trim());
+    if (!valid.length) { setErr("반영할 룰이 없습니다 (점검 문장이 비어있습니다)."); return; }
     setBusy(true); setErr(null);
     try {
-      const payload = rsMode === "new"
-        ? { rules: parsed, new_ruleset: { ruleset_category: rsCat.trim() } }
-        : { rules: parsed, ruleset_id: rsId };
-      const res = await onImport(payload);
+      const rules = valid.map((c) => ({ ...c, statement: c.statement.trim() }));
+      const res = await onImport({ rules });
       reset(); onClose();
       alert(`${res.created}건 반영 완료${res.skipped ? ` (건너뜀 ${res.skipped})` : ""}`);
     } catch (e3) { setErr(e3?.message || "반영 실패"); }
     finally { setBusy(false); }
   }
 
-  const fieldChips = (r) => Object.keys(r).filter((k) => k !== "statement");
+  const fieldLabel = { fontSize: 10.5, color: T.faint, marginBottom: 3, display: "block" };
+  const StepDot = ({ n, label, active, done }) => (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <span style={{ width: 19, height: 19, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10.5, fontWeight: 700, background: active || done ? T.accent : T.chipBg, color: active || done ? "#fff" : T.faint }}>{done ? "✓" : n}</span>
+      <span style={{ fontSize: 11.5, fontWeight: active ? 700 : 500, color: active ? T.ink : T.faint }}>{label}</span>
+    </span>
+  );
+  const Chips = ({ i, field, options, labelOf }) => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+      {cands[i][field].map((v) => (
+        <span key={v} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "2px 4px 2px 8px", fontSize: 11 }}>
+          {labelOf(v)}
+          <button onClick={() => toggleArr(i, field, v)} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>×</button>
+        </span>
+      ))}
+      <select value="" onChange={(e) => { if (e.target.value) toggleArr(i, field, e.target.value); }} style={{ ...inputStyle, width: "auto", maxWidth: 240, padding: "4px 6px" }}>
+        <option value="">+ 추가</option>
+        {options.filter((o) => !cands[i][field].includes(o.value)).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </div>
+  );
 
   return (
     <>
       <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", opacity: open ? 1 : 0, pointerEvents: open ? "auto" : "none", transition: "opacity .25s ease", zIndex: 62 }} />
-      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: "min(560px, 96vw)", background: T.surface, boxShadow: "-10px 0 40px -14px rgba(0,0,0,0.4)", transform: open ? "translateX(0)" : "translateX(100%)", transition: "transform .3s cubic-bezier(.4,0,.2,1)", zIndex: 63, display: "flex", flexDirection: "column" }}>
+      <div style={{ position: "fixed", top: 0, right: 0, height: "100vh", width: step === "review" ? "min(900px, 98vw)" : "min(560px, 96vw)", background: T.surface, boxShadow: "-10px 0 40px -14px rgba(0,0,0,0.4)", transform: open ? "translateX(0)" : "translateX(100%)", transition: "transform .3s cubic-bezier(.4,0,.2,1), width .25s ease", zIndex: 63, display: "flex", flexDirection: "column" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 20px", borderBottom: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
           <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 16, fontWeight: 700, lineHeight: 1 }}>⇪</span>
           <div>
             <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>파일로 룰 추가</div>
-            <div style={{ fontSize: 11.5, color: T.faint, marginTop: 1 }}>마크다운·텍스트를 읽어 룰로 변환합니다</div>
+            <div style={{ fontSize: 11.5, color: T.faint, marginTop: 1 }}>업로드 → AI 분석 → 검토 → 적용</div>
           </div>
-          <button onClick={close} disabled={busy} title="닫기" style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "2px 4px" }}>×</button>
+          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
+            <StepDot n={1} label="업로드" active={step === "upload"} done={step === "review"} />
+            <span style={{ color: T.line }}>→</span>
+            <StepDot n={2} label="검토·적용" active={step === "review"} />
+            <button onClick={close} disabled={busy} title="닫기" style={{ border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "2px 4px" }}>×</button>
+          </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, padding: "18px 20px" }}>
-          {/* 파일 선택 */}
-          <div>
-            <label style={{ display: "inline-flex", alignItems: "center", gap: 8, border: `1px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 9, padding: "12px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-              <input type="file" accept=".md,.markdown,.txt,.pdf,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
-              📄 파일 선택 (.md · .txt)
-            </label>
-            {fileName && <span style={{ marginLeft: 10, fontSize: 12, color: T.sub }}>{fileName} · <b style={{ color: T.accent }}>{parsed.length}건</b> 파싱</span>}
-            <details style={{ marginTop: 10, fontSize: 11.5, color: T.faint }}>
-              <summary style={{ cursor: "pointer", color: T.sub }}>입력 형식 도움말</summary>
-              <pre style={{ margin: "6px 0 0", background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "10px 12px", fontSize: 11, lineHeight: 1.5, fontFamily: T.mono, color: T.ink, whiteSpace: "pre-wrap" }}>{`## 원금손실 가능성 설명
+        <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14, padding: "18px 20px" }}>
+          {step === "upload" && (
+            <>
+              <label style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "34px 16px", cursor: "pointer", fontSize: 13.5, fontWeight: 600 }}>
+                <input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
+                <span style={{ fontSize: 30 }}>📄</span>
+                파일 선택 (.md · .txt)
+                <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>업로드하면 자동으로 분석해 룰 후보를 만듭니다</span>
+              </label>
+              <details style={{ fontSize: 11.5, color: T.faint }}>
+                <summary style={{ cursor: "pointer", color: T.sub }}>입력 형식 도움말</summary>
+                <pre style={{ margin: "6px 0 0", background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "10px 12px", fontSize: 11, lineHeight: 1.5, fontFamily: T.mono, color: T.ink, whiteSpace: "pre-wrap" }}>{`## 원금손실 가능성 설명
 - 원칙: 설명의무
-- 단계: 설명의무 이행 단계
+- 고객조건: 모든 고객
 - 판정: 누락형
-- 태그: RSK_LOSS, RSK_NODEP
-- 근거: KNW-금소법-art_19__para_1
+- 태그: RSK_LOSS
+- 근거: KN_003
 
 (또는 단순 체크리스트)
 - 예금자보호 비대상 상품임을 설명`}</pre>
-            </details>
-          </div>
-
-          {/* 미리보기 */}
-          {parsed.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4 }}>미리보기 · {parsed.length}건</span>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "30vh", overflowY: "auto", border: `1px solid ${T.line}`, borderRadius: 9, padding: 8, background: T.bg }}>
-                {parsed.map((r, i) => (
-                  <div key={i} style={{ borderLeft: `3px solid ${T.accent}`, background: T.surface, borderRadius: "0 7px 7px 0", padding: "7px 10px" }}>
-                    <div style={{ fontSize: 12.5, color: T.ink, lineHeight: 1.5 }}>{r.statement}</div>
-                    {fieldChips(r).length > 0 && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
-                        {fieldChips(r).map((k) => <span key={k} style={{ fontSize: 10, color: T.sub, background: T.chipBg, borderRadius: 5, padding: "1px 6px" }}>{k}</span>)}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              </details>
+              {err && <div style={{ color: "#DC2626", fontSize: 12, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "8px 11px", lineHeight: 1.5 }}>{err}</div>}
+            </>
           )}
 
-          {/* 룰셋 배정 */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4 }}>룰셋 배정</span>
-            <div style={{ display: "flex", gap: 14 }}>
-              {["existing", "new"].map((m) => (
-                <label key={m} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: T.ink, cursor: "pointer" }}>
-                  <input type="radio" checked={rsMode === m} onChange={() => setRsMode(m)} /> {m === "existing" ? "기존 룰셋" : "새 룰셋 생성"}
-                </label>
+          {step === "review" && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 12.5, color: T.sub }}><b style={{ color: T.accent }}>{cands.length}건</b> 분석됨 · <span style={{ color: T.faint }}>{fileName}</span></span>
+                <button onClick={addBlank} style={{ marginLeft: "auto", border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "5px 10px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>+ 빈 룰 추가</button>
+              </div>
+              {cands.length === 0 && <div style={{ padding: "24px", textAlign: "center", color: T.faint, fontSize: 13 }}>검토할 룰이 없습니다. "빈 룰 추가"로 직접 만들 수 있습니다.</div>}
+              {cands.map((c, i) => (
+                <div key={i} style={{ border: `1px solid ${T.line}`, borderRadius: 10, padding: "12px 14px", background: T.bg, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.faint }}>룰 {i + 1}</span>
+                    <button onClick={() => remove(i)} title="삭제" style={{ marginLeft: "auto", border: "none", background: "none", color: "#DC2626", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>삭제</button>
+                  </div>
+                  <div>
+                    <label style={fieldLabel}>점검 문장 (statement)</label>
+                    <textarea value={c.statement} onChange={(e) => patch(i, { statement: e.target.value })} rows={2} style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }} placeholder="예: 원금손실 가능성 설명" />
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <div>
+                      <label style={fieldLabel}>카테고리(룰셋)</label>
+                      <select value={c.category} onChange={(e) => patch(i, { category: e.target.value })} style={inputStyle}>
+                        {categories.map((cat) => <option key={cat.category} value={cat.category}>{cat.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={fieldLabel}>판매원칙</label>
+                      <select value={c.sales_principle} onChange={(e) => patch(i, { sales_principle: e.target.value })} style={inputStyle}>
+                        <option value="">— 미지정 —</option>
+                        {principles.map((p) => <option key={p.code} value={p.label}>{p.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={fieldLabel}>고객조건</label>
+                      <select value={c.customer_condition} onChange={(e) => patch(i, { customer_condition: e.target.value })} style={inputStyle}>
+                        {CONDITION_OPTS.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={fieldLabel}>위반유형</label>
+                      <select value={c.violation_type} onChange={(e) => patch(i, { violation_type: e.target.value })} style={inputStyle}>
+                        {VIOLATION_OPTS.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={fieldLabel}>의미태그</label>
+                    <Chips i={i} field="semantic_tags" options={tagCodes.map((code) => ({ value: code, label: tagsMap[code] || code }))} labelOf={(v) => tagsMap[v] || v} />
+                  </div>
+                  <div>
+                    <label style={fieldLabel}>근거 조항</label>
+                    <Chips i={i} field="knowledge_ids" options={knowList.map((k) => ({ value: k.knowledge_id, label: `${k.title} (${k.knowledge_id})` }))} labelOf={(v) => (knowledge[v]?.title || v)} />
+                  </div>
+                </div>
               ))}
-            </div>
-            {rsMode === "existing" ? (
-              <select value={rsId} onChange={(e) => setRsId(e.target.value)} style={inputStyle}>
-                <option value="">— 룰셋 선택 —</option>
-                {(rulesets || []).map((rs) => <option key={rs.ruleset_id} value={rs.ruleset_id}>{catLabel[rs.ruleset_category] || rs.ruleset_category} 룰셋 · {rs.ruleset_id}</option>)}
-              </select>
-            ) : (
-              <select value={rsCat} onChange={(e) => setRsCat(e.target.value)} style={inputStyle}>
-                <option value="">— 카테고리 선택 —</option>
-                {(categories || []).map((c) => <option key={c.category} value={c.category}>{c.label}</option>)}
-              </select>
-            )}
-            {rsMode === "new" && <span style={{ fontSize: 11, color: T.faint }}>룰셋 이름은 선택한 카테고리 이름으로 자동 지정됩니다. 카테고리는 상품의 product_category와 매칭되어, 해당 카테고리를 가진 상품에 이 룰셋이 적용됩니다.</span>}
-          </div>
-
-          {err && <div style={{ color: "#DC2626", fontSize: 12, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "8px 11px", lineHeight: 1.5 }}>{err}</div>}
+              {err && <div style={{ color: "#DC2626", fontSize: 12, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "8px 11px", lineHeight: 1.5 }}>{err}</div>}
+            </>
+          )}
         </div>
 
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", padding: "13px 20px", borderTop: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
+          {step === "review" && <button onClick={() => { setStep("upload"); setErr(null); }} disabled={busy} style={{ marginRight: "auto", border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>← 다시 업로드</button>}
           <button onClick={close} disabled={busy} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>취소</button>
-          <button onClick={submit} disabled={busy || !parsed.length} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 20px", cursor: busy || !parsed.length ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: busy || !parsed.length ? 0.55 : 1 }}>{busy ? "반영 중…" : `${parsed.length}건 반영`}</button>
+          {step === "review" && <button onClick={submit} disabled={busy || !cands.some((c) => c.statement.trim())} style={{ border: "none", background: T.accent, color: "#fff", borderRadius: 8, padding: "8px 20px", cursor: busy ? "default" : "pointer", fontSize: 13, fontWeight: 700, opacity: busy || !cands.some((c) => c.statement.trim()) ? 0.55 : 1 }}>{busy ? "반영 중…" : `${cands.filter((c) => c.statement.trim()).length}건 룰 적용`}</button>}
         </div>
       </div>
     </>
   );
 }
 
+
 // ─────────────────────────────────────────────
 // 룰북 — 키워드 검색 + 6대 원칙 그룹 + 인라인 상세 (한 페이지)
 //   · 공유 근거 조항은 그룹 헤더에서 1회만 표시(중복 제거)
 //   · 룰 클릭 시 인라인으로 펼쳐 체크 내용·태그·키워드 표시
 // ─────────────────────────────────────────────
-function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], categories = [], catLabel = {}, onImport, openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
+function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], categories = [], catLabel = {}, principles = [], onImport, openId, setOpenId, onUpdate, onPersist, onCreate, onDelete, query, setQuery }) {
   const T = useT();
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
   // 고객조건 셀렉트 옵션 (표준 3분류 + 기존 값)
@@ -434,19 +506,19 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
 
   return (
     <div>
-      {/* 룰 추가 / 파일로 추가 버튼 */}
+      {/* 룰 추가: 파일로 / 직접 입력 */}
       <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 8 }}>
-        {/* <button onClick={() => setImporting(true)}
+        <button onClick={() => setImporting(true)} title="파일을 올려 여러 룰을 한 번에 추가"
           style={{ display: "inline-flex", alignItems: "center", gap: 6, border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 9, padding: "9px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
-          <span style={{ fontSize: 14, lineHeight: 1 }}>⇪</span> 파일 업로드
-        </button> */}
-        <button onClick={() => { setAdding(true); setCreateErr(null); }}
+          <span style={{ fontSize: 14, lineHeight: 1 }}>⇪</span> 파일로 룰 추가
+        </button>
+        <button onClick={() => { setAdding(true); setCreateErr(null); }} title="폼에서 룰 하나를 직접 입력"
           style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "none", background: T.accent, color: "#fff", borderRadius: 9, padding: "9px 16px", cursor: "pointer", fontSize: 13, fontWeight: 700 }}>
-          <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> 룰 추가
+          <span style={{ fontSize: 15, lineHeight: 1 }}>+</span> 직접 입력
         </button>
       </div>
 
-      <ImportRulesDrawer open={importing} onClose={() => setImporting(false)} rulesets={rulesets} categories={categories} catLabel={catLabel} onImport={onImport} />
+      <ImportRulesDrawer open={importing} onClose={() => setImporting(false)} categories={categories} principles={principles} taxonomy={taxonomy} knowledge={knowledge} onImport={onImport} />
 
       {/* 룰 추가 드로어 (오른쪽 → 왼쪽 슬라이드) */}
       <div onClick={() => { if (!creating) setAdding(false); }}
@@ -456,7 +528,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 20px", borderBottom: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
           <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 18, fontWeight: 700, lineHeight: 1 }}>+</span>
           <div>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>새 룰 추가</div>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>룰 직접 입력</div>
           </div>
           <button onClick={() => { setAdding(false); resetNew(); }} disabled={creating} title="닫기"
             style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 22, lineHeight: 1, padding: "2px 4px" }}>×</button>
@@ -1549,7 +1621,7 @@ function AppShell({ mode, setMode }) {
       </Centered>
     );
   else {
-    const { knowledge, rules, taxonomy, products, rulesets, categories } = bundle;
+    const { knowledge, rules, taxonomy, products, rulesets, categories, principles } = bundle;
     const catLabel = Object.fromEntries((categories || []).map((c) => [c.category, c.label]));
     if (section === "tags") {
       content = <TagsView rules={rules} taxonomy={taxonomy} selected={tagSel} setSelected={setTagSel} onOpen={openRule}
@@ -1562,7 +1634,7 @@ function AppShell({ mode, setMode }) {
       content = <LoadView products={products} taxonomy={taxonomy} catLabel={catLabel} form={loadForm} setForm={setLoadForm} result={loadResult} setResult={setLoadResult} />;
     } else {
       content = (
-        <ListView rules={rules} knowledge={knowledge} taxonomy={taxonomy} products={products} rulesets={rulesets} categories={categories} catLabel={catLabel} onImport={importRulesLocal}
+        <ListView rules={rules} knowledge={knowledge} taxonomy={taxonomy} products={products} rulesets={rulesets} categories={categories} catLabel={catLabel} principles={principles} onImport={importRulesLocal}
           openId={selectedRuleId} setOpenId={setSelectedRuleId}
           onUpdate={updateRuleLocal} onPersist={persistRule} onCreate={createRuleLocal} onDelete={deleteRuleLocal}
           query={listQuery} setQuery={setListQuery} />

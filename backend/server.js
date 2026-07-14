@@ -341,9 +341,11 @@ app.post("/api/rules/import", (req, res) => {
       m += 1;
       let rule_id = `RULE_${String(m).padStart(3, "0")}`;
       while (db.prepare("SELECT 1 FROM rules WHERE rule_id = ?").get(rule_id)) rule_id += "_x";
+      // 룰별 category 우선 (검토 화면에서 개별 지정) → 없으면 배치 category
+      const rc = (r.category && db.prepare("SELECT 1 FROM categories WHERE category = ?").get(r.category)) ? r.category : category;
       ins.run({
         rule_id, statement,
-        category,
+        category: rc,
         sales_principle: principleCode(r.sales_principle),
         customer_condition: r.customer_condition || "모든 고객",
         violation_type: r.violation_type || "누락형",

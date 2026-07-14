@@ -12,16 +12,17 @@ async function json(res) {
 
 // 관리 데이터 일괄 로드 (knowledge / rules / taxonomy / products / rulesets)
 export async function fetchBundle() {
-  const [knowledge, rules, taxonomy, products, rulesetsRes, categories] = await Promise.all([
+  const [knowledge, rules, taxonomy, products, rulesetsRes, categories, principles] = await Promise.all([
     fetch(`${BASE}/knowledge`).then(json),
     fetch(`${BASE}/rules`).then(json),
     fetch(`${BASE}/taxonomy`).then(json),
     fetch(`${BASE}/products`).then(json),
     fetch(`${BASE}/rulesets`).then(json),
     fetch(`${BASE}/categories`).then(json),
+    fetch(`${BASE}/principles`).then(json),
   ]);
   const knowledgeMap = Object.fromEntries(knowledge.map((p) => [p.knowledge_id, p]));
-  return { knowledge: knowledgeMap, rules, taxonomy, products, categories, rulesets: rulesetsRes.ruleset_identities || [] };
+  return { knowledge: knowledgeMap, rules, taxonomy, products, categories, principles, rulesets: rulesetsRes.ruleset_identities || [] };
 }
 
 // 룰 일괄 임포트 (파일 파싱 결과) — { rules, ruleset_id? , new_ruleset? }
