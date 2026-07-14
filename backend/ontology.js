@@ -35,11 +35,13 @@ export function buildGraph(db, taxonomy) {
   const addEdge = (source, target, type) => edges.push({ source, target, type });
 
   const knowledge = db.prepare("SELECT * FROM knowledge").all();
-  const rules = db.prepare("SELECT * FROM rules ORDER BY rule_seq").all();
-  const rulesets = db.prepare("SELECT * FROM rulesets").all();
+  const rules = db.prepare("SELECT * FROM rules ORDER BY rule_id").all();
+  const categoriesTbl = db.prepare("SELECT category, label FROM categories").all();
   const products = db.prepare("SELECT * FROM products").all();
-  const catLabel = Object.fromEntries(db.prepare("SELECT category, label FROM categories").all().map((c) => [c.category, c.label]));
-  const semTags = taxonomy.semantic_tags || {};
+  const catLabel = Object.fromEntries(categoriesTbl.map((c) => [c.category, c.label]));
+  const semTags = Object.fromEntries(db.prepare("SELECT tag_code, label FROM tags").all().map((t) => [t.tag_code, t.label]));
+  const ruleTagMap = {};
+  for (const rt of db.prepare("SELECT rule_id, tag_code FROM rule_tags").all()) (ruleTagMap[rt.rule_id] ??= []).push(rt.tag_code);
 
   // documents ← knowledge
   const docs = new Set();
@@ -52,11 +54,11 @@ export function buildGraph(db, taxonomy) {
     addEdge(N.document(p.document_type), N.knowledge(p.knowledge_id), "CONTAINS");
   }
 
-  // rulesets ← category
-  for (const rs of rulesets) {
-    addNode(N.ruleset(rs.ruleset_id), "ruleset", catLabel[rs.ruleset_category] || rs.ruleset_category, { ruleset_category: rs.ruleset_category });
-    addNode(N.category(rs.ruleset_category), "category", catLabel[rs.ruleset_category] || rs.ruleset_category);
-    addEdge(N.ruleset(rs.ruleset_id), N.category(rs.ruleset_category), "HAS_CATEGORY");
+  // 룰셋 = 카테고리 : 카테고리마다 ruleset 노드(id=rset:category) + category 노드
+  for (const c of categoriesTbl) {
+    addNode(N.ruleset(c.category), "ruleset", c.label || c.category, { ruleset_category: c.category });
+    addNode(N.category(c.category), "category", c.label || c.category);
+    addEdge(N.ruleset(c.category), N.category(c.category), "HAS_CATEGORY");
   }
 
   // products → category (APPLIES_TO) — 상품은 단일 카테고리 보유
@@ -72,14 +74,14 @@ export function buildGraph(db, taxonomy) {
   // rules + relations
   for (const r of rules) {
     const knowledge_ids = JSON.parse(r.knowledge_ids || "[]");
-    const tags = JSON.parse(r.semantic_tags || "[]");
+    const tags = ruleTagMap[r.rule_id] || [];
     const mod = modalityOf(r.violation_type);
     addNode(N.rule(r.rule_id), "rule", r.statement, {
-      rule_id: r.rule_id, sales_stage: r.sales_stage,
+      rule_id: r.rule_id,
       customer_condition: r.customer_condition, violation_type: r.violation_type,
       modality: mod.code, modality_ko: mod.ko,
     });
-    if (r.ruleset_id) { addNode(N.ruleset(r.ruleset_id), "ruleset", r.ruleset_id); addEdge(N.rule(r.rule_id), N.ruleset(r.ruleset_id), "IN_RULESET"); }
+    if (r.category) addEdge(N.rule(r.rule_id), N.ruleset(r.category), "IN_RULESET");
     for (const pid of knowledge_ids) addEdge(N.rule(r.rule_id), N.knowledge(pid), "BASED_ON");
     for (const t of tags) { addNode(N.tag(t), "tag", semTags[t] || t, { code: t }); addEdge(N.rule(r.rule_id), N.tag(t), "REQUIRES"); }
   }
@@ -118,7 +120,6 @@ export function toTurtle(graph) {
     const parts = [`a aegis:${CLASS[n.type] || "Node"}`, `rdfs:label "${esc(n.label)}"`, `aegis:sourceId "${esc(n.id)}"`];
     if (n.type === "rule" && n.modality) parts.push(`a deontic:${n.modality}`);
     if (n.document_type) parts.push(`aegis:documentType "${esc(n.document_type)}"`);
-    if (n.sales_stage) parts.push(`aegis:triggerState "${esc(n.sales_stage)}"`);
     if (n.violation_type) parts.push(`aegis:violationType "${esc(n.violation_type)}"`);
     if (n.code) parts.push(`aegis:tagCode "${esc(n.code)}"`);
     L.push(`${iri(n.id)} ${parts.join(" ; ")} .`);
@@ -145,7 +146,6 @@ export function toCypher(graph) {
     if (n.type === "rule" && n.modality) labels.push(n.modality); // deontic 라벨 병기
     const props = [`label:'${q(n.label)}'`, `nodeType:'${q(n.type)}'`];
     if (n.document_type) props.push(`documentType:'${q(n.document_type)}'`);
-    if (n.sales_stage) props.push(`triggerState:'${q(n.sales_stage)}'`);
     if (n.violation_type) props.push(`violationType:'${q(n.violation_type)}'`);
     if (n.modality_ko) props.push(`modality:'${q(n.modality_ko)}'`);
     if (n.code) props.push(`tagCode:'${q(n.code)}'`);

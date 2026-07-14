@@ -79,64 +79,6 @@ const Card = ({ title, right, children, pad = 16 }) => {
   );
 };
 
-// 상담 발화 예시 프리셋 — 다양한 케이스를 한 번에 테스트
-const SCENARIOS = [
-  {
-    label: "이상적 상담",
-    hint: "누락형 충족 · 서명 기록 확인",
-    text: "먼저 일반금융소비자에 해당하시는지 확인하고 투자성향 진단시스템에 입력하겠습니다. 투자성향 분석결과를 설명·교부드리고, 원금손실 가능성과 예금자보호 비대상 상품임을 안내드립니다. 적합한 상품을 권유드리고 설명서를 교부합니다. 마지막으로 가입 상품과 투자위험을 고객과 함께 기재 후 서명 받겠습니다.",
-  },
-  {
-    label: "핵심 누락",
-    hint: "필수 안내 대부분 빠짐 → 미충족",
-    text: "이 상품 수익률이 요즘 제일 좋아요. 바로 가입 도와드릴게요.",
-  },
-  {
-    label: "부당권유(감점)",
-    hint: "금지 발화 감지 → 감점",
-    text: "이 상품은 무조건 원금 보장되고 확실하게 수익 납니다. 혹시 손실 나면 제가 손실보전 해드릴게요.",
-  },
-  {
-    label: "온라인 유도(감점)",
-    hint: "회피성 비대면 유도 → 감점",
-    text: "창구에서 하면 복잡하니까 그냥 앱으로 하세요. 비대면 안내 도와드릴게요. 온라인으로 가입하시는 게 편해요.",
-  },
-  {
-    label: "고령자 상담",
-    hint: "고령자 특화 절차·녹취",
-    text: "만 65세 이상 고령투자자시라 관리직 지점장 사전확인을 받고, 비상연락용 조력자 연락처를 등록하겠습니다. 판매과정 녹취 동의 부탁드립니다.",
-  },
-  { label: "빈 발화", hint: "발화 없음 → 판정 경계 확인", text: "" },
-];
-
-// violation_type + 키워드 매칭으로 판정을 낸다.
-function simulate(rule, transcript) {
-  const text = transcript || "";
-  const keywords = rule.keywords || [];
-  const hits = keywords.filter((k) => k && text.includes(k));
-
-  if (rule.violation_type === "비계량형") {
-    return { verdict: "사람 검토", detail: "비계량(정성) 항목이라 자동 판정 대상이 아닙니다. 검토자 큐로 이관합니다.", score: null };
-  }
-  if (rule.violation_type === "감점형") {
-    return hits.length
-      ? { verdict: "감점 감지", detail: `부적절·금지 발화 감지: "${hits.join('", "')}" → 감점 사유에 해당`, score: 0 }
-      : { verdict: "정상", detail: "감점 대상 발화가 발견되지 않았습니다.", score: 100 };
-  }
-  const total = keywords.length || 1;
-  const ratio = Math.round((hits.length / total) * 100);
-  if (hits.length === 0) return { verdict: "미충족", detail: "관련 발화를 찾지 못했습니다 — 누락 가능성", score: 0 };
-  return { verdict: "충족", detail: `근거 키워드 ${hits.length}/${total} 매칭: "${hits.join('", "')}"`, score: ratio };
-}
-const VERDICT_STYLE = {
-  "충족": { fg: "#047857", bg: "#D1FAE5" },
-  "미충족": { fg: "#B91C1C", bg: "#FEE2E2" },
-  "감점 감지": { fg: "#B91C1C", bg: "#FEE2E2" },
-  "정상": { fg: "#047857", bg: "#D1FAE5" },
-  "시스템 확인": { fg: "#047857", bg: "#D1FAE5" },
-  "기록 미확인": { fg: "#B91C1C", bg: "#FEE2E2" },
-  "사람 검토": { fg: "#B45309", bg: "#FEF3C7" },
-};
 
 // ─────────────────────────────────────────────
 // 마크다운/텍스트 → 룰 후보 파싱 (파일 업로드 임포트)
@@ -145,14 +87,12 @@ const VERDICT_STYLE = {
 // ─────────────────────────────────────────────
 const IMPORT_FIELD_MAP = {
   "원칙": "sales_principle", sales_principle: "sales_principle",
-  "단계": "sales_stage", sales_stage: "sales_stage",
   "고객조건": "customer_condition", "조건": "customer_condition", customer_condition: "customer_condition",
   "판정": "violation_type", "판정성격": "violation_type", violation_type: "violation_type",
   "태그": "semantic_tags", semantic_tags: "semantic_tags", tags: "semantic_tags",
   "근거": "knowledge_ids", knowledge_ids: "knowledge_ids",
-  "키워드": "keywords", keywords: "keywords",
 };
-const IMPORT_ARRAY_FIELDS = new Set(["semantic_tags", "knowledge_ids", "keywords"]);
+const IMPORT_ARRAY_FIELDS = new Set(["semantic_tags", "knowledge_ids"]);
 function parseRulesMarkdown(text) {
   const lines = (text || "").split(/\r?\n/);
   const rules = [];
@@ -330,20 +270,19 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
   const T = useT();
   const koOf = (c) => taxonomy?.semantic_tags?.[c] || "";
   // 고객조건 셀렉트 옵션 (표준 3분류 + 기존 값)
-  const conditionOptions = [...new Set(["모든 고객", "고령자(65+)", "초고령자(80+)", ...rules.map((r) => r.customer_condition).filter(Boolean)])];
+  const conditionOptions = [...new Set(["모든 고객", "고령자", "초고령자", ...rules.map((r) => r.customer_condition).filter(Boolean)])];
   const fieldLabel = { fontSize: 10.5, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase" };
   const knowledgeOf = (r) => (r.knowledge_ids || []).map((pid) => knowledge[pid]).filter(Boolean);
 
   const q = query.trim().toLowerCase();
   const matchInfo = (r) => {
-    if (!q) return { hit: true, kw: [] };
-    const kw = (r.keywords || []).filter((k) => k.toLowerCase().includes(q));
+    if (!q) return { hit: true };
     const tagHit = (r.semantic_tags || []).some((t) => t.toLowerCase().includes(q));
     const textHit = r.statement.toLowerCase().includes(q);
-    return { hit: kw.length || tagHit || textHit, kw };
+    return { hit: tagHit || textHit };
   };
   const results = rules.map((r) => ({ r, ...matchInfo(r) })).filter((x) => x.hit)
-    .sort((a, b) => b.kw.length - a.kw.length || a.r.rule_seq - b.r.rule_seq);
+    .sort((a, b) => (a.r.rule_id || "").localeCompare(b.r.rule_id || ""));
 
   const grouped = useMemo(() => {
     const g = {};
@@ -474,7 +413,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
     </div>
   );
 
-  const RuleItem = ({ r, kw = [], showKnowledge }) => {
+  const RuleItem = ({ r, showKnowledge }) => {
     const open = openId === r.rule_id;
     const tags = r.semantic_tags || [];
     return (
@@ -605,7 +544,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
           <div style={{ padding: "9px 14px", borderBottom: `1px solid ${T.line}`, fontSize: 12, color: T.sub }}>
             <b style={{ color: T.accent }}>{results.length}건</b> 매칭 · "{query}"
           </div>
-          {results.map(({ r, kw }, i) => (<div key={r.rule_id} style={{ borderTop: i ? `1px solid ${T.line}` : "none" }}><RuleItem r={r} kw={kw} showKnowledge /></div>))}
+          {results.map(({ r }, i) => (<div key={r.rule_id} style={{ borderTop: i ? `1px solid ${T.line}` : "none" }}><RuleItem r={r} showKnowledge /></div>))}
           {results.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.faint, fontSize: 13 }}>매칭되는 룰이 없습니다</div>}
         </div>
       ) : (
@@ -1028,10 +967,9 @@ function OntologyView({ form, setForm }) {
                 <button onClick={() => setSelected(null)} style={{ marginLeft: "auto", border: "none", background: "transparent", color: T.faint, cursor: "pointer", fontSize: 16, lineHeight: 1, padding: 0 }} title="선택 해제">×</button>
               </div>
               <div style={{ fontSize: 13.5, fontWeight: 600, color: T.ink, lineHeight: 1.5, marginBottom: 8 }}>{selNode.label}</div>
-              {(selNode.modality_ko || selNode.sales_stage || selNode.document_type) && (
+              {(selNode.modality_ko || selNode.document_type) && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
                   {selNode.modality_ko && <span style={{ fontSize: 11, fontWeight: 600, color: MOD_COLOR[selNode.modality], background: T.accentBg, borderRadius: 8, padding: "2px 8px" }}>{selNode.modality_ko}</span>}
-                  {selNode.sales_stage && <Chip>{selNode.sales_stage}</Chip>}
                   {selNode.document_type && <span style={{ fontSize: 11, color: DOCTYPE_COLOR[selNode.document_type], fontWeight: 600, alignSelf: "center" }}>{selNode.document_type}</span>}
                 </div>
               )}
