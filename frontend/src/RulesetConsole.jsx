@@ -484,11 +484,14 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
 
   // 인라인 상세 패널 — 미니멀 배지 바 + 근거 목록
   const Panel = ({ r, showKnowledge }) => {
-    const art = r.sales_principle ? PRINCIPLE_ART[r.sales_principle] : null;
-    const pb = principleBadge(r.sales_principle);
     const kn = knowledgeOf(r);
+    const metaLabel = (color) => ({ display: "flex", alignItems: "baseline", gap: 7, fontSize: 12, fontWeight: 700, color, marginBottom: 10, paddingLeft: 9, borderLeft: `3px solid ${color}` });
+    const metaHint = { fontSize: 10.5, fontWeight: 500, color: T.faint };
+    const fieldLabel = { fontSize: 11, fontWeight: 700, color: T.sub, letterSpacing: 0.2, marginBottom: 6 };
+    const badge = { fontSize: 12, color: T.sub, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 6, padding: "3px 9px", display: "inline-block" };
+    const MATCH_C = "#2D5BE3", JUDGE_C = "#DC2626";
     return (
-    <div style={{ padding: "12px 14px 14px", background: "transparent", display: "flex", flexDirection: "column", gap: 12 }}>
+    <div style={{ padding: "14px 16px 18px", background: "transparent", display: "flex", flexDirection: "column", gap: 18 }}>
       {edit && (
         <div>
           <div style={secLabel}>점검 문장</div>
@@ -497,62 +500,68 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
             style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 48, resize: "vertical", lineHeight: 1.5, fontSize: 13 }} />
         </div>
       )}
-
-      {/* 미니멀 배지 바 — 분류/태그 + (우측) 저장·편집·삭제 */}
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-        {r.sales_principle && <span style={{ fontSize: 11.5, fontWeight: 600, color: pb.fg, background: pb.bg, borderRadius: 6, padding: "2px 8px" }}>{r.sales_principle}{art && <span style={{ fontFamily: T.mono, fontSize: 10, opacity: 0.8, marginLeft: 4 }}>{art}</span>}</span>}
-        <span style={{ fontSize: 11.5, color: T.sub, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 6, padding: "2px 8px" }}>{r.customer_condition}</span>
-        <span style={{ fontSize: 11.5, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 6, padding: "2px 8px" }}>{r.violation_type}</span>
-        <span style={{ width: 1, height: 16, background: T.line, margin: "0 2px" }} />
-        {(r.semantic_tags || []).map((code) => (
-          <span key={code} title={code} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 6, padding: edit ? "2px 5px 2px 8px" : "2px 8px" }}>
-            {code}
-            {edit && <button onClick={() => commit({ ...r, semantic_tags: r.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>×</button>}
+      {/* 🔵 매칭 메타 (+ 액션) — 대화가 들어왔을 때 어떤 룰이 매칭되는가 (ST·매칭AI) */}
+      <div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ ...metaLabel(MATCH_C), marginBottom: 0 }}>매칭 메타 <span style={metaHint}>대화 → 룰 매칭</span></div>
+          <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            {saveState !== "idle" && <span style={{ fontSize: 11.5, color: saveState === "error" ? "#DC2626" : saveState === "saved" ? "#059669" : T.faint }}>{SAVE[saveState]}</span>}
+            <button onClick={() => { setEdit((v) => !v); setConfirmDel(false); }}
+              style={{ border: edit ? "none" : `1px solid ${T.line}`, background: edit ? T.accent : T.surface, color: edit ? "#fff" : T.sub, borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>{edit ? "완료" : "편집"}</button>
+            {confirmDel ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                <span style={{ color: "#DC2626", fontSize: 11.5, fontWeight: 600 }}>삭제하시겠습니까?</span>
+                <button onClick={() => doDelete(r)} disabled={deleting} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 7, padding: "4px 11px", cursor: deleting ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, opacity: deleting ? 0.6 : 1 }}>{deleting ? "…" : "삭제"}</button>
+                <button onClick={() => setConfirmDel(false)} disabled={deleting} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "4px 11px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
+              </span>
+            ) : (
+              <button onClick={() => setConfirmDel(true)} style={{ border: `1px solid ${T.line}`, background: T.surface, color: "#DC2626", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
+            )}
           </span>
-        ))}
-        {(r.semantic_tags || []).length === 0 && !edit && <span style={{ fontSize: 11.5, color: T.faint }}>태그없음</span>}
-        {edit && (
-          <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.semantic_tags || []; if (cur.includes(v)) return; commit({ ...r, semantic_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 180 }}>
-            <option value="">+ 태그</option>
-            {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
-          </select>
-        )}
-
-        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
-          {saveState !== "idle" && <span style={{ fontSize: 11.5, color: saveState === "error" ? "#DC2626" : saveState === "saved" ? "#059669" : T.faint }}>{SAVE[saveState]}</span>}
-          <button onClick={() => { setEdit((v) => !v); setConfirmDel(false); }}
-            style={{ border: edit ? "none" : `1px solid ${T.line}`, background: edit ? T.accent : T.surface, color: edit ? "#fff" : T.sub, borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>{edit ? "완료" : "편집"}</button>
-          {confirmDel ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-              <span style={{ color: "#DC2626", fontSize: 11.5, fontWeight: 600 }}>삭제하시겠습니까?</span>
-              <button onClick={() => doDelete(r)} disabled={deleting} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 7, padding: "4px 11px", cursor: deleting ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, opacity: deleting ? 0.6 : 1 }}>{deleting ? "…" : "삭제"}</button>
-              <button onClick={() => setConfirmDel(false)} disabled={deleting} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "4px 11px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
+          {(r.semantic_tags || []).map((code) => (
+            <span key={code} title={code} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: T.mono, fontSize: 11.5, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 6, padding: edit ? "3px 6px 3px 9px" : "3px 9px" }}>
+              {code}
+              {edit && <button onClick={() => commit({ ...r, semantic_tags: r.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>×</button>}
             </span>
-          ) : (
-            <button onClick={() => setConfirmDel(true)} style={{ border: `1px solid ${T.line}`, background: T.surface, color: "#DC2626", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
+          ))}
+          {(r.semantic_tags || []).length === 0 && !edit && <span style={{ fontSize: 12, color: T.faint }}>태그없음</span>}
+          {edit && (
+            <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.semantic_tags || []; if (cur.includes(v)) return; commit({ ...r, semantic_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 180 }}>
+              <option value="">+ 태그</option>
+              {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+            </select>
           )}
-        </span>
+        </div>
       </div>
 
-      {/* 근거 조항 — 미니멀 목록 */}
-      {showKnowledge && (
+      {/* 🔴 판정 메타 — iTrix 가 위반 여부를 판단하는 데 쓰는 정보 */}
+      <div>
+        <div style={metaLabel(JUDGE_C)}>판정 메타 <span style={metaHint}>iTrix 위반 판정</span></div>
+        <div style={{ marginBottom: 14 }}>
+          {edit ? (
+            <select value={r.violation_type || ""} onChange={(e) => commit({ ...r, violation_type: e.target.value })} style={{ ...inputStyle, maxWidth: 160 }}>
+              {["누락형", "감점형", "비계량형"].map((v) => <option key={v} value={v}>{v}</option>)}
+            </select>
+          ) : <span style={{ ...badge, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub }}>{r.violation_type}</span>}
+        </div>
         <div>
-          <div style={secLabel}>근거 조항{kn.length > 0 && ` · ${kn.length}`}</div>
-          {kn.length === 0 ? <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>
+          <div style={fieldLabel}>근거 조항</div>
+          {kn.length === 0 ? <div style={{ fontSize: 12.5, color: T.faint }}>연결된 조항이 없습니다</div>
             : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {kn.map((p) => (
-                  <div key={p.knowledge_id} style={{ display: "flex", gap: 8 }}>
-                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: DOCTYPE_COLOR[p.document_type] || T.line, flexShrink: 0, marginTop: 6 }} />
-                    <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>
-                      <span style={{ fontWeight: 600, color: T.ink }}>{p.title}</span>
-                      <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type], margin: "0 6px" }}>{p.document_type}</span>
-                      <span style={{ color: T.sub }}>{p.content}</span>
+                  <div key={p.knowledge_id} style={{ borderLeft: `3px solid ${DOCTYPE_COLOR[p.document_type] || T.line}`, background: T.subtle, borderRadius: "0 8px 8px 0", padding: "9px 12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: T.ink }}>{p.title}</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: DOCTYPE_COLOR[p.document_type] }}>{p.document_type}</span>
                     </div>
+                    <div style={{ fontSize: 12.5, lineHeight: 1.75, color: T.sub }}>{p.content}</div>
                   </div>
                 ))}
               </div>}
         </div>
-      )}
+      </div>
     </div>
     );
   };
@@ -796,9 +805,9 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
   //  · 대화는 ST 가 별도로 붙임. 2000 − 대화여유 500 = 1500자 예산.
   // ST 응답 페이로드 — 태그/조항/체크리스트를 각각 하나의 문자열로 합침 (구분자 " / ", 콤마 미사용)
   const SEP = " / ";
-  const uniqueTags = [...new Set(shown.flatMap((r) => ((r.matched_tags?.length ? r.matched_tags : r.semantic_tags) || [])))].filter((t) => t && t !== "_no_tag");
+  const uniqueTags = [...new Set(shown.flatMap((r) => ((r.matching?.matched_tags?.length ? r.matching.matched_tags : r.matching?.semantic_tags) || [])))].filter((t) => t && t !== "_no_tag");
   const uniqueChecklist = [...new Set(shown.map((r) => r.statement).filter(Boolean))];
-  const uniqueTexts = result ? [...new Set(shown.flatMap((r) => (r.knowledge || []).map((p) => p.content)))] : [];
+  const uniqueTexts = result ? [...new Set(shown.flatMap((r) => (r.judgment?.knowledge || []).map((p) => p.content)))] : [];
   const stPayload = result && {
     tags: uniqueTags.join(SEP),
     knowledge: uniqueTexts.join(SEP),
@@ -812,7 +821,7 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
     <div>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>ST ↔ RuleSet 연동 <span style={{ fontSize: 10.5, fontWeight: 700, color: T.accent, background: T.accentBg, borderRadius: 5, padding: "1px 7px", verticalAlign: "middle" }}>RS-2</span></div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: T.ink }}>ST ↔ RuleSet 연동</div>
         </div>
         <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 7, fontFamily: T.mono, fontSize: 11.5, color: T.sub, background: T.subtle, border: `1px solid ${T.line}`, borderRadius: 8, padding: "6px 11px" }}>
           <span style={{ fontWeight: 700, color: "#059669" }}>GET</span> /api/ruleset/load
@@ -918,8 +927,7 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
             <div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 8 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#fff", background: "#059669", borderRadius: 5, padding: "2px 8px" }}>200 OK</span>
-                <Badge fg="#047857" bg="#D1FAE5">{result.product_name} · 룰 {result.count}건</Badge>
-                {result.ruleset_identity && <Badge fg="#0F766E" bg="#CCFBF1">{result.ruleset_identity.ruleset_name} 룰셋 · {result.ruleset_identity.ruleset_id} · v{result.ruleset_identity.version}</Badge>}
+                <Badge fg="#047857" bg="#D1FAE5">{result.product_name}</Badge>
                 {result.requested_tags?.length > 0 && <Badge fg="#5B21B6" bg="#EDE9FE">태그 매칭 {result.count}/{result.total_in_ruleset}</Badge>}
                 {result.over_budget > 0 && <Badge fg="#B91C1C" bg="#FEE2E2">예산 초과 {result.over_budget}건</Badge>}
               </div>
@@ -937,16 +945,15 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
                           {r.sales_principle && <Badge {...principleBadge(r.sales_principle)}>{r.sales_principle}</Badge>}
                         </div>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 5 }}>
-                          {r.violation_type && <span style={{ fontSize: 10.5, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub }}>{r.violation_type}</span>}
-                          {r.customer_condition && r.customer_condition !== "모든 고객" && <span style={{ fontSize: 10.5, color: T.sub, background: T.chipBg, borderRadius: 5, padding: "1px 6px" }}>{r.customer_condition}</span>}
-                          {((r.matched_tags?.length ? r.matched_tags : r.semantic_tags) || []).filter((t) => t && t !== "_no_tag").map((t) => (
+                          {r.judgment?.violation_type && <span style={{ fontSize: 10.5, fontWeight: 600, color: VIOL_COLOR[r.judgment.violation_type] || T.sub }}>{r.judgment.violation_type}</span>}
+                          {r.matching?.customer_condition && r.matching.customer_condition !== "모든 고객" && <span style={{ fontSize: 10.5, color: T.sub, background: T.chipBg, borderRadius: 5, padding: "1px 6px" }}>{r.matching.customer_condition}</span>}
+                          {((r.matching?.matched_tags?.length ? r.matching.matched_tags : r.matching?.semantic_tags) || []).filter((t) => t && t !== "_no_tag").map((t) => (
                             <span key={t} style={{ fontFamily: T.mono, fontSize: 9.5, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 4, padding: "1px 5px" }}>{t}</span>
                           ))}
-                          {typeof r.judge_chars === "number" && <span style={{ marginLeft: "auto", fontSize: 10, color: r.within_budget === false ? "#DC2626" : T.faint }}>판정 {r.judge_chars}자{r.within_budget === false ? " ⚠" : ""}</span>}
                         </div>
                         <div style={{ marginTop: 7, display: "flex", flexDirection: "column", gap: 6 }}>
-                          {(r.knowledge || []).length === 0 && <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>}
-                          {(r.knowledge || []).map((p) => (
+                          {(r.judgment?.knowledge || []).length === 0 && <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>}
+                          {(r.judgment?.knowledge || []).map((p) => (
                             <div key={p.knowledge_id} style={{ borderLeft: `3px solid ${DOCTYPE_COLOR[p.document_type] || T.line}`, padding: "7px 11px", background: T.subtle, borderRadius: "0 7px 7px 0" }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 3 }}>
                                 <span style={{ fontSize: 12.5, fontWeight: 600, color: T.ink }}>{p.title}</span>
@@ -972,23 +979,24 @@ function LoadView({ products, taxonomy, catLabel = {}, form, setForm, result, se
 // ─────────────────────────────────────────────
 // 온톨로지 — 그래프DB 스타일 탐색기 (force-directed) + deontic + Cypher/RDF 내보내기
 // ─────────────────────────────────────────────
-const NODE_COLOR = { knowledge: "#2D5BE3", tag: "#6D28D9", principle: "#B45309", ruleset: "#0D9488", category: "#0D9488", product: "#0891B2", document: "#5A6577" };
+const NODE_COLOR = { knowledge: "#2D5BE3", tag: "#6D28D9", principle: "#B45309", category: "#0D9488", product: "#0891B2", document: "#5A6577" };
 const MOD_COLOR = { Obligation: "#2D5BE3", Prohibition: "#DC2626", Advisory: "#5A6577" };
-const EDGE_KO = { CONTAINS: "포함", BASED_ON: "근거", REQUIRES: "요구태그", IN_RULESET: "소속", HAS_CATEGORY: "카테고리", APPLIES_TO: "적용", HAS_PRINCIPLE: "판매원칙" };
-const NODE_KO = { rule: "룰", knowledge: "근거 조항", tag: "의미태그", principle: "판매원칙", ruleset: "룰셋", category: "카테고리", product: "상품", document: "문서" };
-const R_OF = { rule: 10, ruleset: 13, category: 12, principle: 11, knowledge: 8, tag: 6, document: 11, product: 11 };
+const EDGE_KO = { CONTAINS: "포함", BASED_ON: "근거", REQUIRES: "요구태그", IN_RULESET: "소속", APPLIES_TO: "적용", HAS_PRINCIPLE: "판매원칙" };
+const NODE_KO = { rule: "룰", knowledge: "근거 조항", tag: "의미태그", principle: "판매원칙", category: "카테고리·룰셋", product: "상품", document: "문서" };
+const R_OF = { rule: 10, category: 13, principle: 11, knowledge: 8, tag: 6, document: 11, product: 11 };
 
-// 룰셋 스코프로 부분그래프 추출 (전체는 노드가 많아 기본은 룰셋 단위)
-function subgraphForRuleset(graph, rulesetId) {
+// 카테고리(=룰셋) 스코프로 부분그래프 추출 (전체는 노드가 많아 기본은 카테고리 단위)
+function subgraphForCategory(graph, categoryId) {
   if (!graph) return { nodes: [], edges: [] };
-  if (rulesetId === "all") return { nodes: graph.nodes, edges: graph.edges };
-  const keep = new Set([`rset:${rulesetId}`]);
+  if (categoryId === "all") return { nodes: graph.nodes, edges: graph.edges };
+  const catNode = `cat:${categoryId}`;
+  const keep = new Set([catNode]);
   const ruleIds = new Set();
-  for (const e of graph.edges) if (e.type === "IN_RULESET" && e.target === `rset:${rulesetId}`) ruleIds.add(e.source);
+  for (const e of graph.edges) if (e.type === "IN_RULESET" && e.target === catNode) ruleIds.add(e.source);
   ruleIds.forEach((id) => keep.add(id));
-  for (const e of graph.edges) if (ruleIds.has(e.source)) keep.add(e.target);
-  for (const e of graph.edges) if (e.source === `rset:${rulesetId}`) keep.add(e.target);
-  for (const e of graph.edges) if (e.type === "CONTAINS" && keep.has(e.target)) keep.add(e.source);
+  for (const e of graph.edges) if (ruleIds.has(e.source)) keep.add(e.target);       // 룰 → 근거·태그·원칙·카테고리
+  for (const e of graph.edges) if (e.target === catNode) keep.add(e.source);          // 상품 → 카테고리(APPLIES_TO)
+  for (const e of graph.edges) if (e.type === "CONTAINS" && keep.has(e.target)) keep.add(e.source); // 문서 → 포함 조항
   return {
     nodes: graph.nodes.filter((n) => keep.has(n.id)),
     edges: graph.edges.filter((e) => keep.has(e.source) && keep.has(e.target)),
@@ -1040,9 +1048,9 @@ function OntologyView({ form, setForm }) {
 
   useEffect(() => { fetchOntology().then(setGraph).catch((e) => setErr(String(e.message || e))); }, []);
 
-  const rulesets = useMemo(() => graph ? graph.nodes.filter((n) => n.type === "ruleset") : [], [graph]);
+  const scopeCats = useMemo(() => graph ? graph.nodes.filter((n) => n.type === "category") : [], [graph]);
   const scope = form.scope || "all";
-  const sub = useMemo(() => subgraphForRuleset(graph, scope), [graph, scope]);
+  const sub = useMemo(() => subgraphForCategory(graph, scope), [graph, scope]);
   const layout = useMemo(() => forceLayout(sub), [sub]);
   const nodeById = useMemo(() => Object.fromEntries((sub.nodes || []).map((n) => [n.id, n])), [sub]);
   const neighbors = useMemo(() => {
@@ -1070,7 +1078,7 @@ function OntologyView({ form, setForm }) {
     const s = n.label || "";
     return s.length > 14 ? s.slice(0, 14) + "…" : s;
   };
-  const showLabel = (n) => ["ruleset", "category", "document"].includes(n.type) || selected === n.id || (neighborIds && neighborIds.has(n.id));
+  const showLabel = (n) => ["category", "document"].includes(n.type) || selected === n.id || (neighborIds && neighborIds.has(n.id));
   const opac = (id) => (selected && id !== selected && !(neighborIds && neighborIds.has(id))) ? 0.13 : 1;
   const selNode = selected ? nodeById[selected] : null;
 
@@ -1096,7 +1104,7 @@ function OntologyView({ form, setForm }) {
               <select value={scope} onChange={(e) => changeScope(e.target.value)}
                 style={{ padding: "5px 8px", border: `1px solid ${T.line}`, borderRadius: 7, fontSize: 12, fontFamily: T.font, background: T.surface, color: T.ink }}>
                 <option value="all">전체 그래프</option>
-                {rulesets.map((rs) => <option key={rs.id} value={rs.id.replace(/^rset:/, "")}>{rs.label}</option>)}
+                {scopeCats.map((c) => <option key={c.id} value={c.id.replace(/^cat:/, "")}>{c.label}</option>)}
               </select>
               {["-", "＋", "⟲"].map((z, i) => (
                 <button key={i} onClick={() => setView((v) => i === 2 ? { tx: 0, ty: 0, s: 1 } : { ...v, s: Math.min(2.6, Math.max(0.4, v.s * (i === 1 ? 1.15 : 0.87))) })}
@@ -1603,6 +1611,124 @@ function KnowledgeView({ knowledge, rules, onCreate, onDelete, onEdit }) {
 // ─────────────────────────────────────────────
 // LNB 아이콘 (인라인 SVG)
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// 흐름 — 룰북 동작 방식 개요 (파이프라인 + 두 메타 + 데이터 구조 + 메뉴 안내)
+// ─────────────────────────────────────────────
+function FlowView({ rules, knowledge, taxonomy, principles, categories, products, go = {} }) {
+  const T = useT();
+  const n = {
+    rules: (rules || []).length,
+    knowledge: Object.keys(knowledge || {}).length,
+    tags: Object.keys(taxonomy?.semantic_tags || {}).length,
+    principles: (principles || []).length,
+    categories: (categories || []).length,
+    products: (products || []).length,
+  };
+  const MATCH_C = "#2D5BE3", JUDGE_C = "#DC2626";
+  const card = { background: T.surface, border: `1px solid ${T.line}`, borderRadius: 12, padding: 16 };
+  const secTitle = { fontSize: 13, fontWeight: 700, color: T.ink, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 };
+  const secNum = { display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 6, background: T.accent, color: "#fff", fontSize: 11, fontWeight: 800, flexShrink: 0 };
+
+  const steps = [
+    { t: "상담 대화", d: "판매 현장의 상담 발화(고객·판매자)", tag: null, c: T.sub },
+    { t: "매칭 (ST·매칭AI)", d: "대화에서 의미태그를 추출해 관련 룰을 선별", tag: "🔵 매칭 메타", c: MATCH_C },
+    { t: "룰셋 로드 (RuleSet · RS-2)", d: "상품 → 카테고리(=룰셋) → 룰. loadRuleSet 이 룰+근거를 반환", tag: null, c: "#0D9488" },
+    { t: "위반 판정 (iTrix)", d: "점검 문장·근거 조항으로 위반 여부 판단", tag: "🔴 판정 메타", c: JUDGE_C },
+    { t: "완전판매 점검 결과", d: "위반·감점 항목 산출", tag: null, c: "#059669" },
+  ];
+  const entities = [
+    { t: "룰 (rule)", d: "점검 문장(statement) + 판매원칙 분류", cnt: n.rules, onGo: go.goRules },
+    { t: "의미태그 (tag)", d: "대화 매칭 키 · rule_tags 로 N:M", cnt: n.tags, onGo: go.goTags },
+    { t: "근거 조항 (knowledge)", d: "판정 근거 원문 · rule_knowledge 로 N:M", cnt: n.knowledge, onGo: go.goKnowledge },
+    { t: "판매원칙 (principle)", d: "6대 원칙 + 절차/사후 — 분류축", cnt: n.principles, onGo: null },
+    { t: "카테고리 = 룰셋", d: "상품이 속한 룰셋 스코프", cnt: n.categories, onGo: null },
+    { t: "상품 (product)", d: "product → category 로 룰셋 결정", cnt: n.products, onGo: go.goLoad },
+  ];
+
+  return (
+    <div>
+      <div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: T.ink }}>룰셋 개요</div>
+        <div style={{ fontSize: 12.5, color: T.sub, marginTop: 3, lineHeight: 1.65 }}>
+          이 콘솔은 <b>완전판매 점검 룰셋</b>을 관리합니다. 상담 대화가 들어오면 <b style={{ color: MATCH_C }}>매칭</b>으로 관련 룰을 찾고,
+          RuleSet 이 룰과 근거를 내려주면 <b style={{ color: JUDGE_C }}>iTrix</b> 가 위반을 판정합니다.
+        </div>
+      </div>
+
+      {/* 1. 파이프라인 */}
+      <div style={{ ...card, marginTop: 14 }}>
+        <div style={secTitle}><span style={secNum}>1</span> 전체 파이프라인</div>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: 8 }}>
+          {steps.map((s, i) => (
+            <React.Fragment key={s.t}>
+              <div style={{ flex: "1 1 150px", minWidth: 140, border: `1px solid ${T.line}`, borderTop: `3px solid ${s.c}`, borderRadius: 10, padding: "10px 12px", background: T.subtle }}>
+                <div style={{ fontSize: 12.5, fontWeight: 700, color: T.ink }}>{s.t}</div>
+                <div style={{ fontSize: 11.5, color: T.sub, lineHeight: 1.55, marginTop: 4 }}>{s.d}</div>
+                {s.tag && <div style={{ marginTop: 6, fontSize: 10.5, fontWeight: 700, color: s.c }}>{s.tag}</div>}
+              </div>
+              {i < steps.length - 1 && <div style={{ display: "flex", alignItems: "center", color: T.faint, fontSize: 16, flexShrink: 0 }}>→</div>}
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      {/* 2. 두 종류의 메타 */}
+      <div style={{ ...card, marginTop: 12 }}>
+        <div style={secTitle}><span style={secNum}>2</span> 룰이 나르는 두 종류의 정보</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 12 }}>
+          <div style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${MATCH_C}`, borderRadius: "0 10px 10px 0", padding: "12px 14px" }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: MATCH_C }}>🔵 매칭 메타</div>
+            <div style={{ fontSize: 11.5, color: T.sub, margin: "4px 0 8px", lineHeight: 1.55 }}>대화 → 어떤 룰이 걸리는가 (ST·매칭AI)</div>
+            <div style={{ fontSize: 12, color: T.ink }}>· 의미태그 (semantic_tags)</div>
+          </div>
+          <div style={{ border: `1px solid ${T.line}`, borderLeft: `3px solid ${JUDGE_C}`, borderRadius: "0 10px 10px 0", padding: "12px 14px" }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: JUDGE_C }}>🔴 판정 메타</div>
+            <div style={{ fontSize: 11.5, color: T.sub, margin: "4px 0 8px", lineHeight: 1.55 }}>iTrix 가 위반을 판단하는 정보</div>
+            <div style={{ fontSize: 12, color: T.ink, lineHeight: 1.7 }}>· 점검 문장 (statement)<br />· 근거 조항 (knowledge)<br />· 판정성격 (violation_type)</div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. 데이터 구조 */}
+      <div style={{ ...card, marginTop: 12 }}>
+        <div style={secTitle}><span style={secNum}>3</span> 데이터 구조 <span style={{ fontSize: 11, fontWeight: 500, color: T.faint }}>· 카드를 누르면 해당 메뉴로</span></div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
+          {entities.map((e) => (
+            <div key={e.t} onClick={e.onGo || undefined} style={{ border: `1px solid ${T.line}`, borderRadius: 10, padding: "11px 13px", background: T.subtle, cursor: e.onGo ? "pointer" : "default" }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 6 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: T.ink }}>{e.t}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: T.accent }}>{e.cnt}</span>
+              </div>
+              <div style={{ fontSize: 11.5, color: T.sub, lineHeight: 1.55, marginTop: 4 }}>{e.d}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. 메뉴별 역할 */}
+      <div style={{ ...card, marginTop: 12, marginBottom: 8 }}>
+        <div style={secTitle}><span style={secNum}>4</span> 메뉴별 역할</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {[
+            ["룰북", "룰 생성·편집. 점검 문장 + 매칭/판정 메타 배정 (파일로 AI 임포트 포함)", go.goRules],
+            ["태그", "의미태그(매칭 키) 마스터 관리", go.goTags],
+            ["근거 조항", "판정 근거(knowledge) 관리", go.goKnowledge],
+            ["API 연동", "RS-2 loadRuleSet 시뮬레이션 — 상품 선택 → 응답 확인", go.goLoad],
+            ["규정 관계도", "룰·태그·근거·원칙의 온톨로지 그래프", go.goOnto],
+          ].map(([label, desc, onGo]) => (
+            <div key={label} onClick={onGo} style={{ display: "flex", gap: 12, alignItems: "baseline", padding: "8px 10px", borderRadius: 8, cursor: "pointer" }}
+              onMouseEnter={(ev) => (ev.currentTarget.style.background = T.subtle)}
+              onMouseLeave={(ev) => (ev.currentTarget.style.background = "transparent")}>
+              <span style={{ fontSize: 12.5, fontWeight: 700, color: T.accent, minWidth: 82, flexShrink: 0 }}>{label}</span>
+              <span style={{ fontSize: 12, color: T.sub, lineHeight: 1.55 }}>{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const Icon = ({ name, color }) => {
   const common = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round" };
   if (name === "list") return (<svg {...common}><line x1="8" y1="6" x2="20" y2="6" /><line x1="8" y1="12" x2="20" y2="12" /><line x1="8" y1="18" x2="20" y2="18" /><circle cx="3.5" cy="6" r="1.2" /><circle cx="3.5" cy="12" r="1.2" /><circle cx="3.5" cy="18" r="1.2" /></svg>);
@@ -1612,6 +1738,7 @@ const Icon = ({ name, color }) => {
   if (name === "tag") return (<svg {...common}><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0l-7.2-7.2a2 2 0 0 1-.6-1.4V4.5a1.5 1.5 0 0 1 1.5-1.5h7.5a2 2 0 0 1 1.4.6l7.4 7.4a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.3" /></svg>);
   if (name === "edit") return (<svg {...common}><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>);
   if (name === "doc") return (<svg {...common}><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><path d="M14 3v6h6" /><line x1="8" y1="13" x2="16" y2="13" /><line x1="8" y1="17" x2="13" y2="17" /></svg>);
+  if (name === "flow") return (<svg {...common}><circle cx="5" cy="12" r="2.3" /><circle cx="19" cy="12" r="2.3" /><line x1="7.3" y1="12" x2="14.5" y2="12" /><path d="M13.5 9l3 3-3 3" /></svg>);
   if (name === "history") return (<svg {...common}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /><path d="M12 8v4l3 2" /></svg>);
   if (name === "sun") return (<svg {...common}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>);
   return (<svg {...common}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>); // moon
@@ -1620,7 +1747,7 @@ const Icon = ({ name, color }) => {
 // ─────────────────────────────────────────────
 // 해시 라우팅 (메뉴별 URL · 새로고침 유지)
 // ─────────────────────────────────────────────
-const SECTION_HASH = { rules: "rulebook", tags: "tags", knowledge: "knowledge", ontology: "ontology", load: "st" };
+const SECTION_HASH = { flow: "overview", rules: "rulebook", tags: "tags", knowledge: "knowledge", ontology: "ontology", load: "st" };
 const HASH_SECTION = Object.fromEntries(Object.entries(SECTION_HASH).map(([k, v]) => [v, k]));
 const readSectionFromHash = () => {
   if (typeof window === "undefined") return "rules";
@@ -1687,6 +1814,9 @@ function AppShell({ mode, setMode }) {
   async function persistRule(next) {
     const saved = await updateRule(next.rule_id, {
       statement: next.statement,
+      sales_principle: next.sales_principle,
+      customer_condition: next.customer_condition,
+      violation_type: next.violation_type,
       semantic_tags: next.semantic_tags ?? [],
       knowledge_ids: next.knowledge_ids ?? [],
     });
@@ -1729,6 +1859,7 @@ function AppShell({ mode, setMode }) {
     setBundle((b) => { const s = { ...b.taxonomy.semantic_tags }; delete s[code]; return { ...b, taxonomy: { ...b.taxonomy, semantic_tags: s } }; });
   }
 
+  const goFlow = () => setSection("flow");
   const goRules = () => { setSection("rules"); setSelectedRuleId(null); };
   const goLoad = () => setSection("load");
   const goOnto = () => setSection("ontology");
@@ -1737,6 +1868,7 @@ function AppShell({ mode, setMode }) {
   const openRule = (id) => { setSelectedRuleId(id); setSection("rules"); };
 
   const NAV = [
+    { key: "flow", label: "룰셋 개요", icon: "flow", onClick: goFlow, active: section === "flow" },
     { key: "rules", label: "룰북", icon: "list", onClick: goRules, active: section === "rules" },
     { key: "tags", label: "태그", icon: "tag", onClick: goTags, active: section === "tags" },
     { key: "knowledge", label: "근거 조항", icon: "doc", onClick: goKnowledge, active: section === "knowledge" },
@@ -1758,7 +1890,9 @@ function AppShell({ mode, setMode }) {
   else {
     const { knowledge, rules, taxonomy, products, rulesets, categories, principles } = bundle;
     const catLabel = Object.fromEntries((categories || []).map((c) => [c.category, c.label]));
-    if (section === "tags") {
+    if (section === "flow") {
+      content = <FlowView rules={rules} knowledge={knowledge} taxonomy={taxonomy} principles={principles} categories={categories} products={products} go={{ goRules, goTags, goKnowledge, goLoad, goOnto }} />;
+    } else if (section === "tags") {
       content = <TagsView rules={rules} taxonomy={taxonomy} selected={tagSel} setSelected={setTagSel} onOpen={openRule}
         onCreateTag={createTagLocal} onUpdateTag={updateTagLocal} onDeleteTag={deleteTagLocal} />;
     } else if (section === "knowledge") {

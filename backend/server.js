@@ -527,27 +527,33 @@ app.get("/api/ruleset/load", (req, res) => {
     const judge_chars = judge_payload.length;
     const ruleTags = rtMap[r.rule_id] || [];
     return {
+      // 식별·분류
       id: r.rule_id.replace(/^RULE_/, ""),
       rule_id: r.rule_id,
       statement: r.statement,
       // 판매원칙 : 저장 code → 표시 label, 조문(principles 마스터)
       sales_principle: principleLabel(r.sales_principle),
       principle_article: principleArticle(r.sales_principle),
-      customer_condition: r.customer_condition,
-      violation_type: r.violation_type,
-      is_deduct: r.violation_type === "감점형" ? 1 : 0,
-      // 매칭 메타 (ST 가 대화↔Rule 매칭에 사용)
-      semantic_tags: ruleTags,
-      matched_tags: reqTags.length ? ruleTags.filter((t) => reqTags.includes(t)) : [],
-      basis: basisView, // 근거 요지 뷰 (document_type·title·gist)
-      knowledge: knowledgeOf(r), // 조항 (근거 법령 원문) — ST 실제 응답 페이로드용
-      // iTrix 판정 페이로드 + 크기 검증 (2000자 = 룰 판정정보 + 대화)
-      judge_payload,
-      judge_chars,
-      within_budget: judge_chars <= RULE_LIMIT,
+      // 🔵 매칭 메타 — 대화가 들어왔을 때 어떤 룰이 매칭되는가 (ST·매칭AI)
+      matching: {
+        semantic_tags: ruleTags,
+        matched_tags: reqTags.length ? ruleTags.filter((t) => reqTags.includes(t)) : [],
+        customer_condition: r.customer_condition,
+        category: r.category,
+      },
+      // 🔴 판정 메타 — iTrix 가 위반 여부를 판단하는 데 쓰는 정보
+      judgment: {
+        violation_type: r.violation_type,
+        is_deduct: r.violation_type === "감점형" ? 1 : 0,
+        basis: basisView, // 근거 요지 뷰 (document_type·title·gist)
+        knowledge: knowledgeOf(r), // 조항 (근거 법령 원문)
+        judge_payload, // iTrix 판정 페이로드
+        judge_chars,
+        within_budget: judge_chars <= RULE_LIMIT, // 2000자 예산 (룰 판정정보 + 대화)
+      },
     };
   });
-  const over = rules.filter((r) => !r.within_budget);
+  const over = rules.filter((r) => !r.judgment.within_budget);
 
   res.json(ok({
     ruleset_identity,
