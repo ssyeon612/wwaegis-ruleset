@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, importRules, analyzeRulesFile } from "./api";
+import { fetchBundle, updateRule, createRule, deleteRule, createKnowledge, deleteKnowledge, createTag, updateTag, deleteTag, loadRuleSet, fetchOntology, updateKnowledge, importRules, analyzeRulesFile, aiStatus } from "./api";
 
 // 데이터는 백엔드 API 에서 로드한다. (knowledge / rules / taxonomy / products / rulesets)
 
@@ -158,6 +158,8 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
   const [busy, setBusy] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzer, setAnalyzer] = useState(""); // 어떤 분석기가 돌았는지 표기
+  const [ai, setAi] = useState(null); // 현재 AI 연동 상태·모델
+  useEffect(() => { if (open && !ai) aiStatus().then(setAi).catch(() => setAi({ enabled: false })); }, [open, ai]);
 
   const tagsMap = taxonomy.semantic_tags || {};
   const tagCodes = Object.keys(tagsMap);
@@ -242,8 +244,13 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "16px 20px", borderBottom: `1px solid ${T.line}`, background: T.subtle, flexShrink: 0 }}>
           <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 30, height: 30, borderRadius: 9, background: T.accentBg, color: T.accent, fontSize: 16, fontWeight: 700, lineHeight: 1 }}>⇪</span>
           <div>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>파일로 룰 추가</div>
-            <div style={{ fontSize: 11.5, color: T.faint, marginTop: 1 }}>업로드 → AI 분석 → 검토 → 적용</div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14.5, fontWeight: 700, color: T.ink }}>파일로 룰 추가</span>
+              {ai && (ai.enabled
+                ? <span title={`${ai.provider} · ${ai.model}`} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10.5, fontWeight: 700, color: "#059669", background: "#D1FAE5", borderRadius: 6, padding: "2px 7px" }}>🤖 <span style={{ fontFamily: T.mono }}>{ai.model}</span></span>
+                : <span style={{ fontSize: 10.5, fontWeight: 600, color: T.faint, background: T.chipBg, borderRadius: 6, padding: "2px 7px" }}>AI 미연동 · 규칙기반</span>)}
+            </div>
+            <div style={{ fontSize: 11.5, color: T.faint, marginTop: 1 }}>업로드 → {ai && !ai.enabled ? "규칙기반" : "AI"} 분석 → 검토 → 적용</div>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
             <StepDot n={1} label="업로드" active={step === "upload"} done={step === "review"} />
@@ -260,14 +267,14 @@ function ImportRulesDrawer({ open, onClose, categories = [], principles = [], ta
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "40px 16px", fontSize: 13.5, fontWeight: 600 }}>
                   <span style={{ fontSize: 26 }}>🤖</span>
                   AI 분석 중…
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>{fileName} · 문서에서 룰을 추출하고 있습니다</span>
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>{fileName} · {ai?.enabled ? ai.model : "규칙기반"}(으)로 룰을 추출하고 있습니다</span>
                 </div>
               ) : (
                 <label style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, border: `1.5px dashed ${T.accent}`, background: T.accentBg, color: T.accent, borderRadius: 12, padding: "34px 16px", cursor: "pointer", fontSize: 13.5, fontWeight: 600 }}>
                   <input type="file" accept=".md,.markdown,.txt,text/markdown,text/plain" onChange={onFile} style={{ display: "none" }} />
                   <span style={{ fontSize: 30 }}>📄</span>
                   파일 선택 (.md · .txt)
-                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>업로드하면 AI가 분석해 룰 후보를 만듭니다 (미연동 시 규칙기반)</span>
+                  <span style={{ fontSize: 11.5, color: T.sub, fontWeight: 400 }}>{ai?.enabled ? `${ai.model}가 분석해 룰 후보를 만듭니다` : "업로드하면 분석해 룰 후보를 만듭니다"}</span>
                 </label>
               )}
               <details style={{ fontSize: 11.5, color: T.faint }}>
@@ -410,7 +417,15 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
     if (fCond && r.customer_condition !== fCond) return false;
     if (fViol && r.violation_type !== fViol) return false;
     return true;
-  }).sort((a, b) => (a.rule_id || "").localeCompare(b.rule_id || ""));
+  }).sort((a, b) => (b.rule_id || "").localeCompare(a.rule_id || ""));
+  // 페이징
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(tableRows.length / PAGE_SIZE));
+  const curPage = Math.min(page, totalPages);
+  const pageRows = tableRows.slice((curPage - 1) * PAGE_SIZE, curPage * PAGE_SIZE);
+  const visPages = Array.from({ length: totalPages }, (_, i) => i + 1).filter((p) => p === 1 || p === totalPages || Math.abs(p - curPage) <= 2);
+  useEffect(() => { setPage(1); }, [q, fPrin, fCat, fCond, fViol]);
   const [openKnowledge, setOpenKnowledge] = useState(() => new Set());
   const [edit, setEdit] = useState(false);
   const [saveState, setSaveState] = useState("idle");
@@ -459,72 +474,88 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
       <p style={{ fontSize: 12.5, lineHeight: 1.65, margin: 0, color: T.sub }}>{p.content}</p>
     </div>
   );
-  const MetaRow = ({ label, children }) => (
-    <div style={{ display: "flex", gap: 10, alignItems: "baseline", marginBottom: 7 }}>
-      <span style={{ fontSize: 11, color: T.faint, minWidth: 64 }}>{label}</span>
-      <div style={{ flex: 1, fontSize: 13, color: T.ink }}>{children}</div>
+  const secLabel = { fontSize: 10, fontWeight: 700, color: T.faint, letterSpacing: 0.4, textTransform: "uppercase", marginBottom: 5 };
+  const Field = ({ label, children }) => (
+    <div>
+      <div style={{ ...secLabel, marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 12.5, color: T.ink }}>{children}</div>
     </div>
   );
 
-  // 인라인 상세 패널 (근거 조항은 그룹 헤더에서 1회만 표시 → 검색 모드에서만 showKnowledge)
-  const Panel = ({ r, showKnowledge }) => (
-    <div style={{ padding: "10px 14px 14px", background: T.bg }}>
+  // 인라인 상세 패널 — 미니멀 배지 바 + 근거 목록
+  const Panel = ({ r, showKnowledge }) => {
+    const art = r.sales_principle ? PRINCIPLE_ART[r.sales_principle] : null;
+    const pb = principleBadge(r.sales_principle);
+    const kn = knowledgeOf(r);
+    return (
+    <div style={{ padding: "12px 14px 14px", background: "transparent", display: "flex", flexDirection: "column", gap: 12 }}>
       {edit && (
-        <MetaRow label="제목">
+        <div>
+          <div style={secLabel}>점검 문장</div>
           <textarea defaultValue={r.statement}
             onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== r.statement) commit({ ...r, statement: v }); }}
             style={{ ...inputStyle, width: "100%", boxSizing: "border-box", minHeight: 48, resize: "vertical", lineHeight: 1.5, fontSize: 13 }} />
-        </MetaRow>
-      )}
-      <MetaRow label="고객조건">
-        <span style={{ fontFamily: T.mono, fontSize: 12, color: T.sub, background: T.chipBg, borderRadius: 6, padding: "2px 8px" }}>{r.customer_condition}</span>
-      </MetaRow>
-      <MetaRow label="태그">
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, alignItems: "center" }}>
-          {(r.semantic_tags || []).map((code) => (
-            <span key={code} title={code} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: T.accentBg, color: T.accent, fontSize: 12, fontWeight: 600, padding: edit ? "3px 6px 3px 9px" : "3px 9px", borderRadius: 8 }}>
-              {koOf(code) || code}
-              {edit && <button onClick={() => commit({ ...r, semantic_tags: r.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }}>×</button>}
-            </span>
-          ))}
-          {(r.semantic_tags || []).length === 0 && !edit && <span style={{ fontSize: 12, color: T.faint }}>태그없음</span>}
-          {edit && (
-            <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.semantic_tags || []; if (cur.includes(v)) return; commit({ ...r, semantic_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 220 }}>
-              <option value="">+ 태그</option>
-              {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
-            </select>
-          )}
-        </div>
-      </MetaRow>
-      {showKnowledge && knowledgeOf(r).length > 0 && (
-        <div style={{ marginTop: 10 }}>
-          <div style={{ fontSize: 11, color: T.faint, marginBottom: 5 }}>근거 조항</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>{knowledgeOf(r).map((p) => <KnowledgeCard key={p.knowledge_id} p={p} />)}</div>
         </div>
       )}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 12 }}>
-        {confirmDel ? (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-            <span style={{ color: "#DC2626", fontSize: 12, fontWeight: 600 }}>이 룰을 삭제할까요?</span>
-            <button onClick={() => doDelete(r)} disabled={deleting}
-              style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 7, padding: "5px 11px", cursor: deleting ? "default" : "pointer", fontSize: 12, fontWeight: 700, opacity: deleting ? 0.6 : 1 }}>{deleting ? "삭제 중…" : "삭제"}</button>
-            <button onClick={() => setConfirmDel(false)} disabled={deleting}
-              style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "5px 11px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>취소</button>
+
+      {/* 미니멀 배지 바 — 분류/태그 + (우측) 저장·편집·삭제 */}
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
+        {r.sales_principle && <span style={{ fontSize: 11.5, fontWeight: 600, color: pb.fg, background: pb.bg, borderRadius: 6, padding: "2px 8px" }}>{r.sales_principle}{art && <span style={{ fontFamily: T.mono, fontSize: 10, opacity: 0.8, marginLeft: 4 }}>{art}</span>}</span>}
+        <span style={{ fontSize: 11.5, color: T.sub, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 6, padding: "2px 8px" }}>{r.customer_condition}</span>
+        <span style={{ fontSize: 11.5, fontWeight: 600, color: VIOL_COLOR[r.violation_type] || T.sub, background: T.surface, border: `1px solid ${T.line}`, borderRadius: 6, padding: "2px 8px" }}>{r.violation_type}</span>
+        <span style={{ width: 1, height: 16, background: T.line, margin: "0 2px" }} />
+        {(r.semantic_tags || []).map((code) => (
+          <span key={code} title={code} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: T.accent, background: T.accentBg, borderRadius: 6, padding: edit ? "2px 5px 2px 8px" : "2px 8px" }}>
+            {code}
+            {edit && <button onClick={() => commit({ ...r, semantic_tags: r.semantic_tags.filter((t) => t !== code) })} style={{ border: "none", background: "none", color: T.accent, cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>×</button>}
           </span>
-        ) : (
-          <button onClick={() => setConfirmDel(true)}
-            style={{ border: "1px solid #FCA5A5", background: T.surface, color: "#DC2626", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>삭제</button>
+        ))}
+        {(r.semantic_tags || []).length === 0 && !edit && <span style={{ fontSize: 11.5, color: T.faint }}>태그없음</span>}
+        {edit && (
+          <select value="" onChange={(e) => { const v = e.target.value; if (!v) return; const cur = r.semantic_tags || []; if (cur.includes(v)) return; commit({ ...r, semantic_tags: [...cur, v] }); }} style={{ ...inputStyle, maxWidth: 180 }}>
+            <option value="">+ 태그</option>
+            {Object.entries(taxonomy?.semantic_tags || {}).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+          </select>
         )}
-        <span style={{ fontSize: 12, marginLeft: "auto", color: saveState === "error" ? "#DC2626" : saveState === "saved" ? "#059669" : T.faint }}>{SAVE[saveState]}</span>
-        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-          <span style={{ fontSize: 12.5, fontWeight: 600, color: edit ? T.accent : T.sub }}>편집</span>
-          <button role="switch" aria-checked={edit} onClick={() => { setEdit((v) => !v); setConfirmDel(false); }} style={{ position: "relative", width: 40, height: 22, borderRadius: 11, border: "none", cursor: "pointer", background: edit ? T.accent : T.line, transition: "background .15s", padding: 0 }}>
-            <span style={{ position: "absolute", top: 3, left: edit ? 21 : 3, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left .15s", boxShadow: "0 1px 2px rgba(0,0,0,0.25)" }} />
-          </button>
-        </label>
+
+        <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+          {saveState !== "idle" && <span style={{ fontSize: 11.5, color: saveState === "error" ? "#DC2626" : saveState === "saved" ? "#059669" : T.faint }}>{SAVE[saveState]}</span>}
+          <button onClick={() => { setEdit((v) => !v); setConfirmDel(false); }}
+            style={{ border: edit ? "none" : `1px solid ${T.line}`, background: edit ? T.accent : T.surface, color: edit ? "#fff" : T.sub, borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>{edit ? "완료" : "편집"}</button>
+          {confirmDel ? (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span style={{ color: "#DC2626", fontSize: 11.5, fontWeight: 600 }}>삭제하시겠습니까?</span>
+              <button onClick={() => doDelete(r)} disabled={deleting} style={{ border: "none", background: "#DC2626", color: "#fff", borderRadius: 7, padding: "4px 11px", cursor: deleting ? "default" : "pointer", fontSize: 11.5, fontWeight: 700, opacity: deleting ? 0.6 : 1 }}>{deleting ? "…" : "삭제"}</button>
+              <button onClick={() => setConfirmDel(false)} disabled={deleting} style={{ border: `1px solid ${T.line}`, background: T.surface, color: T.sub, borderRadius: 7, padding: "4px 11px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>취소</button>
+            </span>
+          ) : (
+            <button onClick={() => setConfirmDel(true)} style={{ border: `1px solid ${T.line}`, background: T.surface, color: "#DC2626", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontSize: 11.5, fontWeight: 600 }}>삭제</button>
+          )}
+        </span>
       </div>
+
+      {/* 근거 조항 — 미니멀 목록 */}
+      {showKnowledge && (
+        <div>
+          <div style={secLabel}>근거 조항{kn.length > 0 && ` · ${kn.length}`}</div>
+          {kn.length === 0 ? <div style={{ fontSize: 12, color: T.faint }}>연결된 조항이 없습니다</div>
+            : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {kn.map((p) => (
+                  <div key={p.knowledge_id} style={{ display: "flex", gap: 8 }}>
+                    <span style={{ width: 5, height: 5, borderRadius: "50%", background: DOCTYPE_COLOR[p.document_type] || T.line, flexShrink: 0, marginTop: 6 }} />
+                    <div style={{ fontSize: 12.5, lineHeight: 1.6 }}>
+                      <span style={{ fontWeight: 600, color: T.ink }}>{p.title}</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 600, color: DOCTYPE_COLOR[p.document_type], margin: "0 6px" }}>{p.document_type}</span>
+                      <span style={{ color: T.sub }}>{p.content}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>}
+        </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const RuleItem = ({ r, showKnowledge }) => {
     const open = openId === r.rule_id;
@@ -677,7 +708,7 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
             </thead>
             <tbody>
               {tableRows.length === 0 && <tr><td colSpan={7} style={{ padding: 40, textAlign: "center", color: T.faint }}>조건에 맞는 룰이 없습니다</td></tr>}
-              {tableRows.map((r) => {
+              {pageRows.map((r) => {
                 const open = openId === r.rule_id;
                 const tags = r.semantic_tags || [];
                 const pb = principleBadge(r.sales_principle);
@@ -700,13 +731,28 @@ function ListView({ rules, knowledge, taxonomy, products = [], rulesets = [], ca
                       </td>
                       <td style={{ padding: "8px 12px", textAlign: "center", color: T.sub, verticalAlign: "top" }}>{(r.knowledge_ids || []).length || "—"}</td>
                     </tr>
-                    {open && <tr><td colSpan={7} style={{ padding: 0, borderBottom: `1px solid ${T.line}`, background: T.bg }}><Panel r={r} showKnowledge /></td></tr>}
+                    {open && <tr><td colSpan={7} style={{ padding: 0, borderTop: `1px solid ${T.line}`, borderBottom: `1px solid ${T.line}`, background: T.chipBg, boxShadow: "inset 0 3px 8px -5px rgba(0,0,0,0.3)" }}><Panel r={r} showKnowledge /></td></tr>}
                   </React.Fragment>
                 );
               })}
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, padding: "10px 14px", borderTop: `1px solid ${T.line}` }}>
+            <button onClick={() => setPage(curPage - 1)} disabled={curPage <= 1}
+              style={{ border: `1px solid ${T.line}`, background: T.surface, color: curPage <= 1 ? T.faint : T.sub, borderRadius: 7, padding: "5px 10px", cursor: curPage <= 1 ? "default" : "pointer", fontSize: 12, fontWeight: 600 }}>‹</button>
+            {visPages.map((p, i) => (
+              <React.Fragment key={p}>
+                {i > 0 && p - visPages[i - 1] > 1 && <span style={{ color: T.faint, fontSize: 12, padding: "0 2px" }}>…</span>}
+                <button onClick={() => setPage(p)}
+                  style={{ border: "none", background: p === curPage ? T.accent : "transparent", color: p === curPage ? "#fff" : T.sub, borderRadius: 7, padding: "5px 0", minWidth: 30, cursor: "pointer", fontSize: 12, fontWeight: p === curPage ? 700 : 600 }}>{p}</button>
+              </React.Fragment>
+            ))}
+            <button onClick={() => setPage(curPage + 1)} disabled={curPage >= totalPages}
+              style={{ border: `1px solid ${T.line}`, background: T.surface, color: curPage >= totalPages ? T.faint : T.sub, borderRadius: 7, padding: "5px 10px", cursor: curPage >= totalPages ? "default" : "pointer", fontSize: 12, fontWeight: 600 }}>›</button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -25,6 +25,11 @@ export async function fetchBundle() {
   return { knowledge: knowledgeMap, rules, taxonomy, products, categories, principles, rulesets: rulesetsRes.ruleset_identities || [] };
 }
 
+// AI 연동 상태 (현재 사용 모델) — { enabled, provider, model }
+export async function aiStatus() {
+  return fetch(`${BASE}/ai/status`).then(json);
+}
+
 // AI 분석 (Google Gemini) — 파일 텍스트 → 룰 후보 (키 미설정 시 503 → 프론트에서 규칙기반 폴백)
 export async function analyzeRulesFile(text) {
   return fetch(`${BASE}/rules/analyze`, {

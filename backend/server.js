@@ -378,6 +378,11 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const CONDS = ["모든 고객", "고령자", "초고령자"];
 const VIOLS = ["누락형", "감점형", "비계량형"];
 
+// AI 연동 상태 — 프론트에서 현재 사용 모델 표시용
+app.get("/api/ai/status", (_req, res) => {
+  res.json(ok({ enabled: !!GEMINI_KEY, provider: "Google Gemini", model: GEMINI_MODEL }));
+});
+
 app.post("/api/rules/analyze", async (req, res) => {
   const text = (req.body?.text || "").trim();
   if (!text) return fail(res, 400, "bad_request", "text is required");
